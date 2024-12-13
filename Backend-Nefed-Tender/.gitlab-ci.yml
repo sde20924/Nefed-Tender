@@ -1,0 +1,25 @@
+image: node:18
+
+stages:
+  - deploy
+
+# before_script:
+#   - npm install
+
+deploy:
+  stage: deploy
+  script:
+    - apt-get update -y
+    - apt-get install -y lftp
+    - echo "Current directory contents before mirroring:"
+    - ls -la
+    - lftp -u $FTP_USERNAME,$FTP_PASSWORD $FTP_HOST -e "set ftp:ssl-allow no; mirror -R --no-symlinks . $REMOTE_DIR; quit"
+  only:
+    - master-user_module
+
+variables:
+  FTP_USERNAME: user_module_ftp@nafedtrackandtrace.com
+  FTP_PASSWORD: dev2@2024
+  FTP_HOST: ftp.nafedtrackandtrace.com
+  REMOTE_DIR: /
+
