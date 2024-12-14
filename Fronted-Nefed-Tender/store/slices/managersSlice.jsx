@@ -7,7 +7,7 @@ export const getAllManagers = createAsyncThunk(
     try {
       console.log("getting all managers");
       const data = await callApiGet("get-all-managers");
-      console.log(data);
+      console.log("data is",data);
       return data;
     } catch (err) {
       return rejectWithValue("Opps found an error", err.response.data);
@@ -81,6 +81,7 @@ export const managersSlice = createSlice({
         else state.managers = [];
       })
       .addCase(getAllManagers.rejected, (state, action) => {
+        console.log(action.payload)
         state.managersLoading = false;
         state.error = action.payload;
         state.m_msg = action.payload.msg;
