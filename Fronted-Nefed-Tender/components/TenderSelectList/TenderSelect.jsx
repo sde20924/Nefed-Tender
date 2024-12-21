@@ -8,7 +8,7 @@ const TenderSelect = ({ selectedTender, onChange }) => {
   useEffect(() => {
     const fetchSellerTenders = async () => {
       try {
-        const data = await callApiGet("/seller-tenders");
+        const data = await callApiGet("seller-tenders");
         if (data && data.data) {
           setTenders(data.data);
         } else {

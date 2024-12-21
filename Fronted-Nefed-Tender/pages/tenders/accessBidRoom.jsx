@@ -35,7 +35,7 @@ const AccessBidRoom = () => {
   const fetchAuctionItems = async () => {
     try {
       const response = await callApiGet(
-        `/get-tender-auction-items/${tenderId}`
+        `get-tender-auction-items/${tenderId}`
       );
 
       // Check if auction_items array exists and is not empty
@@ -57,7 +57,7 @@ const AccessBidRoom = () => {
   // Fetch tender details
   const fetchTenderDetails = async () => {
     try {
-      const tenderData = await callApiGet(`/tender/${tenderId}`); // Fetch tender details by ID
+      const tenderData = await callApiGet(`tender/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
       checkAuctionStatus(
         tenderData.data.auct_start_time,
@@ -71,7 +71,7 @@ const AccessBidRoom = () => {
   // Fetch bids for the specific tender
   const fetchBids = async () => {
     try {
-      const response = await callApiGet(`/tender/bid/${tenderId}`); // Fetch bids by tender ID
+      const response = await callApiGet(`tender/bid/${tenderId}`); // Fetch bids by tender ID
       if (response.success) {
         setBids(response.allBids); // Set all bids data
         setLBidsUserId(response.lowestBid.user_id);

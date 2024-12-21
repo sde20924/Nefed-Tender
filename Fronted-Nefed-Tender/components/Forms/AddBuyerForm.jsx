@@ -24,8 +24,8 @@ const validationSchema = Yup.object({
     .email("Invalid email address")
     .required("Email is required"),
   phone_number: Yup.string()
-    .min(10, "Contact must be 10 digit")
-    .max(10, "Contact can't exceed 10 digit")
+    .min(13, "Contact must be 10 digit")
+    .max(13, "Contact can't exceed 10 digit")
     .required("Contact is required"),
   gst_number: Yup.string()
     .matches(

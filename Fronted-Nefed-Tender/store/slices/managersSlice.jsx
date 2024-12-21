@@ -11,6 +11,7 @@ export const getAllManagers = createAsyncThunk(
       return data;
     } catch (err) {
       return rejectWithValue("Opps found an error", err.response.data);
+      
     }
   }
 );
@@ -84,7 +85,7 @@ export const managersSlice = createSlice({
         console.log(action.payload)
         state.managersLoading = false;
         state.error = action.payload;
-        state.m_msg = action.payload.msg;
+        state.m_msg = action.payload?.msg;
       })
 
       .addCase(deleteManager.fulfilled, (state, action) => {
@@ -96,7 +97,7 @@ export const managersSlice = createSlice({
       })
       .addCase(deleteManager.rejected, (state, action) => {
         state.delete_success = false;
-        state.m_msg = action.payload.msg;
+        state.m_msg = action.payload?.msg;
       })
       .addCase(blockManager.fulfilled, (state, action) => {
         state.block_success = true;
@@ -107,7 +108,7 @@ export const managersSlice = createSlice({
       })
       .addCase(blockManager.rejected, (state, action) => {
         state.block_success = false;
-        state.m_msg = action.payload.msg;
+        state.m_msg = action.payload?.msg;
       })
       .addCase(updateMSGManager.fulfilled, (state, action) => {
         state.m_msg = action.payload;

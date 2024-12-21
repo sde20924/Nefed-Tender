@@ -14,7 +14,7 @@ const callApi = async (route, method, body) => {
 };
 
 const callApiGet = async (route) => {
-  const responce = await fetch(`${`http://localhost:8002`}${route}`, {
+  const responce = await fetch(`${`http://localhost:8002/`}${route}`, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",

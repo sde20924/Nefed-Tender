@@ -13,7 +13,7 @@ const EditHomepage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await callApiGet('/get-home-page-content'); // Call the API
+        const response = await callApiGet('get-home-page-content'); // Call the API
         if (response.success && response.data) {
           // Set the state variables with the data from the server
           setTitle(response.data.title);

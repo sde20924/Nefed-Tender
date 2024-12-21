@@ -21,6 +21,7 @@ export default function Dashboard() {
     (state) => state.profileData
   );
   const userData = JSON.parse(localStorage.getItem("data")) || null;
+  console.log("Data is",userData)
 
   const openModal = () => {
     setIsModalOpen(true);
@@ -49,7 +50,7 @@ export default function Dashboard() {
   return (
     <>
       <div className="flex flex-wrap md:pt-32 pb-32 pt-12">
-        {/* <div className="w-full mb-8">
+        <div className="w-full mb-8">
           <HeaderStats />
         </div>
         <div className="w-full xl:w-8/12 mb-12 xl:mb-0 px-4">
@@ -65,7 +66,7 @@ export default function Dashboard() {
         </div>
         <div className="w-full xl:w-4/12 px-4">
           <CardSocialTraffic />
-        </div> */}
+        </div>
         {profileData?.buyer_id && (
           <UploadFilesModal
             docs={profileData?.docs}

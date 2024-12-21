@@ -432,7 +432,7 @@ export default function Sidebar() {
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("data"));
     setTagId(userData?.data?.tag_id || 0);
-    setCurrentUser(userData.login_as);
+    setCurrentUser(userData?.login_as);
   }, []);
   return (
     <>

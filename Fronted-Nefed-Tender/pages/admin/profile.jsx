@@ -35,8 +35,8 @@ function ProfilePage() {
       .email("Invalid email address")
       .required("Email is required"),
     phone: Yup.string()
-      .min(10, "Contact must be 10 characters")
-      .max(10, "Contact can't exceed 10 characters")
+      .min(13, "Contact must be 10 characters")
+      .max(13, "Contact can't exceed 10 characters")
       .required("Phone is required"),
   });
 

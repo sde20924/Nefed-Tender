@@ -13,7 +13,7 @@ const ExploreTender = () => {
   useEffect(() => {
     const fetchTenders = async () => {
       try {
-        const data = await callApiGet("/tenders/active");
+        const data = await callApiGet("tenders/active");
         setTenders(data.data);
 
         // Initialize time left for each tender and set intervals
@@ -94,7 +94,7 @@ const ExploreTender = () => {
           Active Tenders
         </h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {tenders.map((tender) => (
+          {tenders?.map((tender) => (
             <div
               key={tender.tender_id}
               className="bg-white p-4 rounded-lg shadow-md max-w-sm mb-8"

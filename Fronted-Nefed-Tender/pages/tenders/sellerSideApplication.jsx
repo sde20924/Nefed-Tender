@@ -57,7 +57,7 @@ const SubmittedApplications = () => {
   useEffect(() => {
     const fetchSubmittedApplications = async () => {
       try {
-        const data = await callApiGet('/submitted-tender-applications');
+        const data = await callApiGet('submitted-tender-applications');
         setApplications(data.data || []);
         setLoading(false);
       } catch (err) {

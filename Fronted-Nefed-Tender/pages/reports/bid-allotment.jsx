@@ -13,7 +13,7 @@ const BidAllotment = () => {
   const fetchAuctionBids = async (selectedTender) => {
     setLoadingBids(true);
     try {
-      const response = await callApiGet(`/tender-All-bidAmount/${selectedTender}`);
+      const response = await callApiGet(`tender-All-bidAmount/${selectedTender}`);
 
       if (response && response.success) {
         setBids(response.allBids || []);

@@ -12,7 +12,7 @@ const HomeSection = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await callApiGet('/get-home-page-content'); // Use the correct route
+        const response = await callApiGet('get-home-page-content'); // Use the correct route
         if (response.success && response.data) {
           // Set the state variables with the data from the server
           setTitle(response.data.title);

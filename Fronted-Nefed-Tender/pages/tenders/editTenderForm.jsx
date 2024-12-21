@@ -66,7 +66,7 @@ const EditTenderForm = () => {
     if (id) {
       const fetchTenderDetails = async () => {
         try {
-          const response = await callApiGet(`/tender/${id}`);
+          const response = await callApiGet(`tender/${id}`);
           const data = response.data;
           console.log(data.attachments);
 

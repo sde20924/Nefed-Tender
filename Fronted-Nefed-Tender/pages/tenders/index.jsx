@@ -13,7 +13,7 @@ const Tenders = () => {
   useEffect(() => {
     const fetchSellerTenders = async () => {
       try {
-        const data = await callApiGet("/seller-tenders"); // API endpoint to fetch tenders for a specific seller
+        const data = await callApiGet("seller-tenders"); // API endpoint to fetch tenders for a specific seller
         setTenders(data.data);
       } catch (error) {
         console.error("Error fetching tenders:", error.message);
@@ -90,7 +90,7 @@ const Tenders = () => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-200">
-            {tenders.map((tender, index) => (
+            {tenders?.map((tender, index) => (
               <tr key={tender.tender_id}>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{index + 1}</td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm relative">

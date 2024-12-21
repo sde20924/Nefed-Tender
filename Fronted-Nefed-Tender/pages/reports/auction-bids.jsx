@@ -13,7 +13,7 @@ const AuctionBids = () => {
   const fetchAuctionBids = async (selectedTender) => {
     setLoadingBids(true);
     try {
-      const response = await callApiGet(`/tender-Auction-bids/${selectedTender}`);
+      const response = await callApiGet(`tender-Auction-bids/${selectedTender}`);
 
       if (response && response.success) {
         setBids(response.allBids || []);

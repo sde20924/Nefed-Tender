@@ -16,8 +16,8 @@ const MyTender = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        const data = await callApiGet("/tender-applications");
-        const acceptedApplications = data.data.filter(
+        const data = await callApiGet("tender-applications");
+        const acceptedApplications = data?.data?.filter(
           (app) => app.status === "accepted"
         );
 
@@ -36,7 +36,7 @@ const MyTender = () => {
         const tendersData = await Promise.all(
           applications.map(async (application) => {
             const tenderData = await callApiGet(
-              `/tender/${application.tender_id}`
+              `tender/${application.tender_id}`
             );
             calculateTimeLeft(
               tenderData.data.auct_start_time,
@@ -115,7 +115,7 @@ const MyTender = () => {
   };
 
   // Tab navigation logic
-  const filteredApplications = applications.filter((application) => {
+  const filteredApplications = applications?.filter((application) => {
     const tender = tenderDetails[application.tender_id];
     const timeInfo = timeLeft[application.tender_id];
     if (activeTab === "active") {
