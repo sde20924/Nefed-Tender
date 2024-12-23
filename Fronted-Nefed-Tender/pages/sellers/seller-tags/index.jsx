@@ -6,6 +6,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { getSellerTags, updateMSGSeller } from "@/store/slices/sellerSlice";
 import LoadingScreen from "@/components/LoadingScreen/LoadingScreen";
 import AddTagModal from "@/components/Modal/AddTagMadal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SellerTags = () => {
   const dispatch = useDispatch();
@@ -29,7 +31,7 @@ const SellerTags = () => {
 
   useEffect(() => {
     if (s_msg) {
-      alert(s_msg);
+      toast.info(s_msg);
       dispatch(updateMSGSeller());
     }
   }, [s_msg]);
@@ -117,6 +119,7 @@ const SellerTags = () => {
           </table>
         </div>
       </div>
+      < ToastContainer />
     </div>
   );
 };

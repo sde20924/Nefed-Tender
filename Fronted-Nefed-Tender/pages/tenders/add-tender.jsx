@@ -9,6 +9,8 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { callApiPost } from "@/utils/FetchApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -332,10 +334,10 @@ const AddTender = () => {
     try {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
-      alert(response.msg);
+      toast.success(response.msg);
     } catch (error) {
       console.error("Error submitting form:", error);
-      alert("Failed to create tender.");
+      toast.error("Failed to create tender.");
     }
   };
 
@@ -1291,6 +1293,7 @@ const AddTender = () => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </>
   );
 };

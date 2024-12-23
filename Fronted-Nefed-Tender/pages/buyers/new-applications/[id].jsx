@@ -10,6 +10,9 @@ import DocumentViews from "@/components/DocumentsView/DocumentsView";
 import { acceptBuyer, rejectBuyer } from "@/store/slices/buyersSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllRejectedBuyers } from "@/utils/getData";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 
 const ApplicationDetails = () => {
   const router = useRouter();
@@ -51,7 +54,7 @@ const ApplicationDetails = () => {
       dispatch(acceptBuyer({ data: newBuyerDetails, key: "newApp" }));
       router.push("/buyers/new-applications");
     }
-    alert(data.msg);
+    toast.success(data.msg);
     closeDialog();
   };
 
@@ -68,7 +71,7 @@ const ApplicationDetails = () => {
       dispatch(rejectBuyer({ data: newBuyerDetails }));
       router.push("/buyers/new-applications");
     }
-    alert(data.msg);
+    toast.success(data.msg);
     closeDialog();
   };
 
@@ -98,7 +101,7 @@ const ApplicationDetails = () => {
       if (data.msg === "User not found") {
         setNewBuyerDetails([]);
       }
-      alert(data.msg);
+      toast.success(data.msg);
     }
   };
   useEffect(() => {
@@ -219,6 +222,7 @@ const ApplicationDetails = () => {
           }}
         />
       </div>
+      <ToastContainer />
     </div>
   );
 };

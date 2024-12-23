@@ -2,6 +2,7 @@ import {
   addAllRejectedSellers,
   addSellersToRedux,
 } from "@/store/slices/sellerSlice";
+import { toast } from "react-toastify";
 
 const {
   addBuyersToRedux,
@@ -20,7 +21,7 @@ export const getAllApprovedBuyers = async (dispatch) => {
       dispatch(addBuyersToRedux([]));
     }
   } else {
-    alert(data.msg);
+    toast.error(data.msg);
   }
 };
 
@@ -35,7 +36,7 @@ export const getAllRejectedBuyers = async (dispatch) => {
       dispatch(addAllRejectedBuyers([]));
     }
   } else {
-    alert(data.msg);
+    toast.error(data.msg);
   }
 };
 
@@ -50,7 +51,7 @@ export const getAllApprovedSellers = async (dispatch) => {
       dispatch(addSellersToRedux([]));
     }
   } else {
-    alert(data.msg);
+    toast.error(data.msg);
   }
 };
 
@@ -65,6 +66,6 @@ export const getAllRejectedSellers = async (dispatch) => {
       dispatch(addAllRejectedSellers([]));
     }
   } else {
-    alert(data.msg);
+    toast.error(data.msg);
   }
 };

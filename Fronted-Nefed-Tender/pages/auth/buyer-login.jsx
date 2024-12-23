@@ -7,6 +7,8 @@ import Auth from "@/layouts/Auth";
 import { useRouter } from "next/router";
 import { callApi } from "@/utils/FetchApi";
 import SetNewPasswordForm from "@/components/OTPVerification/SetNewPasswordForm";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -46,7 +48,7 @@ export default function Login() {
     if (!data.success) {
       if (data.errors) {
         setSignInDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg); // Display error toast
       } else if (data["is_email_verified"] !== undefined) {
         const otpData = await callApi("otp/resend", "POST", {
           email: values.email,
@@ -58,9 +60,10 @@ export default function Login() {
             setSignInDisabled(true);
           }, 200);
           setOtpSec("initial");
+          toast.info("OTP has been resent. Check your email."); // Display info toast
         } else {
           setSignInDisabled(false);
-          alert(otpData.msg);
+          toast.error(otpData.msg); // Display error toast
         }
       } else if (data["temp_pass_verified"] !== undefined) {
         setDataForSetPass({
@@ -70,22 +73,29 @@ export default function Login() {
           user_type: "buyer",
         });
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.info(data.msg); // Display info toast
         setLoginHidden(true);
       } else {
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg); // Display error toast
       }
-    }
-    console.log(data);
-
-    if (data.success) {
+    } else {
+      // Login successful
       localStorage.setItem("token", data.token);
       if (data.data?.status === "not_verified") {
         localStorage.setItem("openModal", 1);
       }
       localStorage.setItem("data", JSON.stringify(data));
-      alert(data.msg);
+      toast.success("Successfully logged in!", {
+        position: "top-right",
+        autoClose: 9000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+      }); // Display success toast
       router.push("/dashboard");
     }
   };
@@ -94,14 +104,15 @@ export default function Login() {
     const otpData = await callApi("otp/verify", "POST", { email, otp });
     if (otpData.success) {
       setSignInDisabled(false);
-      alert(otpData.msg);
+      toast.success(otpData.msg); // Display success toast
     } else {
-      alert(otpData.msg);
+      toast.error(otpData.msg); // Display error toast
     }
   };
 
   return (
     <>
+      {/* Toast Container */}
       <div className="container mx-auto px-4 h-full">
         <div
           style={{ gap: "24px" }}
@@ -255,6 +266,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

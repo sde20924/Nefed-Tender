@@ -6,6 +6,8 @@ import * as Yup from "yup";
 import Admin from "@/layouts/Admin";
 import { useRouter } from "next/router";
 import { callApi } from "@/utils/FetchApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -35,10 +37,10 @@ export default function AdminLogin() {
     if (!data.success) {
       if (data.errors) {
         setSignInDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg);
       } else {
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg);
       }
     }
 
@@ -46,7 +48,7 @@ export default function AdminLogin() {
     if (data.success) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("data", JSON.stringify(data));
-      alert(data.msg);
+      toast.success(data.msg);
       router.push("/dashboard");
     }
   };
@@ -148,6 +150,7 @@ export default function AdminLogin() {
           </div>
         </div>
       </div>
+      <ToastContainer/>
     </>
   );
 }

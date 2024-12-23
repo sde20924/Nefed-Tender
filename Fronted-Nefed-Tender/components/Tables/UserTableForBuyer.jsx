@@ -7,6 +7,8 @@ import DataNotAvailable from "../DataNotAvailable/DataNotAvailable";
 import { useDispatch, useSelector } from "react-redux";
 import { blockBuyer, deleteBuyer, updateMSG } from "@/store/slices/buyersSlice";
 import LoginButton from "../Buttons/LoginButton";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UserTable = ({ users }) => {
   const router = useRouter();
@@ -68,12 +70,12 @@ const UserTable = ({ users }) => {
   useEffect(() => {
     if (delete_success !== null) {
       if (delete_success) {
-        alert(b_msg);
+        toast.info(b_msg);
         closeDialog();
         setIdForDeleteBlock(null);
         dispatch(updateMSG());
       } else {
-        alert(b_msg);
+        toast.info(b_msg);
         closeDialog();
         dispatch(updateMSG());
       }
@@ -83,12 +85,12 @@ const UserTable = ({ users }) => {
   useEffect(() => {
     if (block_success !== null) {
       if (block_success) {
-        alert(b_msg);
+        toast.info(b_msg);
         closeDialog();
         setIdForDeleteBlock(null);
         dispatch(updateMSG());
       } else {
-        alert(b_msg);
+        toast.info(b_msg);
         closeDialog();
         dispatch(updateMSG());
       }
@@ -205,6 +207,7 @@ const UserTable = ({ users }) => {
           </button>
         ))}
       </div>
+      <ToastContainer />
     </div>
   );
 };

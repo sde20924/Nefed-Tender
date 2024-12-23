@@ -6,6 +6,8 @@ import { getBuyerTags, updateMSG } from "@/store/slices/buyersSlice";
 import LoadingScreen from "@/components/LoadingScreen/LoadingScreen";
 import AddTagModal from "@/components/Modal/AddTagMadal";
 import { useRouter } from "next/router";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const BuyerTags = () => {
   const dispatch = useDispatch();
@@ -28,7 +30,7 @@ const BuyerTags = () => {
 
   useEffect(() => {
     if (b_msg) {
-      alert(b_msg);
+      toast.info(b_msg);
       dispatch(updateMSG());
     }
   }, [b_msg]);
@@ -116,6 +118,7 @@ const BuyerTags = () => {
           </table>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

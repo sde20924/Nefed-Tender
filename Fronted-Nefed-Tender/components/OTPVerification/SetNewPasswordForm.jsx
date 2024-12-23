@@ -5,6 +5,8 @@ import * as Yup from "yup";
 import { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { callApi } from "@/utils/FetchApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const SetNewPasswordForm = ({ data, closeSetPass }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -33,11 +35,11 @@ const SetNewPasswordForm = ({ data, closeSetPass }) => {
       });
       if (resData.success) {
         setSignInDisabled(false);
-        alert(resData.msg);
+        toast.success(resData.msg);
         closeSetPass();
       } else {
         setSignInDisabled(false);
-        alert(resData.msg);
+        toast.error(resData.msg);
       }
     },
   });
@@ -131,6 +133,7 @@ const SetNewPasswordForm = ({ data, closeSetPass }) => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </div>
   );
 };

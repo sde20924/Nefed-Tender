@@ -6,6 +6,8 @@ import "react-phone-input-2/lib/style.css";
 import Link from "next/link";
 import OTPVerification from "../OTPVerification/OTPVerification";
 import { callApi } from "@/utils/FetchApi";
+import { toast , ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Validation schema
 
@@ -101,15 +103,15 @@ const SellerRegistrationForm = () => {
     if (data.success) {
       setEmail(values.email);
       setbtnDisabled(false);
-      alert(data.msg);
+      toast.success(data.msg);
       setShowOTP(true);
     } else {
       if (data.errors) {
         setbtnDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg);
       } else {
         setbtnDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg);
       }
     }
   };
@@ -426,6 +428,7 @@ const SellerRegistrationForm = () => {
           </Formik>
         )}
       </div>
+      <ToastContainer/>
     </div>
   );
 };

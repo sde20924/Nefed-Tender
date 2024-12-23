@@ -7,6 +7,8 @@ import Auth from "@/layouts/Auth";
 import { useRouter } from "next/router";
 import { callApi } from "@/utils/FetchApi";
 import SetNewPasswordForm from "@/components/OTPVerification/SetNewPasswordForm";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -46,10 +48,12 @@ export default function Login() {
     if (!data.success) {
       if (data.errors) {
         setSignInDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg); // Error notification
+        // alert(data.errors[0].msg);
       } else if (data["is_email_verified"] !== undefined) {
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.info(data.msg); // Info notification
+        // alert(data.msg);
         const otpData = await callApi("otp/resend", "POST", {
           email: values.email,
         });
@@ -60,9 +64,11 @@ export default function Login() {
             setSignInDisabled(true);
           }, 200);
           setOtpSec("initial");
+          toast.info("OTP has been resent. Please check your email."); // Info notification
         } else {
           setSignInDisabled(false);
-          alert(otpData.msg);
+          toast.error(otpData.msg); // Error notification
+          // alert(otpData.msg);
         }
       } else if (data["temp_pass_verified"] !== undefined) {
         setDataForSetPass({
@@ -72,22 +78,25 @@ export default function Login() {
           user_type: "seller",
         });
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.info(data.msg); // Info notification
+        // alert(data.msg);
         setLoginHidden(true);
       } else {
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg); // Error notification
+        // alert(data.msg);
       }
     }
-    // if user is not verfied
 
+    // if user is not verified
     if (data.success) {
       localStorage.setItem("token", data.token);
       if (data.data?.status === "not_verified") {
         localStorage.setItem("openModal", 1);
       }
       localStorage.setItem("data", JSON.stringify(data));
-      alert(data.msg);
+      toast.success(data.msg); // Success notification
+      // alert(data.msg);
       router.push("/dashboard");
     }
   };
@@ -96,14 +105,17 @@ export default function Login() {
     const otpData = await callApi("otp/verify", "POST", { email, otp });
     if (otpData.success) {
       setSignInDisabled(false);
-      alert(otpData.msg);
+      toast.success(otpData.msg); // Success notification
+      // alert(otpData.msg);
     } else {
-      alert(otpData.msg);
+      toast.error(otpData.msg); // Error notification
+      // alert(otpData.msg);
     }
   };
 
   return (
     <>
+      {/* <ToastContainer position="top-right" autoClose={3000} />  */}
       <div className="container mx-auto px-4 h-full">
         <div
           style={{ gap: "24px" }}
@@ -260,6 +272,7 @@ export default function Login() {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

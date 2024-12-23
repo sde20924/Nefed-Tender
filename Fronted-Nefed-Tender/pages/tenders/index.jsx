@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { callApiGet , callApiPost ,callApiDelete } from "@/utils/FetchApi";
 import moment from "moment";
 import { useRouter } from 'next/router';
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Tenders = () => {
   const router = useRouter();
@@ -32,35 +34,68 @@ const Tenders = () => {
     setSelectedTenderId((prevSelectedId) => (prevSelectedId === tenderId ? null : tenderId));
   };
 
+  
+
   const handleMenuOptionClick = async (option, tender) => {
     if (option === "edit") {
       router.push(`/tenders/editTenderForm?id=${tender.tender_id}`);
     } else if (option === "delete") {
-      const confirmDelete = window.confirm("Are you sure you want to delete this tender?");
-      if (confirmDelete) {
-        try {
-          const response = await callApiDelete(`delete-tender/${tender.tender_id}`);
-          if (response.success) {
-            alert('Tender deleted successfully');
-            // Refetch tenders to update the list after deletion
-            // setTenders(tenders.filter(t => t.tender_id !== tender.tender_id));
-          }
-        } catch (error) {
-          console.error('Error deleting tender:', error);
-          alert('Failed to delete tender');
+      // Show custom popup for confirmation
+      toast(
+        ({ closeToast }) => (
+          <div>
+            <p>Are you sure you want to delete this tender?</p>
+            <div className="mt-2">
+              <button
+                className="bg-red-500 text-white px-4 py-2 rounded mr-2"
+                onClick={async () => {
+                  closeToast();
+                  try {
+                    const response = await callApiDelete(
+                      `delete-tender/${tender.tender_id}`
+                    );
+                    if (response.success) {
+                      toast.success("Tender deleted successfully");
+                      setTenders((prevTenders) =>
+                        prevTenders.filter(
+                          (t) => t.tender_id !== tender.tender_id
+                        )
+                      );
+                    }
+                  } catch (error) {
+                    console.error("Error deleting tender:", error);
+                    toast.error("Failed to delete tender");
+                  }
+                }}
+              >
+                Yes
+              </button>
+              <button
+                className="bg-gray-300 text-black px-4 py-2 rounded"
+                onClick={() => closeToast()}
+              >
+                No
+              </button>
+            </div>
+          </div>
+        ),
+        {
+          autoClose: false, // Prevent auto-close
+          closeOnClick: false,
         }
-      }
+      );
     } else if (option === "clone") {
       try {
-        const response = await callApiPost(`clone-tender/${tender.tender_id}`, {}); // Cloning still requires formData (even if empty)
+        const response = await callApiPost(
+          `clone-tender/${tender.tender_id}`,
+          {}
+        ); // Cloning still requires formData (even if empty)
         if (response.success) {
-          alert('Tender cloned successfully');
-          // Optionally, refetch tenders to include the new cloned tender
-          fetchSellerTenders();
+          toast.success("Tender cloned successfully");
         }
       } catch (error) {
-        console.error('Error cloning tender:', error);
-        alert('Failed to clone tender');
+        console.error("Error cloning tender:", error);
+        toast.error("Failed to clone tender");
       }
     }
     setSelectedTenderId(null); // Close the menu after the option is selected
@@ -137,6 +172,7 @@ const Tenders = () => {
           </tbody>
         </table>
       </div>
+      <ToastContainer />
     </div>
   );
 };

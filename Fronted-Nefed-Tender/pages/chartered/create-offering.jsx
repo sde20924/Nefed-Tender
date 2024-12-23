@@ -8,6 +8,8 @@ import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import StepIndicator from '@/components/chartered-components/StepIndicator';
 import { vesselCallApi } from '../../utils/FetchApi.jsx';
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 function StepForm() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -47,7 +49,7 @@ function StepForm() {
         if (validateForm()) {
             setCurrentPage(currentPage + 1);
         } else {
-            alert('Please fill all required fields.');
+            toast.info('Please fill all required fields.');
         }
     };
 
@@ -57,7 +59,7 @@ function StepForm() {
 
     const submitForm = async () => {
         if (!validateForm()) {
-            alert('Please fill all required fields.');
+            toast.info('Please fill all required fields.');
             return;
         }
 
@@ -89,10 +91,10 @@ function StepForm() {
         try {
             const response = await vesselCallApi('offering/create', 'POST', obj);
             console.log('API response:', response);
-            alert('Form submitted successfully!');
+            toast.success('Form submitted successfully!');
         } catch (error) {
             console.error('API error:', error);
-            alert('There was an error submitting the form. Please try again.');
+            toast.error('There was an error submitting the form. Please try again.');
         }
     };
 
@@ -204,6 +206,7 @@ function StepForm() {
                     </div>
                 </div>
             </div>
+            <ToastContainer />
         </div>
     );
 }
