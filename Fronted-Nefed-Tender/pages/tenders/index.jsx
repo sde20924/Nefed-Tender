@@ -106,6 +106,7 @@ const Tenders = () => {
   
 
   return (
+    <>
     <div>
       <HeaderTitle
         padding={"p-4"}
@@ -174,6 +175,8 @@ const Tenders = () => {
       </div>
       <ToastContainer />
     </div>
+    <ToastContainer/>
+    </>
   );
 };
 

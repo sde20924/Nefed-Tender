@@ -9,11 +9,14 @@ const withAuth = (WrappedComponent) => {
     useEffect(() => {
       const checkAuth = () => {
         const token = localStorage.getItem("token");
+        const loginAs = localStorage.getItem("login_as");
         if (token) {
           setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(false);
-          router.push("/auth/buyer-login"); // Redirect to home or login page
+          let redirectPath = "/auth/buyer-login"; // Default to buyer-login
+          if (loginAs === "seller") redirectPath = "/auth/seller-login";
+          else if (loginAs === "manager") redirectPath = "/auth/manager-login";
+          router.push(redirectPath); 
         }
       };
 

@@ -1,18 +1,17 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 
 const UserDropdown = () => {
   const router = useRouter();
   const [userAcount, setUserAccount] = useState([
     { type: "admin" },
     { type: "buyer" },
+    { type: "seller" },
+    { type: "manager" },
   ]);
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
-
   // Handle outside click
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -20,14 +19,25 @@ const UserDropdown = () => {
         setIsOpen(false);
       }
     };
-
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
-
+  const handleLogout = () => {
+    const loginAs = localStorage.getItem("login_as");
+    let redirectPath = "/auth/buyer-login";
+    if (loginAs === "seller") redirectPath = "/auth/seller-login";
+    else if (loginAs === "manager") redirectPath = "/auth/manager-login";
+    // Clear localStorage
+    localStorage.removeItem("token");
+    localStorage.removeItem("data");
+    localStorage.removeItem("token_a");
+    localStorage.removeItem("data_a");
+    // Redirect to the appropriate login page
+    router.push(redirectPath);
+    window.location.reload(); // Refresh the page
+  };
   return (
     <div className="relative" ref={dropdownRef} data-testid="user-dropdown">
       <button
@@ -57,15 +67,7 @@ const UserDropdown = () => {
           )}
           <button
             className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-            onClick={() => {
-              // Add your logout logic here
-              localStorage.removeItem("token");
-              localStorage.removeItem("data");
-              localStorage.removeItem("token_a");
-              localStorage.removeItem("data_a");
-              router.push("/");
-              window.location.reload();
-            }}
+            onClick={handleLogout}
           >
             Logout
           </button>

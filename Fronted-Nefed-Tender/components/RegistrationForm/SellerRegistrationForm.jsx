@@ -5,9 +5,7 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Link from "next/link";
 import OTPVerification from "../OTPVerification/OTPVerification";
-import { callApi } from "@/utils/FetchApi";
-import { toast , ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { authApi } from "@/utils/FetchApi";
 
 // Validation schema
 
@@ -97,7 +95,7 @@ const SellerRegistrationForm = () => {
       user_role: "seller",
     };
 
-    const data = await callApi("seller/register", "POST", obj);
+    const data = await authApi("seller/register", "POST", obj);
 
     console.log(data);
     if (data.success) {

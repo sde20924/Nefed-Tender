@@ -1,6 +1,7 @@
 const BASE_URL_LOCAL = "http://localhost:8002/";
 const BASE_URL_TENDER = "https://tenderapi.nafedtrackandtrace.com/";
 const BASE_URL_VESSEL = "https://tender-vessel-module.nafedtrackandtrace.com/";
+const AUTH_URL = "https://tender-auth-module.nafedtrackandtrace.com/"; 
 
 const callApiBase = async ({
   route,
@@ -27,14 +28,6 @@ const callApiBase = async ({
 
     const response = await fetch(`${baseUrl}${route}`, options);
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error("Error Data:", errorData);
-      throw new Error(
-        errorData.msg || "An error occurred while processing the request"
-      );
-    }
-
     const data = await response.json();
     console.log("Response Data:", data);
     return data;
@@ -47,6 +40,8 @@ const callApiBase = async ({
 // Specialized functions for different APIs
 const callApi = (route, method, body) =>
   callApiBase({ route, method, body, baseUrl: BASE_URL_TENDER });
+const authApi = (route, method, body) =>
+  callApiBase({ route, method, body, baseUrl: AUTH_URL });
 const callApiGet = (route) => callApiBase({ route });
 const callApiPost = (route, body) =>
   callApiBase({ route, method: "POST", body });
@@ -82,6 +77,7 @@ const viewOfferingGetApi = (route) =>
 
 export {
   callApi,
+  authApi,
   callApiGet,
   callApiPost,
   callApiDelete,
