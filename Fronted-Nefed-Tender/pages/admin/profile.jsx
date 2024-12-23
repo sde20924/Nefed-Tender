@@ -13,6 +13,8 @@ import {
   updateMSG,
   updateProfile,
 } from "@/store/slices/profileSlice";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ProfilePage() {
   const [isEditable, setIsEditable] = useState(false);
@@ -81,7 +83,7 @@ function ProfilePage() {
   useEffect(() => {
     if (p_msg) {
       setFormikValues();
-      alert(p_msg);
+      toast.info(p_msg);
       dispatch(updateMSG());
     }
   }, [p_msg]);
@@ -251,7 +253,9 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+        
       </main>
+      <ToastContainer />
     </>
   );
 }

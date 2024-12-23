@@ -6,6 +6,8 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { addManager, getAllManagers } from "@/store/slices/managersSlice";
 import ConfirmationDialog from "../DialogBox/DialogBox";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const validationSchema = Yup.object({
   first_name: Yup.string()
@@ -87,12 +89,12 @@ export default function PersonalForm() {
       //dispatch(addManager(data.userDetails));
       setSignInDisabled(false);
       randomFun()
-      alert(data.msg)
+      toast.success(data.msg)
       closeDialog();
       
     } else {
       setSignInDisabled(false);
-      alert(data.msg);
+      toast.error(data.msg);
       closeDialog();
     }
   };
@@ -127,7 +129,7 @@ export default function PersonalForm() {
         dispatch(addManager(data.userDetails));
         resetForm();
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.success(data.msg);
       } else {
         if (data.is_already_exists) {
           setManager(data.existedManager[0]);
@@ -136,10 +138,10 @@ export default function PersonalForm() {
           setResetFun(resetForm)
         } else if (data.errors) {
           setSignInDisabled(false);
-          alert(data.errors[0].msg);
+          toast.error(data.errors[0].msg);
         } else {
           setSignInDisabled(false);
-          alert(data.msg);
+          toast.error(data.msg);
         }
       }
     },
@@ -459,6 +461,7 @@ export default function PersonalForm() {
           desc: "This manager is already exists. Do you still want to add as a manager ?",
         }}
       />
+      <ToastContainer/>
     </div>
   );
 }

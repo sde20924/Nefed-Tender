@@ -100,15 +100,15 @@ const BuyerRegistrationForm = () => {
     if (data.success) {
       setEmail(values.email);
       setbtnDisabled(false);
-      alert(data.msg);
+      toast.success(data.msg);
       setShowOTP(true);
     } else {
       if (data.errors) {
         setbtnDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg);
       } else {
         setbtnDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg);
       }
     }
   };
@@ -426,6 +426,7 @@ const BuyerRegistrationForm = () => {
           </Formik>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };

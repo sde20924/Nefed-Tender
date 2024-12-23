@@ -10,6 +10,8 @@ import DocumentViews from "@/components/DocumentsView/DocumentsView";
 import { useDispatch, useSelector } from "react-redux";
 import { acceptSeller, rejectSeller } from "@/store/slices/sellerSlice";
 import { getAllApprovedSellers, getAllRejectedSellers } from "@/utils/getData";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ApplicationDetails = () => {
   const router = useRouter();
@@ -50,7 +52,7 @@ const ApplicationDetails = () => {
       dispatch(acceptSeller({ data: newSellerDetails, key: "newApp" }));
       router.push("/sellers/new-applications");
     }
-    alert(data.msg);
+    toast.success(data.msg);
     closeDialog();
   };
 
@@ -67,7 +69,7 @@ const ApplicationDetails = () => {
       dispatch(rejectSeller({ data: newSellerDetails }));
       router.push("/sellers/new-applications");
     }
-    alert(data.msg);
+    toast.success(data.msg);
     closeDialog();
   };
 
@@ -97,7 +99,7 @@ const ApplicationDetails = () => {
       if (data.msg === "User not found") {
         setNewSellerDetails([]);
       }
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
   useEffect(() => {
@@ -219,6 +221,7 @@ const ApplicationDetails = () => {
           }}
         />
       </div>
+      <ToastContainer />
     </div>
   );
 };

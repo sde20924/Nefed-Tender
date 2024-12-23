@@ -3,6 +3,8 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { callApi } from "@/utils/FetchApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 // Yup validation schema for OTP
 const OTPVerificationSchema = Yup.object().shape({
@@ -25,7 +27,7 @@ const OTPVerification = ({ email, loginAs }) => {
 
     console.log(otpData);
     if (otpData.success) {
-      alert(otpData.msg);
+      toast.success(otpData.msg);
       localStorage.setItem("token", otpData.token);
       if (otpData?.data?.status === "not_verified") {
         localStorage.setItem("openModal", 1);
@@ -33,7 +35,7 @@ const OTPVerification = ({ email, loginAs }) => {
       localStorage.setItem("data", JSON.stringify(otpData));
       router.push("/dashboard");
     } else {
-      alert(otpData.msg);
+      toast.error(otpData.msg);
     }
     setSubmitting(false);
   };
@@ -81,6 +83,7 @@ const OTPVerification = ({ email, loginAs }) => {
           </Form>
         </Formik>
       </div>
+      <ToastContainer/>
     </div>
   );
 };

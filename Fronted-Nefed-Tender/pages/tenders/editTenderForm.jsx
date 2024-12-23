@@ -10,6 +10,8 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { callApiGet, callApiPost } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 
@@ -395,10 +397,10 @@ const EditTenderForm = () => {
     try {
       const response = await callApiPost(`update-tender/${id}`, formData);
       console.log("responses: ", response);
-      alert(response.msg);
+      toast.success(response.msg);
     } catch (error) {
       console.error("Error updating form:", error);
-      alert("Failed to update tender.");
+      toast.error("Failed to update tender.");
     }
   };
 
@@ -1262,6 +1264,7 @@ const EditTenderForm = () => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </>
   );
 };

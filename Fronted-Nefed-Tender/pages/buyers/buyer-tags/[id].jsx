@@ -6,6 +6,8 @@ import UserDashboard from "@/layouts/UserDashboard";
 import { callApi, callApiGet } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const TagDetails = () => {
   const [allBuyers, setAllBuyers] = useState(null);
@@ -52,9 +54,9 @@ const TagDetails = () => {
         prevUsers.filter((user) => !idsToDelete.includes(user.user_id))
       );
       setAllRegularBuyer([...allRegularBuyer, ...data.updatedUsers]);
-      alert(data.msg);
+      toast.success(data.msg);
     } else {
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -76,9 +78,9 @@ const TagDetails = () => {
       );
       setAllBuyers([...allBuyers, ...data.updatedUsers]);
       setSelectedUserIds([]);
-      alert(data.msg);
+      toast.success(data.msg);
     } else {
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -125,6 +127,7 @@ const TagDetails = () => {
         onDelete={handleDeleteUsers}
         regular={id === "2" ? true : false}
       />
+      <ToastContainer />
     </div>
   );
 };

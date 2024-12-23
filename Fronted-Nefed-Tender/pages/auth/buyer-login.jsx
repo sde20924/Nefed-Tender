@@ -46,9 +46,7 @@ export default function Login() {
     const data = await callApi("buyer/login", "POST", { ...values });
 
     if (!data.success) {
-      if (data.errors) {j hg
-
-        
+      if (data.errors) {
         setSignInDisabled(false);
         toast.error(data.errors[0].msg); // Display error toast
       } else if (data["is_email_verified"] !== undefined) {
@@ -267,8 +265,9 @@ export default function Login() {
             </div>
           </div>
         </div>
+        <ToastContainer />
       </div>
-      <ToastContainer />
+      
     </>
   );
 }

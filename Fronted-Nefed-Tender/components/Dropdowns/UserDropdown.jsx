@@ -1,6 +1,9 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 const UserDropdown = () => {
   const router = useRouter();
   const [userAcount, setUserAccount] = useState([
@@ -58,7 +61,7 @@ const UserDropdown = () => {
               className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               onClick={() => {
                 // Add your logout logic here
-                alert("Switch Account clicked");
+                toast.info("Switch Account clicked");
               }}
             >
               Switch
@@ -72,6 +75,7 @@ const UserDropdown = () => {
           </button>
         </div>
       )}
+      <ToastContainer />
     </div>
   );
 };

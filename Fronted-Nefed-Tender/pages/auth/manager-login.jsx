@@ -7,6 +7,8 @@ import Auth from "@/layouts/Auth";
 import { useRouter } from "next/router";
 import { callApi } from "@/utils/FetchApi";
 import SetNewPasswordForm from "@/components/OTPVerification/SetNewPasswordForm";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -37,6 +39,7 @@ export default function Login() {
   const setLoginHiddenStatus = () => {
     setLoginHidden(false);
   };
+
   const handleSubmit = async (values) => {
     setSignInDisabled(true);
 
@@ -45,15 +48,18 @@ export default function Login() {
     if (!data.success) {
       if (data.errors) {
         setSignInDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg); // Display error toast
+        // alert(data.errors[0].msg);
       } else if (data["is_email_verified"] !== undefined) {
-        alert(data.msg);
+        toast.info(data.msg); // Display info toast
+        // alert(data.msg);
         const otpData = await callApi("otp/resend", "POST", {
           email: values.email,
         });
 
         if (otpData.success) {
-          alert(data.msg);
+          toast.info("OTP has been resent. Please check your email."); // Display info toast
+          // alert(data.msg);
           setEmail(values.email);
           setTimeout(() => {
             setSignInDisabled(true);
@@ -61,7 +67,8 @@ export default function Login() {
           setOtpSec("initial");
         } else {
           setSignInDisabled(false);
-          alert(otpData.msg);
+          toast.error(otpData.msg); // Display error toast
+          // alert(otpData.msg);
         }
       } else if (data["temp_pass_verified"] !== undefined) {
         setDataForSetPass({
@@ -71,18 +78,21 @@ export default function Login() {
           user_type: "manager",
         });
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.info(data.msg); // Display info toast
+        // alert(data.msg);
         setLoginHidden(true);
       } else {
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg); // Display error toast
+        // alert(data.msg);
       }
     }
 
     if (data.success) {
       localStorage.setItem("token", data.token);
       localStorage.setItem("data", JSON.stringify(data));
-      alert(data.msg);
+      toast.success("Login successful!"); // Display success toast
+      // alert(data.msg);
       router.push("/dashboard");
     }
   };
@@ -91,14 +101,17 @@ export default function Login() {
     const otpData = await callApi("otp/verify", "POST", { email, otp });
     if (otpData.success) {
       setSignInDisabled(false);
-      alert(otpData.msg);
+      toast.success(otpData.msg); // Display success toast
+      // alert(otpData.msg);
     } else {
-      alert(otpData.msg);
+      toast.error(otpData.msg); // Display error toast
+      // alert(otpData.msg);
     }
   };
 
   return (
     <>
+      {/* <ToastContainer position="top-right" autoClose={3000} /> Toast Container */}
       <div className="container mx-auto px-4 h-full">
         <div
           style={{ gap: "24px" }}
@@ -242,18 +255,11 @@ export default function Login() {
                   <small>Forgot password?</small>
                 </Link>
               </div>
-              {/* <div className="w-1/2 text-right">
-                <Link
-                  href="/auth/manager-register"
-                  className="text-blueGray-200"
-                >
-                  <small>Create new account</small>
-                </Link>
-              </div> */}
             </div>
           </div>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

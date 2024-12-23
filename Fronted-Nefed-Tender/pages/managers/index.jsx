@@ -5,6 +5,8 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllManagers, updateMSGManager } from "@/store/slices/managersSlice";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const Managers = () => {
   const router = useRouter();
@@ -29,7 +31,7 @@ const Managers = () => {
   
   useEffect(() => {
     if (m_msg) {
-      alert(m_msg);
+      toast.info(m_msg);
       dispatch(updateMSGManager());
     }
   }, [m_msg]);
@@ -82,6 +84,7 @@ const Managers = () => {
       </div>
       {/* SEARCH BAR CODE END */}
       <ManagersTable users={managers} />
+      <ToastContainer />
     </div>
   );
 };

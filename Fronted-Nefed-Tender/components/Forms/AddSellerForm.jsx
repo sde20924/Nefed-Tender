@@ -6,6 +6,8 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { addSeller } from "@/store/slices/sellerSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllApprovedSellers } from "@/utils/getData";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const validationSchema = Yup.object({
   first_name: Yup.string()
@@ -88,14 +90,14 @@ const AddSellerForm = () => {
         dispatch(addSeller(data.userDetails));
         resetForm();
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.success(data.msg);
       } else {
         if (data.errors) {
           setSignInDisabled(false);
-          alert(data.errors[0].msg);
+          toast.error(data.errors[0].msg);
         } else {
           setSignInDisabled(false);
-          alert(data.msg);
+          toast.error(data.msg);
         }
       }
     },
@@ -410,6 +412,7 @@ const AddSellerForm = () => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </div>
   );
 };

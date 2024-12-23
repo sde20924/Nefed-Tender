@@ -12,6 +12,8 @@ import {
   updateMSGManager,
 } from "@/store/slices/managersSlice";
 import LoginButton from "../Buttons/LoginButton";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 const ManagersTable = ({ users }) => {
   const router = useRouter();
   const [isDialogOpenDlt, setIsDialogOpenDlt] = useState(false);
@@ -73,12 +75,12 @@ const ManagersTable = ({ users }) => {
   useEffect(() => {
     if (delete_success !== null) {
       if (delete_success) {
-        alert(m_msg);
+        toast.info(m_msg);
         closeDialog();
         setIdForDeleteBlock(null);
         dispatch(updateMSGManager());
       } else {
-        alert(m_msg);
+        toast.info(m_msg);
         closeDialog();
         dispatch(updateMSGManager());
       }
@@ -88,12 +90,12 @@ const ManagersTable = ({ users }) => {
   useEffect(() => {
     if (block_success !== null) {
       if (block_success) {
-        alert(m_msg);
+        toast.info(m_msg);
         closeDialog();
         setIdForDeleteBlock(null);
         dispatch(updateMSGManager());
       } else {
-        alert(m_msg);
+        toast.info(m_msg);
         closeDialog();
         dispatch(updateMSGManager());
       }
@@ -216,6 +218,7 @@ useEffect(()=>{
           </button>
         ))}
       </div>
+       <ToastContainer />
     </div>
   );
 };
