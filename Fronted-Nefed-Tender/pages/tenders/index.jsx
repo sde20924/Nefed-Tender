@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { callApiGet , callApiPost ,callApiDelete } from "@/utils/FetchApi";
 import moment from "moment";
 import { useRouter } from 'next/router';
+import { toast, ToastContainer } from "react-toastify";
 
 const Tenders = () => {
   const router = useRouter();
@@ -41,13 +42,13 @@ const Tenders = () => {
         try {
           const response = await callApiDelete(`delete-tender/${tender.tender_id}`);
           if (response.success) {
-            alert('Tender deleted successfully');
+            toast.success('Tender deleted successfully');
             // Refetch tenders to update the list after deletion
             // setTenders(tenders.filter(t => t.tender_id !== tender.tender_id));
           }
         } catch (error) {
           console.error('Error deleting tender:', error);
-          alert('Failed to delete tender');
+          toast.error('Failed to delete tender');
         }
       }
     } else if (option === "clone") {
@@ -71,6 +72,7 @@ const Tenders = () => {
   
 
   return (
+    <>
     <div>
       <HeaderTitle
         padding={"p-4"}
@@ -138,6 +140,8 @@ const Tenders = () => {
         </table>
       </div>
     </div>
+    <ToastContainer/>
+    </>
   );
 };
 

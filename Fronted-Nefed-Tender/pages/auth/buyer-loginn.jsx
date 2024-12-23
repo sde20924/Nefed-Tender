@@ -44,7 +44,9 @@ export default function Login() {
     const data = await callApi("buyer/login", "POST", { ...values });
 
     if (!data.success) {
-      if (data.errors) {
+      if (data.errors) {j hg
+
+        
         setSignInDisabled(false);
         alert(data.errors[0].msg);
       } else if (data["is_email_verified"] !== undefined) {

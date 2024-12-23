@@ -59,7 +59,7 @@ const TenderChallan = () => {
         </div>
 
         {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="">No Bids Found</p>}
 
         {bids.length > 0 && (
           <div className="overflow-x-auto">

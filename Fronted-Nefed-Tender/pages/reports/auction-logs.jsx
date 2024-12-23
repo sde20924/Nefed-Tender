@@ -59,7 +59,7 @@ const AuctionLogs = () => {
         </div>
 
         {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="">No Bids Found</p>}
 
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-300">
