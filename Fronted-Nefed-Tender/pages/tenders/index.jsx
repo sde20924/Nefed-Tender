@@ -175,7 +175,6 @@ const Tenders = () => {
       </div>
       <ToastContainer />
     </div>
-    <ToastContainer/>
     </>
   );
 };
