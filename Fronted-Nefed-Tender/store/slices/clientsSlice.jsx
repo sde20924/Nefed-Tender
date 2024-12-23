@@ -30,12 +30,12 @@ export const clientsSlice = createSlice({
       })
       .addCase(getAllManagerClients.fulfilled, (state, action) => {
         state.clientLoading = false;
-        state.clients = action.payload.data;
+        state.clients = action?.payload?.data;
       })
       .addCase(getAllManagerClients.rejected, (state, action) => {
         state.clientLoading = false;
-        state.error = action.payload;
-        state.c_msg = action.payload.msg;
+        state.error = action?.payload;
+        state.c_msg = action?.payload?.msg;
       });
   },
 });
