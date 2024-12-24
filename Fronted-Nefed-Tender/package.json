@@ -37,6 +37,7 @@
     "react-toastify": "^10.0.5",
     "ufo": "^1.5.3",
     "uuid": "^10.0.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.4.0"
   },
   "devDependencies": {
