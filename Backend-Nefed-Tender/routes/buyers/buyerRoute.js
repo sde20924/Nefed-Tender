@@ -1,10 +1,10 @@
 const express = require("express");
 const router = express.Router();
-const verifyUser = require('../../middleware/verifyUser')
-const getAllVerifiedBuyersController = require("../../controllers/misc/getAllVerifiedBuyersController");
-const getAllPendingBuyersController = require("../../controllers/admin/rejectedAndPendingUsers/getAllPendingBuyersController");
-const getAllRejectedBuyersController = require('../../controllers/admin/rejectedAndPendingUsers/getAllRejectedBuyersController');
-const isAdmin = require("../../middleware/isAdmin");
+const verifyUser = require('../../src/middleware/verifyUser')
+const getAllVerifiedBuyersController = require("../../src/controllers/misc/getAllVerifiedBuyersController");
+const getAllPendingBuyersController = require("../../src/controllers/admin/rejectedAndPendingUsers/getAllPendingBuyersController");
+const getAllRejectedBuyersController = require('../../src/controllers/admin/rejectedAndPendingUsers/getAllRejectedBuyersController');
+const isAdmin = require("../../src/middleware/isAdmin");
 
 router.get("/get-all-verified-buyers", verifyUser, getAllVerifiedBuyersController);
 router.get("/get-all-pending-buyers", isAdmin, getAllPendingBuyersController);

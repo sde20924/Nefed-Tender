@@ -8,8 +8,8 @@ const sellerRoute = require('./routes/sellers/sellerRoute')
 const connection = require("./config/config");
 const adminRoute = require("./routes/admin/adminRoute");
 const managerRoute = require("./routes/manager/managerRoute");
-const CustomError = require('./utils/customError')
-const globalErrorHandler = require("./controllers/error/errorController")
+const CustomError = require('./src/utils/customError')
+const globalErrorHandler = require("./src/controllers/error/errorController")
 require('dotenv').config();
 
 const app = express();

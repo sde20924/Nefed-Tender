@@ -1,15 +1,15 @@
 const express = require("express");
 const router = express.Router();
-const verifyUser = require("../../middleware/verifyUser");
-const  getUserInfoController  = require("../../controllers/users/userInfoController");
-const editUserInfoController = require("../../controllers/users/editUserInfoController");
-const isAdmin = require("../../middleware/isAdmin");
-const getAllManagers = require("../../controllers/misc/getAllManager");
-const getManagerDetails = require("../../controllers/misc/getManagerDetails");
-const listOfRequiredDocs = require("../../controllers/admin/listOfRequiredDocs");
-const uploadDocController = require("../../controllers/users/uploadDocController");
-const validateAndUploadMiddleware = require("../../middleware/validateAndUploadMiddleware");
-const addExistingManagerAsManager = require("../../controllers/manager/addExistingManagerAsManager");
+const verifyUser = require("../../src/middleware/verifyUser");
+const  getUserInfoController  = require("../../src/controllers/users/userInfoController");
+const editUserInfoController = require("../../src/controllers/users/editUserInfoController");
+const isAdmin = require("../../src/middleware/isAdmin");
+const getAllManagers = require("../../src/controllers/misc/getAllManager");
+const getManagerDetails = require("../../src/controllers/misc/getManagerDetails");
+const listOfRequiredDocs = require("../../src/controllers/admin/listOfRequiredDocs");
+const uploadDocController = require("../../src/controllers/users/uploadDocController");
+const validateAndUploadMiddleware = require("../../src/middleware/validateAndUploadMiddleware");
+const addExistingManagerAsManager = require("../../src/controllers/manager/addExistingManagerAsManager");
 
 
 router.get("/get-user-info",verifyUser || isAdmin ,getUserInfoController);

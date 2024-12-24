@@ -1,35 +1,35 @@
 const express = require("express");
 const router = express.Router();
-const verifyUser = require("../../middleware/verifyUser")
-const createNewTenderController = require("../../controllers/tender/createNewTender");
-const createAudienceController = require("../../controllers/tender/createAudience");
-const { submitFileUrl } = require('../../controllers/tender/buyerDocumentUpload');
+const verifyUser = require("../../src/middleware/verifyUser")
+const createNewTenderController = require("../../src/controllers/tender/createNewTender");
+const createAudienceController = require("../../src/controllers/tender/createAudience");
+const { submitFileUrl } = require('../../src/controllers/tender/buyerDocumentUpload');
 
-const { getAllTendersController } = require('../../controllers/tender/viewNewTender');
-const { getSellerTendersController } = require('../../controllers/tender/viewSellerTender'); 
-const { getTenderDetailsController } = require('../../controllers/tender/getTenderDetailById');  
-const {getTenderApplicationsByUser}  = require('../../controllers/tender/getBuyerApplication');
-const {getSubmittedTenderApplications} = require('../../controllers/tender/getSellerApplication');
-const { getTenderFilesAndStatus  } = require('../../controllers/tender/getBuyerSavedData');
-const { updateTenderApplicationBySeller } = require('../../controllers/tender/applicationUpdatedStatusByseller');
-const { submitBid} = require('../../controllers/tender/tenderBidRoomController');
-const {getTenderBids} = require('../../controllers/tender/getTenderBidAmount');
-const {getActiveTenders} = require('../../controllers/tender/getActiveTenderOnly');
-const updateTenderDetails = require('../../controllers/tender/editTenderForm'); 
-const { cloneTenderController } = require('../../controllers/tender/cloneTenderController');
-const {deleteTenderController} = require('../../controllers/tender/deleteTenderController');
-const { getAllAuctionBids } = require('../../controllers/tender/getAllAuctionBids');
-const { announceWinner } = require('../../controllers/tender/updateFirstAuctionWinner');
-const {getTenderBidsByTenderId} = require('../../controllers/tender/getAllBidAmount');
-const { getTenderMiniSummary } = require('../../controllers/tender/getTenderMiniSummary');
-const { getSellerList} = require('../../controllers/tender/getsellerList');
-const { getBuyerList} = require('../../controllers/tender/getBuyerList');
-const { getManagerList} = require('../../controllers/tender/getManagerList');
+const { getAllTendersController } = require('../../src/controllers/tender/viewNewTender');
+const { getSellerTendersController } = require('../../src/controllers/tender/viewSellerTender'); 
+const { getTenderDetailsController } = require('../../src/controllers/tender/getTenderDetailById');  
+const {getTenderApplicationsByUser}  = require('../../src/controllers/tender/getBuyerApplication');
+const {getSubmittedTenderApplications} = require('../../src/controllers/tender/getSellerApplication');
+const { getTenderFilesAndStatus  } = require('../../src/controllers/tender/getBuyerSavedData');
+const { updateTenderApplicationBySeller } = require('../../src/controllers/tender/applicationUpdatedStatusByseller');
+const { submitBid} = require('../../src/controllers/tender/tenderBidRoomController');
+const {getTenderBids} = require('../../src/controllers/tender/getTenderBidAmount');
+const {getActiveTenders} = require('../../src/controllers/tender/getActiveTenderOnly');
+const updateTenderDetails = require('../../src/controllers/tender/editTenderForm'); 
+const { cloneTenderController } = require('../../src/controllers/tender/cloneTenderController');
+const {deleteTenderController} = require('../../src/controllers/tender/deleteTenderController');
+const { getAllAuctionBids } = require('../../src/controllers/tender/getAllAuctionBids');
+const { announceWinner } = require('../../src/controllers/tender/updateFirstAuctionWinner');
+const {getTenderBidsByTenderId} = require('../../src/controllers/tender/getAllBidAmount');
+const { getTenderMiniSummary } = require('../../src/controllers/tender/getTenderMiniSummary');
+const { getSellerList} = require('../../src/controllers/tender/getsellerList');
+const { getBuyerList} = require('../../src/controllers/tender/getBuyerList');
+const { getManagerList} = require('../../src/controllers/tender/getManagerList');
 
-const {getHomepageContent} = require("../../controllers/tender/getHomePageContent");
-const {updateHomepageContent} = require("../../controllers/tender/updateHomePageContent");
+const {getHomepageContent} = require("../../src/controllers/tender/getHomePageContent");
+const {updateHomepageContent} = require("../../src/controllers/tender/updateHomePageContent");
 
-const {getTenderAuctionItemsController} = require("../../controllers/tender/getTenderAuctionItemsController")
+const {getTenderAuctionItemsController} = require("../../src/controllers/tender/getTenderAuctionItemsController")
 
 // Route to get all tenders 
 router.get('/tenders', getAllTendersController);

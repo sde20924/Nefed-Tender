@@ -1,9 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const verifyUser = require('../../middleware/verifyUser')
-const isAdmin = require("../../middleware/isAdmin");
-const getAllClientForManager = require("../../controllers/manager/getAllClientForManager");
-const switchUser = require("../../controllers/manager/switch");
+const verifyUser = require('../../src/middleware/verifyUser')
+const isAdmin = require("../../src/middleware/isAdmin");
+const getAllClientForManager = require("../../src/controllers/manager/getAllClientForManager");
+const switchUser = require("../../src/controllers/manager/switch");
 
 
 router.get("/manager/get-all-client",verifyUser, getAllClientForManager);
