@@ -6,6 +6,7 @@ import "react-phone-input-2/lib/style.css";
 import Link from "next/link";
 import OTPVerification from "../OTPVerification/OTPVerification";
 import { authApi } from "@/utils/FetchApi";
+import { ToastContainer } from "react-toastify";
 
 // Validation schema
 
