@@ -12,6 +12,7 @@ import "react-datepicker/dist/react-datepicker.css";
 import { callApiPost } from "@/utils/FetchApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import TanderUpload from "@/components/add-tander/TanderUpload";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const initialFields = [
@@ -795,6 +796,11 @@ const AddTender = () => {
                   </div>
                 </div>
               </div>
+
+              {/* Upload tender's */}
+                
+               
+              
             </div>
 
             <div>
@@ -1294,6 +1300,7 @@ const AddTender = () => {
               Create
             </button>
           </div>
+          <TanderUpload />
         </form>
       </div>
       <ToastContainer />
