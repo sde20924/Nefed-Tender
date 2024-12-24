@@ -2,6 +2,7 @@ import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import React, { useCallback, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
+import { useRouter } from "next/router";
 import "react-quill/dist/quill.snow.css";
 import { useDropzone } from "react-dropzone";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
@@ -13,7 +14,6 @@ import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
-
 const initialFields = [
   { id: "textarea-1", type: "textarea", content: "Text Area" },
   { id: "textfield-1", type: "textfield", content: "Text Field" },
@@ -26,7 +26,7 @@ const initialFields = [
 
 const AddTender = () => {
   // for user-details
-
+  const router = useRouter();
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
@@ -335,9 +335,12 @@ const AddTender = () => {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
       toast.success(response.msg);
+      router.push("/tender");
+      
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to create tender.");
+     
     }
   };
 

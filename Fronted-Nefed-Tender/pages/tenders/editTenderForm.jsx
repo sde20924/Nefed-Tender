@@ -398,6 +398,7 @@ const EditTenderForm = () => {
       const response = await callApiPost(`update-tender/${id}`, formData);
       console.log("responses: ", response);
       toast.success(response.msg);
+      router.push("/tenders");
     } catch (error) {
       console.error("Error updating form:", error);
       toast.error("Failed to update tender.");
