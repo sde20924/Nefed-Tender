@@ -15,6 +15,9 @@ export default function EditableSheet() {
   ]);
   const [subTenders, setSubTenders] = useState([]); // Subtenders data
 
+  console.log("header",headers)
+  console.log("tender",subTenders);
+  
   // Add a new subtender
   const handleAddSubTender = () => {
     const subTenderName = prompt("Enter the Subtender Name:");
@@ -213,17 +216,25 @@ export default function EditableSheet() {
   // Download table as Excel
   const handleDownload = () => {
     const worksheetData = [];
-
+  
+    worksheetData.push([...headers]);
     subTenders.forEach((subTender) => {
-      worksheetData.push([subTender.name]); // Subtender name as a header
-      worksheetData.push(headers); // Column headers
-      worksheetData.push(...subTender.rows); // Rows under the subtender
-      worksheetData.push([]); // Blank row for separation
+      const subTenderHeaderRow = new Array(headers.length).fill("");
+      subTenderHeaderRow[0] = subTender.id
+      subTenderHeaderRow[1] = subTender.name;
+      worksheetData.push(subTenderHeaderRow);
+      worksheetData.push(...subTender.rows);
+  
+      worksheetData.push([]);
     });
-
+  
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
+  
+    // Build a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+  
+    // Download the file
     XLSX.writeFile(workbook, "editable_subtender_table.xlsx");
   };
 
@@ -288,7 +299,7 @@ export default function EditableSheet() {
               onClick={() => handleDeleteSubTender(subTender.id)}
               className="hover:bg-red-600 hover:text-white text-black font-bold py-1 px-3 rounded flex items-center"
             >
-              <FaTrash className="mr-1" /> Delete Table
+              <FaTrash className="mr-1" />
             </button>
           </div>
 
@@ -341,9 +352,9 @@ export default function EditableSheet() {
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(subTender.id, rowIndex)}
-                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-1 px-3 rounded flex items-center"
+                        className=" bg-gray-300 text-white font-bold py-1 px-3 rounded flex items-center"
                       >
-                        <FaTrash className="mr-1" /> Delete
+                        <FaTrash className="mr-1" /> 
                       </button>
                     </td>
                   </tr>
@@ -351,11 +362,11 @@ export default function EditableSheet() {
               </tbody>
             </table>
           </div>
+          <ToastContainer />
         </div>
       ))}
 
       {/* ToastContainer for notifications (place one at a global level) */}
-      <ToastContainer />
     </div>
   );
 }
