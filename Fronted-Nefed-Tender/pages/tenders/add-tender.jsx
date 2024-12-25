@@ -13,6 +13,7 @@ import { callApiPost } from "@/utils/FetchApi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import TanderUpload from "@/components/add-tander/TanderUpload";
+import EditableSheet from "@/components/add-tander/EditableSheet";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const initialFields = [
@@ -1301,9 +1302,11 @@ const AddTender = () => {
             </button>
           </div>
           <TanderUpload />
+          <EditableSheet />
         </form>
       </div>
       <ToastContainer />
+      
     </>
   );
 };
