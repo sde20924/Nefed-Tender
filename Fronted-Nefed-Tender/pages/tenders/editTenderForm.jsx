@@ -145,7 +145,8 @@ const EditTenderForm = () => {
             minDecrementValue: data.min_decr_bid_val?.toString() || "",
             timerExtendedValue: data.timer_ext_val?.toString() || "",
             qtySplittingCriteria: data.qty_split_criteria?.trim() || "",
-            counterOfferTimer: data.counter_offr_accept_timer?.toString() || ""
+            counterOfferTimer: data.counter_offr_accept_timer?.toString() || "",
+
           }));
 
           console.log("attachments data here :", tenderData.attachments);
