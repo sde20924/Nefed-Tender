@@ -17,7 +17,7 @@ const MyTender = () => {
     const fetchApplications = async () => {
       try {
         const data = await callApiGet("/tender-applications");
-        const acceptedApplications = data.data.filter(
+        const acceptedApplications = data?.data?.filter(
           (app) => app.status === "accepted"
         );
 
@@ -115,7 +115,7 @@ const MyTender = () => {
   };
 
   // Tab navigation logic
-  const filteredApplications = applications.filter((application) => {
+  const filteredApplications = applications?.filter((application) => {
     const tender = tenderDetails[application.tender_id];
     const timeInfo = timeLeft[application.tender_id];
     if (activeTab === "active") {
@@ -161,7 +161,7 @@ const MyTender = () => {
 
         {/* Tender Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredApplications.length > 0 ? (
+          {filteredApplications?.length > 0 ? (
             filteredApplications.map((application) => {
               const tender = tenderDetails[application.tender_id];
               const timeInfo = timeLeft[application.tender_id];

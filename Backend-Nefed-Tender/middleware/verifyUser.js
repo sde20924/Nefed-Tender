@@ -3,7 +3,6 @@ const db = require('../config/config');
 
 const verifyUser = async (req, res, next) => {
   const token = req.headers['authorization'];
-
   if (!token) {
     return res.status(403).send({ msg: 'No token provided', success: false });
   }
@@ -14,10 +13,10 @@ const verifyUser = async (req, res, next) => {
 
     // Query the database to check the user's role
     const query = `
-      SELECT user_id, registered_as, email
-      FROM authentication
-      WHERE user_id = $1
-    `;
+    SELECT user_id, registered_as, email
+    FROM authentication
+    WHERE user_id = $1
+  `;
     const { rows } = await db.query(query, [req.user.user_id]);
 
     if (rows.length === 0) {
@@ -26,10 +25,11 @@ const verifyUser = async (req, res, next) => {
 
     const user = rows[0];
 
+
     if (user.registered_as !== req.user.login_as && user.email !== req.user.email) {
       return res.status(403).send({ msg: 'Access denied. Not authorized.', success: false });
     }
-    console.log(`${user.email} logged in as: ${user.registered_as}`);
+    console.log("-=-==-==--user",user);
 
     next();
   } catch (error) {
