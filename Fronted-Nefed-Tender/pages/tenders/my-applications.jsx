@@ -45,7 +45,7 @@ const MyApplication = () => {
         <h1 className="text-2xl font-bold mb-4">Your Tender Applications</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {applications?.length > 0 ? (
-            applications?.map((application) => ( 
+            applications.map((application) => ( 
               <div
                 key={application.tender_application_id}
                 className="bg-white shadow-md rounded-lg p-6 mb-4 border border-gray-200"
