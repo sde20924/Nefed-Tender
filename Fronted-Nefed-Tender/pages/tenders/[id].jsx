@@ -21,12 +21,12 @@ const TenderDetail = () => {
       const fetchTenderDetails = async () => {
         try {
           // Fetch tender details by ID
-          const tenderData = await callApiGet(`/tender/${id}`);
+          const tenderData = await callApiGet(`tender/${id}`);
           setTender(tenderData.data);
           calculateTimeLeft(tenderData.data.app_end_time);
 
           // Fetch applications from server to check if any application is submitted
-          const applicationsData = await callApiGet("/tender-applications");
+          const applicationsData = await callApiGet("tender-applications");
 
           // Filter applications to find any with the status "submitted"
           const acceptedApplications = applicationsData.data.filter(
@@ -40,7 +40,7 @@ const TenderDetail = () => {
             setIsApplicationSubmitted(true); // If any submitted application exists, set the flag to true
           } else {
             // Fetch previously uploaded files for "draft" status
-            const uploadedFilesData = await callApiGet(`/tender/${id}/files-status`);
+            const uploadedFilesData = await callApiGet(`tender/${id}/files-status`);
             if (uploadedFilesData.success) {
               setUploadedFiles(uploadedFilesData.data); // Set the uploaded files from the server
             }

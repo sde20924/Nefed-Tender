@@ -161,7 +161,11 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
                 `INSERT INTO tender_auct_items (
                     tender_id, 
                     auct_item, 
+<<<<<<< HEAD
                     auct_qty 
+=======
+                    auct_qty
+>>>>>>> 4879f794e22edc5aa86a66c8f9c8c8bf25e9da88
                 ) 
                 VALUES ($1, $2, $3)`,
                 [createdTenderId, name, quantity]

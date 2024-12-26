@@ -5,7 +5,8 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import Link from "next/link";
 import OTPVerification from "../OTPVerification/OTPVerification";
-import { callApi } from "@/utils/FetchApi";
+import { authApi } from "@/utils/FetchApi";
+import { ToastContainer } from "react-toastify";
 
 // Validation schema
 
@@ -94,21 +95,21 @@ const BuyerRegistrationForm = () => {
       password: values.password,
     };
 
-    const data = await callApi("buyer/register", "POST", obj);
+    const data = await authApi("buyer/register", "POST", obj);
 
     console.log(data);
     if (data.success) {
       setEmail(values.email);
       setbtnDisabled(false);
-      alert(data.msg);
+      toast.success(data.msg);
       setShowOTP(true);
     } else {
       if (data.errors) {
         setbtnDisabled(false);
-        alert(data.errors[0].msg);
+        toast.error(data.errors[0].msg);
       } else {
         setbtnDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg);
       }
     }
   };
@@ -426,6 +427,7 @@ const BuyerRegistrationForm = () => {
           </Formik>
         )}
       </div>
+      <ToastContainer />
     </div>
   );
 };

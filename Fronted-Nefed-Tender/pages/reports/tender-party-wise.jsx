@@ -13,7 +13,7 @@ const tenderPartyWise = () => {
   const fetchAuctionBids = async (selectedTender) => {
     setLoadingBids(true);
     try {
-      const response = await callApiGet(`/tender-Auction-bids/${selectedTender}`);
+      const response = await callApiGet(`tender-Auction-bids/${selectedTender}`);
 
       if (response && response.success) {
         setBids(response.allBids || []);
@@ -59,7 +59,7 @@ const tenderPartyWise = () => {
         </div>
 
         {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="">No Bids Found</p>}
 
         {bids.length > 0 && (
           <div className="overflow-x-auto">

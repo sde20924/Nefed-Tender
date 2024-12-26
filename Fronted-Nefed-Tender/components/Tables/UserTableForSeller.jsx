@@ -12,6 +12,8 @@ import {
   updateMSGSeller,
 } from "@/store/slices/sellerSlice";
 import LoginButton from "../Buttons/LoginButton";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UserTableForSeller = ({ users }) => {
   const router = useRouter();
@@ -73,12 +75,12 @@ const UserTableForSeller = ({ users }) => {
   useEffect(() => {
     if (delete_success !== null) {
       if (delete_success) {
-        alert(s_msg);
+        toast.info(s_msg);
         closeDialog();
         setIdForDeleteBlock(null);
         dispatch(updateMSGSeller());
       } else {
-        alert(s_msg);
+        toast.info(s_msg);
         closeDialog();
         dispatch(updateMSGSeller());
       }
@@ -88,12 +90,12 @@ const UserTableForSeller = ({ users }) => {
   useEffect(() => {
     if (block_success !== null) {
       if (block_success) {
-        alert(s_msg);
+        toast.info(s_msg);
         closeDialog();
         setIdForDeleteBlock(null);
         dispatch(updateMSGSeller());
       } else {
-        alert(s_msg);
+        toast.info(s_msg);
         closeDialog();
         dispatch(updateMSGSeller());
       }
@@ -210,6 +212,7 @@ const UserTableForSeller = ({ users }) => {
           </button>
         ))}
       </div>
+      <ToastContainer/>
     </div>
   );
 };

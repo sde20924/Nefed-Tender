@@ -6,11 +6,12 @@ import IndexDropdown from "@/components/Dropdowns/IndexDropdown";
 import { useRouter } from "next/router";
 
 export default function Navbar(props) {
+  
+  const route = useRouter();
   const [navbarOpen, setNavbarOpen] = React.useState(false);
   const [openDropdown, setOpenDropdown] = React.useState(null);
   const [isLogin, setIsLogin] = useState(null);
 
-  const route = useRouter();
 
   const handleDropdownToggle = (dropdownName) => {
     setOpenDropdown((prev) => (prev === dropdownName ? null : dropdownName));
@@ -85,11 +86,11 @@ export default function Navbar(props) {
                     menus: [
                       {
                         label: "Register as buyer",
-                        href: "/auth/buyer-register",
+                        href: "/auth/register/buyer",
                       },
                       {
                         label: "Register as seller",
-                        href: "/auth/seller-register",
+                        href: "/auth/register/seller",
                       },
                     ],
                   }}

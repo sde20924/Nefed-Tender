@@ -13,7 +13,7 @@ const BidPosition = () => {
   const fetchAuctionBids = async (tenderId) => {
     setLoadingBids(true);
     try {
-      const response = await callApiGet(`/tender-Auction-bids/${tenderId}`);
+      const response = await callApiGet(`tender-Auction-bids/${tenderId}`);
 
       if (response && response.success) {
         setBids(response.allBids || []);
@@ -59,7 +59,7 @@ const BidPosition = () => {
         </div>
 
         {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="">No Bids Found</p>}
 
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white border border-gray-300">

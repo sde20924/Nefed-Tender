@@ -11,6 +11,8 @@ import LoadingScreen from "@/components/LoadingScreen/LoadingScreen";
 import DataNotAvailable from "@/components/DataNotAvailable/DataNotAvailable";
 import DocumentViews from "@/components/DocumentsView/DocumentsView";
 import { callApi, callApiGet } from "@/utils/FetchApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -65,10 +67,10 @@ const SellerDetails = () => {
       phone_number: values.phone,
     });
     if (data.success) {
-      alert(data.msg);
+      toast.success(data.msg);
       toggleEditMode();
     } else {
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -86,7 +88,7 @@ const SellerDetails = () => {
       if (data.msg === "User not found") {
         setSellerDetails([]);
       }
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -291,6 +293,7 @@ const SellerDetails = () => {
           <IndividualManagers managers={managers} />
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

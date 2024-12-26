@@ -13,7 +13,7 @@ const BidAllotment = () => {
   const fetchAuctionBids = async (selectedTender) => {
     setLoadingBids(true);
     try {
-      const response = await callApiGet(`/tender-All-bidAmount/${selectedTender}`);
+      const response = await callApiGet(`tender-All-bidAmount/${selectedTender}`);
 
       if (response && response.success) {
         setBids(response.allBids || []);
@@ -56,7 +56,7 @@ const BidAllotment = () => {
         </div>
 
         {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {error && <p className="">No Bids Found</p>}
 
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white border border-gray-300">

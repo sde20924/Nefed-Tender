@@ -346,93 +346,10 @@ export default function Sidebar() {
       },
     ],
   };
-
-  if (tagId === 7) {
-    menus.buyer.push({
-      id: 4,
-      icon: "fas fa-file-contract",
-      name: "Shippers",
-      route: "/shippers/create-requirements",
-      active: true,
-      children: [
-        {
-          id: 1,
-          name: "Create Requirements",
-          route: "/shippers/create-requirements",
-        },
-        {
-          id: 2,
-          name: "View Requirements",
-          route: "/shippers/view-requirements",
-        },
-        { id: 3, name: "View Offerings", route: "/shippers/view-offerings" },
-        {
-          id: 4,
-          name: "View Booking Status",
-          route: "/shippers/view-booking-status",
-        },
-      ],
-    });
-  }
-  if (tagId === 3 || tagId === 4) {
-    menus.seller = menus.seller.filter(
-      (menuItem) => menuItem.name !== "managers" && menuItem.name !== "Tenders"
-    );
-
-    const offeringsMenu = {
-      id: 4,
-      icon: "fas fa-clipboard-list",
-      name: "Offerings",
-      route: "/offerings",
-      active: true,
-      children: [
-        { id: 1, name: "Create Offering", route: "/chartered/create-offering" },
-        { id: 2, name: "View Offering", route: "/chartered/view-offering" },
-      ],
-    };
-
-    const additionalMenus = [
-      {
-        id: 5,
-        icon: "fas fa-box",
-        name: "View Bookings",
-        route: "/products",
-        active: true,
-      },
-      {
-        id: 6,
-        icon: "fas fa-shopping-cart",
-        name: "View Requirements",
-        route: "/orders",
-        active: true,
-      },
-      {
-        id: 7,
-        icon: "fas fa-chart-line",
-        name: "Reports",
-        route: "/reports",
-        active: true,
-      },
-    ];
-    const profileMenu = {
-      id: 1,
-      icon: "fas fa-user",
-      name: "profile",
-      route: "/profile",
-      active: true,
-    };
-    menus.seller = [
-      menus.seller[0], // Dashboard
-      offeringsMenu,
-      ...additionalMenus,
-      profileMenu, // Profile at the end
-    ];
-  }
-
   useEffect(() => {
     const userData = JSON.parse(localStorage.getItem("data"));
     setTagId(userData?.data?.tag_id || 0);
-    setCurrentUser(userData.login_as);
+    setCurrentUser(userData?.login_as);
   }, []);
   return (
     <>

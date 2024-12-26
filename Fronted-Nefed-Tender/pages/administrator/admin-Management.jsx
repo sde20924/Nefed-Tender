@@ -12,7 +12,7 @@ const AdminManagement = () => {
     const fetchSellerList = async () => {
       try {
         // Call the API endpoint with GET method
-        const response = await callApiGet("/get-seller-list");
+        const response = await callApiGet("get-seller-list");
 
         // Log response for debugging
         console.log("API Response:", response);

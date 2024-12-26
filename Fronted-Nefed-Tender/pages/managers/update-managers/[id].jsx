@@ -7,6 +7,8 @@ import { useRouter } from "next/router";
 import DataNotAvailable from "@/components/DataNotAvailable/DataNotAvailable";
 import LoadingScreen from "@/components/LoadingScreen/LoadingScreen";
 import { callApi, callApiGet } from "@/utils/FetchApi";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const validationSchema = Yup.object({
   first_name: Yup.string()
@@ -68,7 +70,7 @@ const UpdateManagers = () => {
       if (data.msg === "Manager not found") {
         setManagerDetails([]);
       }
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
   const initialValues = {
@@ -89,7 +91,7 @@ const UpdateManagers = () => {
         values.password.length > 0 &&
         values.confirm_password !== values.password
       ) {
-        alert("password not matched");
+        toast.error("password not matched");
       } else {
         const data = await callApi(
           `admin/edit-user-info/manager/${managerDetails.user_id}`,
@@ -102,9 +104,9 @@ const UpdateManagers = () => {
           }
         );
         if (data.success) {
-          alert(data.msg);
+          toast.success(data.msg);
         } else {
-          alert(data.msg);
+          toast.error(data.msg);
         }
       }
     },
@@ -310,6 +312,7 @@ const UpdateManagers = () => {
           </form>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };

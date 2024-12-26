@@ -13,6 +13,8 @@ import {
   updateMSG,
   updateProfile,
 } from "@/store/slices/profileSlice";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function ProfilePage() {
   const [isEditable, setIsEditable] = useState(false);
@@ -35,8 +37,8 @@ function ProfilePage() {
       .email("Invalid email address")
       .required("Email is required"),
     phone: Yup.string()
-      .min(10, "Contact must be 10 characters")
-      .max(10, "Contact can't exceed 10 characters")
+      .min(13, "Contact must be 10 characters")
+      .max(13, "Contact can't exceed 10 characters")
       .required("Phone is required"),
   });
 
@@ -81,7 +83,7 @@ function ProfilePage() {
   useEffect(() => {
     if (p_msg) {
       setFormikValues();
-      alert(p_msg);
+      toast.info(p_msg);
       dispatch(updateMSG());
     }
   }, [p_msg]);
@@ -251,7 +253,9 @@ function ProfilePage() {
             </div>
           </div>
         </div>
+        
       </main>
+      <ToastContainer />
     </>
   );
 }

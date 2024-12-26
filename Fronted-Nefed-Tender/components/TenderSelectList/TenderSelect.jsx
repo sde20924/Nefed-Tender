@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from "react";
 import { callApiGet } from "@/utils/FetchApi";
 
 const TenderSelect = ({ selectedTender, onChange }) => {
@@ -8,9 +8,15 @@ const TenderSelect = ({ selectedTender, onChange }) => {
   useEffect(() => {
     const fetchSellerTenders = async () => {
       try {
-        const data = await callApiGet("/seller-tenders");
+        const data = await callApiGet("seller-tenders");
         if (data && data.data) {
           setTenders(data.data);
+
+          // Automatically select the first tender if available
+          if (data.data.length > 0 && !selectedTender) {
+            const firstTender = data.data[0];
+            onChange({ target: { value: firstTender.tender_id } });
+          }
         } else {
           throw new Error("Failed to load tenders.");
         }
@@ -21,7 +27,7 @@ const TenderSelect = ({ selectedTender, onChange }) => {
     };
 
     fetchSellerTenders();
-  }, []);
+  }, [onChange, selectedTender]);
 
   return (
     <div className="ml-4">

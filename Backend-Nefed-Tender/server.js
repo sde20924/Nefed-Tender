@@ -1,7 +1,6 @@
 const express = require("express");
 const cors = require("cors");
 const helmet = require("helmet");
-const authRoute = require("./routes/auth/authRoute");
 const userRoute = require("./routes/users/usersRoute");
 const tenderRoute = require('./routes/tender/tenderRoute')
 const buyerRoute = require("./routes/buyers/buyerRoute")
@@ -19,11 +18,11 @@ app.use(express.json());
 app.use(express.urlencoded({
   extended: true,
   }));
-app.use(cors());
+app.use(cors());  
 app.use(helmet());
 
 //Routes
-app.use(authRoute);
+
 app.use(userRoute);
 app.use(tenderRoute)
 app.use(adminRoute);

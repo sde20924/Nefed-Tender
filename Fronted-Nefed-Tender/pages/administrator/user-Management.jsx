@@ -12,7 +12,7 @@ const userManagement = () => {
     const fetchSellerList = async () => {
       try {
         // Call the API endpoint with GET method
-        const response = await callApiGet("/get-buyer-list");
+        const response = await callApiGet("get-buyer-list");
 
         // Log response for debugging
         console.log("API Response:", response);

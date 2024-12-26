@@ -6,6 +6,7 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { addBuyer } from "@/store/slices/buyersSlice";
 import { getAllApprovedBuyers } from "@/utils/getData";
+import { toast } from "react-toastify";
 
 const validationSchema = Yup.object({
   first_name: Yup.string()
@@ -24,8 +25,8 @@ const validationSchema = Yup.object({
     .email("Invalid email address")
     .required("Email is required"),
   phone_number: Yup.string()
-    .min(10, "Contact must be 10 digit")
-    .max(10, "Contact can't exceed 10 digit")
+    .min(13, "Contact must be 10 digit")
+    .max(13, "Contact can't exceed 10 digit")
     .required("Contact is required"),
   gst_number: Yup.string()
     .matches(
@@ -78,14 +79,14 @@ const AddBuyerForm = () => {
         dispatch(addBuyer(data.userDetails));
         resetForm();
         setSignInDisabled(false);
-        alert(data.msg);
+        toast.success(data.msg);
       } else {
         if (data.errors) {
           setSignInDisabled(false);
-          alert(data.errors[0].msg);
+          toast.error(data.errors[0].msg);
         } else {
           setSignInDisabled(false);
-          alert(data.msg);
+          toast.info(data.msg);
         }
       }
     },

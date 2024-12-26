@@ -16,7 +16,11 @@ const MyTender = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
+<<<<<<< HEAD
         const data = await callApiGet("/tender-applications");
+=======
+        const data = await callApiGet("tender-applications");
+>>>>>>> 4879f794e22edc5aa86a66c8f9c8c8bf25e9da88
         const acceptedApplications = data?.data?.filter(
           (app) => app.status === "accepted"
         );
@@ -36,7 +40,7 @@ const MyTender = () => {
         const tendersData = await Promise.all(
           applications.map(async (application) => {
             const tenderData = await callApiGet(
-              `/tender/${application.tender_id}`
+              `tender/${application.tender_id}`
             );
             calculateTimeLeft(
               tenderData.data.auct_start_time,

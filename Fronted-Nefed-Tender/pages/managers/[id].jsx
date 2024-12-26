@@ -5,6 +5,8 @@ import UserDashboard from "@/layouts/UserDashboard";
 import { callApiGet } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const user = {
   id: 1,
@@ -36,7 +38,7 @@ const ManagersDetails = () => {
       if (data.msg === "Manager not found") {
         setManagerDetails([]);
       }
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -103,6 +105,7 @@ const ManagersDetails = () => {
           </div>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 };

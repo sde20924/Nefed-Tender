@@ -6,6 +6,8 @@ import * as Yup from "yup";
 import Auth from "@/layouts/Auth";
 import { callApi } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
+import { toast,ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ForgetPassword = () => {
   const router = useRouter();
@@ -47,10 +49,10 @@ const ForgetPassword = () => {
         email: values.email,
         user_type: values.user_type,
       });
-      alert(data.msg);
+      toast.success(data.msg);
       setStep(2);
     } else {
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -62,10 +64,10 @@ const ForgetPassword = () => {
       password: values.newPassword,
     });
     if (data.success) {
-      alert(data.msg);
+      toast.success(data.msg);
       router.push(`/auth/${userType}-login`);
     } else {
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -210,6 +212,7 @@ const ForgetPassword = () => {
           )}
         </Formik>
       )}
+      <ToastContainer/>
     </div>
   );
 };

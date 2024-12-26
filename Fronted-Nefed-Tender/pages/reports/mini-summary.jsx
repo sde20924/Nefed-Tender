@@ -14,7 +14,7 @@ const MiniSummary = () => {
     setLoading(true);
     try {
       const response = await callApiGet(
-        `/tender-mini-summary/${selectedTender}`
+        `tender-mini-summary/${selectedTender}`
       );
 
       if (response && response.success) {

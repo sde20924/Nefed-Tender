@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { callApiGet, callApiPost } from '../../utils/FetchApi'; 
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 const Modal = ({ isOpen, onClose, onSubmit }) => {
   const [reason, setReason] = useState('');
@@ -13,7 +15,7 @@ const Modal = ({ isOpen, onClose, onSubmit }) => {
       onSubmit(reason);
       setReason('');
     } else {
-      alert('Please enter a reason for rejection.');
+      toast.info('Please enter a reason for rejection.');
     }
   };
 
@@ -43,6 +45,7 @@ const Modal = ({ isOpen, onClose, onSubmit }) => {
           </button>
         </div>
       </div>
+      <ToastContainer />
     </div>
   );
 };
@@ -57,7 +60,7 @@ const SubmittedApplications = () => {
   useEffect(() => {
     const fetchSubmittedApplications = async () => {
       try {
-        const data = await callApiGet('/submitted-tender-applications');
+        const data = await callApiGet('submitted-tender-applications');
         setApplications(data.data || []);
         setLoading(false);
       } catch (err) {

@@ -1,210 +1,92 @@
-const callApi = async (route, method, body) => {
-  const responce = await fetch(`${`https://tenderapi.nafedtrackandtrace.com`}/${route}`, {
-    method: method,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(body),
-  });
+const BASE_URL_LOCAL = "http://localhost:8002/";
+const BASE_URL_TENDER = "https://tenderapi.nafedtrackandtrace.com/";
+const BASE_URL_VESSEL = "https://tender-vessel-module.nafedtrackandtrace.com/";
+const AUTH_URL = "https://tender-auth-module.nafedtrackandtrace.com/"; 
 
-  const data = await responce.json();
-  console.log(data);
-  return data;
-};
-
-const callApiGet = async (route) => {
-  const responce = await fetch(`${`http://localhost:8002`}${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await responce.json();
-  return data;
-};
-
-const callApiPost = async (route, formData) => {
-  console.log("Form Data:", formData); // To check if formData is correct
-
+const callApiBase = async ({
+  route,
+  method = "GET",
+  body,
+  headers = {},
+  baseUrl = BASE_URL_LOCAL,
+}) => {
   try {
-    const response = await fetch(`http://localhost:8002/${route}`, {
-      method: "POST",
+    const options = {
+      method,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${localStorage.getItem("token")}`,
+        ...headers,
       },
-      body: JSON.stringify(formData), // Properly stringified body
-    });
+    };
 
-    // Check if the response is okay (status code in the range 200-299)
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log("Error Data:", errorData); // Log server-side errors
-      throw new Error(errorData.msg || 'An error occurred while creating the tender');
+    if (body && method !== "GET") {
+      options.body = body instanceof FormData ? body : JSON.stringify(body);
+      // Remove Content-Type header for FormData (it sets its own boundary)
+      if (body instanceof FormData) delete options.headers["Content-Type"];
     }
 
+    const response = await fetch(`${baseUrl}${route}`, options);
+
     const data = await response.json();
-    console.log("Response Data:", data); // Log response data for verification
+    console.log("Response Data:", data);
     return data;
   } catch (error) {
-    console.error('Error submitting form:', error.message);
+    console.error("API Error:", error.message);
     throw error;
   }
 };
 
-// api for delete tender
-
-const callApiDelete = async (route) => {
-  console.log(`Calling DELETE for route: ${route}`);
-
-  try {
-    const response = await fetch(`http://localhost:8002/${route}`, {
-      method: 'DELETE',
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${localStorage.getItem("token")}`,
-      },
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.log("Error Data:", errorData); // Log server-side errors
-      throw new Error(errorData.msg || 'An error occurred while processing the request');
-    }
-
-    const data = await response.json();
-    console.log("Response Data:", data); // Log response data for verification
-    return data;
-  } catch (error) {
-    console.error('Error:', error.message);
-    throw error;
-  }
-};
-
-
-
-
-
-
-
-
-
-
-
-
-const uploadDocApi = async (route, formData) => {
-  // const responce = await fetch(`${`https://tenderapi.nafedtrackandtrace.com`}/${route}`, {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
+// Specialized functions for different APIs
+const callApi = (route, method, body) =>
+  callApiBase({ route, method, body, baseUrl: BASE_URL_TENDER });
+const authApi = (route, method, body) =>
+  callApiBase({ route, method, body, baseUrl: AUTH_URL });
+const callApiGet = (route) => callApiBase({ route });
+const callApiPost = (route, body) =>
+  callApiBase({ route, method: "POST", body });
+const callApiDelete = (route) => callApiBase({ route, method: "DELETE" });
+const uploadDocApi = (route, formData) =>
+  callApiBase({
+    route,
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
     body: formData,
+    baseUrl: BASE_URL_VESSEL,
   });
 
-  const data = await responce.json();
-  return data;
+// Vessel-specific APIs
+const vesselCallApi = (route, method, body) =>
+  callApiBase({ route, method, body, baseUrl: BASE_URL_VESSEL });
+const vesselGetApi = (route) =>
+  callApiBase({ route, baseUrl: BASE_URL_VESSEL });
+
+// Commodity-specific APIs
+const commodityGetApi = (route) =>
+  callApiBase({ route, baseUrl: BASE_URL_VESSEL });
+const commoditySearchGetApi = (route) =>
+  callApiBase({ route, baseUrl: BASE_URL_VESSEL });
+const commodityCallApi = (route, method, body) =>
+  callApiBase({ route, method, body, baseUrl: BASE_URL_VESSEL });
+
+// Port-specific APIs
+const portGetApi = (route) => callApiBase({ route, baseUrl: BASE_URL_VESSEL });
+
+// View offerings API
+const viewOfferingGetApi = (route) =>
+  callApiBase({ route, baseUrl: BASE_URL_VESSEL });
+
+export {
+  callApi,
+  authApi,
+  callApiGet,
+  callApiPost,
+  callApiDelete,
+  uploadDocApi,
+  vesselCallApi,
+  vesselGetApi,
+  commodityGetApi,
+  commoditySearchGetApi,
+  commodityCallApi,
+  portGetApi,
+  viewOfferingGetApi,
 };
-
-const vesselCallApi = async (route, method, body) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: method,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await responce.json();
-  console.log(data);
-  return data;
-}
-
-const vesselGetApi = async (route) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await responce.json();
-  console.log(data);
-  return data;
-};
-
-const commodityGetApi = async (route) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await responce.json();
-  console.log(data);
-  return data;
-};
-
-const commoditySearchGetApi = async (route) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await responce.json();
-  console.log(data);
-  return data;
-}; 
-const commoditycallApi = async (route, method, body) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: method,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-    body: JSON.stringify(body),
-  });
-  const data = await responce.json();
-  console.log(data);
-  return data;
-}
-
-
-const portGetApi = async (route) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await responce.json();
-  console.log(data);
-  return data;
-};
-
-const viewOfferingGetApi = async (route) => {
-  const responce = await fetch(`${`https://tender-vessel-module.nafedtrackandtrace.com`}/${route}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
-  });
-
-  const data = await responce.json();
-  console.log(data);
-  return data;
-};
-
-export { callApi, callApiGet, callApiPost, uploadDocApi, vesselCallApi, vesselGetApi, portGetApi, commodityGetApi, commoditySearchGetApi, commoditycallApi, viewOfferingGetApi , callApiDelete };

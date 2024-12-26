@@ -12,6 +12,8 @@ import {
 } from "@/store/slices/profileSlice";
 import { useDispatch, useSelector } from "react-redux";
 import UploadFilesModal from "@/components/Modal/UploadFilesModal";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function ProfilePage() {
   const rating = {
@@ -54,7 +56,7 @@ export default function ProfilePage() {
       .required("Email is required"),
     phone: Yup.string()
       .min(10, "Contact must be 10 characters")
-      .max(10, "Contact can't exceed 10 characters")
+      .max(13, "Contact can't exceed 10 characters")
       .required("Phone is required"),
   });
 
@@ -109,7 +111,7 @@ export default function ProfilePage() {
   useEffect(() => {
     if (p_msg) {
       setFormikValues();
-      alert(p_msg);
+      toast.info(p_msg);
       dispatch(updateMSG());
     }
   }, [p_msg]);
@@ -481,6 +483,7 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
+        <ToastContainer/>
       </main>
     </>
   );

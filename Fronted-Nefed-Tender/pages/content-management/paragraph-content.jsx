@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import { callApiGet, callApiPost } from '../../utils/FetchApi'; // Assuming both methods are exported
+import { toast, ToastContainer } from 'react-toastify';
+import "react-toastify/dist/ReactToastify.css";
 
 const EditHomepage = () => {
   // State variables to hold the title, subheading, and description
@@ -13,7 +15,7 @@ const EditHomepage = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await callApiGet('/get-home-page-content'); // Call the API
+        const response = await callApiGet('get-home-page-content'); // Call the API
         if (response.success && response.data) {
           // Set the state variables with the data from the server
           setTitle(response.data.title);
@@ -39,10 +41,10 @@ const EditHomepage = () => {
       // Call the API to update the homepage content
       const data = await callApiPost('update-home-page-content', formData); // Update API call
       console.log("Homepage content updated:", data);
-      alert('Homepage content updated successfully');
+      toast.success('Homepage content updated successfully');
     } catch (error) {
       console.error('Error updating homepage content:', error.message);
-      alert('Failed to update content');
+      toast.error('Failed to update content');
     }
   };
 
@@ -107,6 +109,7 @@ const EditHomepage = () => {
           </div>
         </form>
       </div>
+      <ToastContainer />
     </>
   );
 };

@@ -6,6 +6,8 @@ import UserDashboard from "@/layouts/UserDashboard";
 import { callApi, callApiGet } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const DocsForTags = () => {
   const router = useRouter();
@@ -47,14 +49,14 @@ const DocsForTags = () => {
       if (data.success) {
         setDocuments([...documents, data.document]);
         setIsSubmitDisabled(false);
-        alert(data.msg);
+        toast.success(data.msg);
         closeModal();
       } else {
         setIsSubmitDisabled(false);
-        alert(data.msg);
+        toast.error(data.msg);
       }
     } else {
-      alert("Invalid tag ID");
+      toast.error("Invalid tag ID");
     }
   };
 
@@ -91,9 +93,9 @@ const DocsForTags = () => {
     if (data.success) {
       const updatedDocs = documents.filter((ele) => ele.id != data.document.id);
       setDocuments(updatedDocs);
-      alert(data.msg);
+      toast.success(data.msg);
     } else {
-      alert(data.msg);
+      toast.error(data.msg);
     }
   };
 
@@ -241,6 +243,7 @@ const DocsForTags = () => {
           </div>
         </div>
       )}
+      < ToastContainer />
     </div>
   );
 };

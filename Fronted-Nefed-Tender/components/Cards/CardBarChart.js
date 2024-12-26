@@ -3,7 +3,7 @@ import Chart from "chart.js/auto";
 
 export default function CardBarChart() {
   React.useEffect(() => {
-    let config = {
+    const config = {
       type: "bar",
       data: {
         labels: [
@@ -37,68 +37,72 @@ export default function CardBarChart() {
       options: {
         maintainAspectRatio: false,
         responsive: true,
-        title: {
-          display: false,
-          text: "Orders Chart",
+        plugins: {
+          title: {
+            display: false,
+            text: "Orders Chart",
+          },
+          legend: {
+            labels: {
+              color: "rgba(0,0,0,.4)",
+            },
+            align: "end",
+            position: "bottom",
+          },
+          tooltip: {
+            mode: "index",
+            intersect: false,
+          },
         },
-        tooltips: {
-          mode: "index",
-          intersect: false,
-        },
-        hover: {
+        interaction: {
           mode: "nearest",
           intersect: true,
         },
-        legend: {
-          labels: {
-            fontColor: "rgba(0,0,0,.4)",
-          },
-          align: "end",
-          position: "bottom",
-        },
         scales: {
-          xAxes: [
-            {
-              display: false,
-              scaleLabel: {
-                display: true,
-                labelString: "Month",
-              },
-              gridLines: {
-                borderDash: [2],
-                borderDashOffset: [2],
-                color: "rgba(33, 37, 41, 0.3)",
-                zeroLineColor: "rgba(33, 37, 41, 0.3)",
-                zeroLineBorderDash: [2],
-                zeroLineBorderDashOffset: [2],
-              },
-            },
-          ],
-          yAxes: [
-            {
+          x: {
+            display: true,
+            title: {
               display: true,
-              scaleLabel: {
-                display: false,
-                labelString: "Value",
-              },
-              gridLines: {
-                borderDash: [2],
-                drawBorder: false,
-                borderDashOffset: [2],
-                color: "rgba(33, 37, 41, 0.2)",
-                zeroLineColor: "rgba(33, 37, 41, 0.15)",
-                zeroLineBorderDash: [2],
-                zeroLineBorderDashOffset: [2],
-              },
+              text: "Month",
             },
-          ],
+            grid: {
+              borderDash: [2],
+              borderDashOffset: [2],
+              color: "rgba(33, 37, 41, 0.3)",
+              zeroLineColor: "rgba(33, 37, 41, 0.3)",
+            },
+            ticks: {
+              color: "rgba(33, 37, 41, 0.8)",
+            },
+          },
+          y: {
+            display: true,
+            title: {
+              display: true,
+              text: "Value",
+            },
+            grid: {
+              borderDash: [2],
+              color: "rgba(33, 37, 41, 0.2)",
+              zeroLineColor: "rgba(33, 37, 41, 0.15)",
+            },
+            ticks: {
+              color: "rgba(33, 37, 41, 0.8)",
+            },
+          },
         },
       },
     };
-    let ctx = document.getElementById("bar-chart").getContext("2d");
-    window.myBar = new Chart(ctx, config);
-    window.myBar.destroy();
+
+    const ctx = document.getElementById("bar-chart").getContext("2d");
+    const myBar = new Chart(ctx, config);
+
+    // Cleanup when component unmounts
+    return () => {
+      myBar.destroy();
+    };
   }, []);
+
   return (
     <>
       <div className="relative flex flex-col min-w-0 break-words bg-white w-full mb-6 shadow-lg rounded">
