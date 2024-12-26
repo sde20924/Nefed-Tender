@@ -36,8 +36,6 @@ const initialFields = [
 const AddTender = () => {
   const router = useRouter();
 
-  // State Management
-
   // Tenders Details
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -259,6 +257,15 @@ const AddTender = () => {
   const [counterOfferTimer, setCounterOfferTimer] = useState("");
   const [applicationStart, setApplicationStart] = useState(null);
   const [applicationEnd, setApplicationEnd] = useState(null);
+  const [headers, setHeaders] = useState([
+    "S.No",                   
+    "Item",
+    "Item Description",
+    "UOM",
+    "Total Qty",
+    "Rate",
+  ]);
+  const [subTenders, setSubTenders] = useState([]); 
 
   const parseDate = (date) => (date ? new Date(date) : null);
   const handleApplicationStartChange = (date) => {
@@ -316,6 +323,10 @@ const AddTender = () => {
       tender_id: tender_id, // Generate a random tender ID based on the current timestamp if not provided
       audi_key: null, // Set to null if not applicable
       auct_field: auctionFields,
+      editable_sheet: {
+        headers, // Headers from EditableSheet
+        sub_tenders: subTenders, // SubTender data with rows
+      },
     };
 
     console.log("form data here 1", formData);
@@ -324,7 +335,7 @@ const AddTender = () => {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
       toast.success(response.msg);
-      router.push("/tender");
+      // router.push("/tender");
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to create tender.");
@@ -454,8 +465,27 @@ const AddTender = () => {
             </div>
           </div>
 
+<<<<<<< HEAD
+          {/* Submit Button */}
+           {/* Sticky Submit Button */}
+           <div className="fixed bottom-8 right-4 p-4">
+            <button
+              type="submit"
+              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+            >
+              Create
+            </button>
+            </div>
+
+          <EditableSheet 
+          headers={headers}
+          setHeaders={setHeaders}
+          subTenders={subTenders}
+          setSubTenders={setSubTenders}/>
+=======
           {/* Editable Sheet */}
           <EditableSheet />
+>>>>>>> 79ea23c82e9361e3e278b5c197159f4ba2b3c88b
         </form>
         {/* Sticky Submit Button */}
         <div className="flex justify-center sm:justify-end sm:fixed sm:bottom-4 sm:right-4 w-full p-4">
