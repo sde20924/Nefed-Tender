@@ -4,6 +4,10 @@ import { FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"; // Importing toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
+<<<<<<< HEAD
+export default function EditableSheet({ headers, setHeaders, subTenders, setSubTenders }) {
+ 
+=======
 export default function EditableSheet() {
   const [headers, setHeaders] = useState([
     "S.No",
@@ -19,6 +23,7 @@ export default function EditableSheet() {
 
   console.log("header", headers);
   console.log("tender", subTenders);
+>>>>>>> 79ea23c82e9361e3e278b5c197159f4ba2b3c88b
 
   // Add a new subtender
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
