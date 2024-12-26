@@ -339,13 +339,14 @@ const AddTender = () => {
         title={"Create new tenders"}
       />
 
-      <div>
+      <div className="container mx-auto px-4 py-6">
         <form
           onSubmit={handleSubmit}
-          className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 relative"
+          className="bg-white shadow-lg rounded-md p-6 md:p-10 mb-6"
         >
-          <div className="flex flex-row border-2 justify-between">
-            <div className="max-w-2xl mx-auto mt-10">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-2 p-6 rounded-md">
+            {/* Left Column */}
+            <div className="space-y-6">
               {/* Tenders Details */}
               <TendersDetails
                 name={name}
@@ -398,14 +399,16 @@ const AddTender = () => {
               />
             </div>
 
-            <div>
+            {/* Right Column */}
+            <div className="space-y-6">
               {/* Custom Form Builder */}
+              {/* Uncomment and use as needed */}
               {/* <CustomFormBuilder
-                formFields={formFields}
-                onDragEnd={onDragEnd}
-                renderField={renderField}
-                initialFields={initialFields}
-              /> */}
+              formFields={formFields}
+              onDragEnd={onDragEnd}
+              renderField={renderField}
+              initialFields={initialFields}
+            /> */}
 
               {/* Tender Details Form */}
               <FullDetails
@@ -451,20 +454,20 @@ const AddTender = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
-           {/* Sticky Submit Button */}
-           <div className="fixed bottom-8 right-4 p-4">
-            <button
-              type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            >
-              Create
-            </button>
-            </div>
-
+          {/* Editable Sheet */}
           <EditableSheet />
         </form>
+        {/* Sticky Submit Button */}
+        <div className="flex justify-center sm:justify-end sm:fixed sm:bottom-4 sm:right-4 w-full p-4">
+          <button
+            type="submit"
+            className="bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold py-3 px-6 rounded-md shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring focus:ring-blue-300 w-full sm:w-auto"
+          >
+            Create
+          </button>
+        </div>
       </div>
+
       <ToastContainer />
     </>
   );
