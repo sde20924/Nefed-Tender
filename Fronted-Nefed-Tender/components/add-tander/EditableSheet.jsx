@@ -4,21 +4,60 @@ import { FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"; // Importing toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
+<<<<<<< HEAD
 export default function EditableSheet({ headers, setHeaders, subTenders, setSubTenders }) {
  
+=======
+export default function EditableSheet() {
+  const [headers, setHeaders] = useState([
+    "S.No",
+    "Item",
+    "Item Description",
+    "UOM",
+    "Total Qty",
+    "Rate",
+  ]);
+  const [subTenders, setSubTenders] = useState([]); // Subtenders data
+  const [showModal, setShowModal] = useState(false); // To show/hide the modal
+  const [newColumnName, setNewColumnName] = useState("");
 
-  console.log("header",headers)
-  console.log("tender",subTenders);
-  
+  console.log("header", headers);
+  console.log("tender", subTenders);
+>>>>>>> 79ea23c82e9361e3e278b5c197159f4ba2b3c88b
+
   // Add a new subtender
-  const handleAddSubTender = () => {
-    const subTenderName = prompt("Enter the Subtender Name:");
-    if (subTenderName) {
+  const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
+  const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
+
+  // Function to open the modal
+  const openAddSubTenderModal = () => {
+    setIsModalOpen(true); // Show modal
+  };
+
+  // Function to handle input change for SubTender name
+  const handleSubTenderNameChange = (e) => {
+    setNewSubTenderName(e.target.value); // Set the new SubTender name
+  };
+
+  // Function to confirm adding the new SubTender
+  const confirmAddSubTender = () => {
+    if (newSubTenderName.trim()) {
       setSubTenders((prev) => [
         ...prev,
-        { id: prev.length + 1, name: subTenderName, rows: [] },
+        { id: prev.length + 1, name: newSubTenderName, rows: [] },
       ]);
+      setIsModalOpen(false); // Close the modal
+      setNewSubTenderName(""); // Clear input field
+      toast.success(`SubTender "${newSubTenderName}" added successfully.`);
+    } else {
+      toast.error("Please enter a valid SubTender name.");
     }
+  };
+
+  // Function to close the modal without adding SubTender
+  const closeModal = () => {
+    setIsModalOpen(false); // Close modal
+    setNewSubTenderName(""); // Clear input field
   };
 
   // Add a new row to a specific subtender
@@ -38,17 +77,38 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
   };
 
   // Add a new column to the table
+  // Show Modal when adding a column
   const handleAddColumn = () => {
-    const columnName = prompt("Enter the name of the new column:");
-    if (columnName) {
-      setHeaders((prev) => [...prev, columnName]);
+    setShowModal(true); // Open modal
+  };
+
+  // Handle column name input change
+  const handleColumnNameChange = (e) => {
+    setNewColumnName(e.target.value);
+  };
+
+  // Add column logic
+  const handleAddColumnConfirm = () => {
+    if (newColumnName) {
+      setHeaders((prev) => [...prev, newColumnName]);
       setSubTenders((prev) =>
         prev.map((subTender) => ({
           ...subTender,
           rows: subTender.rows.map((row) => [...row, ""]),
         }))
       );
+      setNewColumnName("");
+      setShowModal(false); // Close modal after adding column
+      toast.success(`Column "${newColumnName}" added successfully.`);
+    } else {
+      toast.error("Please enter a valid column name.");
     }
+  };
+
+  // Close the modal without adding column
+  const handleCloseModal = () => {
+    setShowModal(false); // Close the modal
+    setNewColumnName(""); // Clear input
   };
 
   // Handle cell editing
@@ -115,37 +175,78 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
       });
 
     setSubTenders(updatedSubTenders);
-    toast.success("Table has been deleted and reindexed.");
+    toast.success("Table has been deleted.");
   };
 
   // Delete a specific column
-  const handleDeleteColumn = () => {
-    const columnToDelete = prompt(
-      `Enter the column name to delete:\n${headers.join(", ")}`
-    );
+  // const handleDeleteColumn = () => {
+  //   const columnToDelete = prompt(
+  //     `Enter the column name to delete:\n${headers.join(", ")}`
+  //   );
 
-    if (!columnToDelete || !headers.includes(columnToDelete)) {
-      toast.error("Invalid column name or column does not exist.");
+  //   if (!columnToDelete || !headers.includes(columnToDelete)) {
+  //     toast.error("Invalid column name or column does not exist.");
+  //     return;
+  //   }
+
+  //   const colIndex = headers.indexOf(columnToDelete);
+
+  //   // Remove the column from headers
+  //   const updatedHeaders = headers.filter((_, index) => index !== colIndex);
+  //   setHeaders(updatedHeaders);
+
+  //   // Remove the corresponding cell from each row in all subtenders
+  //   setSubTenders((prev) =>
+  //     prev.map((subTender) => ({
+  //       ...subTender,
+  //       rows: subTender.rows.map((row) =>
+  //         row.filter((_, index) => index !== colIndex)
+  //       ),
+  //     }))
+  //   );
+
+  //   toast.success(`Column "${columnToDelete}" has been deleted.`);
+  // };
+
+  const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState([]);
+
+  const handleDeleteColumn = () => {
+    setShowDeleteColumnModal(true);
+  };
+
+  const handleDeleteSelectedColumns = () => {
+    if (selectedColumns.length === 0) {
+      toast.error("No columns selected for deletion.");
       return;
     }
 
-    const colIndex = headers.indexOf(columnToDelete);
+    const updatedHeaders = headers.filter(
+      (_, index) => !selectedColumns.includes(index)
+    );
 
-    // Remove the column from headers
-    const updatedHeaders = headers.filter((_, index) => index !== colIndex);
     setHeaders(updatedHeaders);
 
-    // Remove the corresponding cell from each row in all subtenders
     setSubTenders((prev) =>
       prev.map((subTender) => ({
         ...subTender,
         rows: subTender.rows.map((row) =>
-          row.filter((_, index) => index !== colIndex)
+          row.filter((_, index) => !selectedColumns.includes(index))
         ),
       }))
     );
 
-    toast.success(`Column "${columnToDelete}" has been deleted.`);
+    setSelectedColumns([]);
+    setShowDeleteColumnModal(false);
+    toast.success("Selected columns have been deleted.");
+  };
+
+  const handleCheckboxChange = (colIndex) => {
+    setSelectedColumns((prev) =>
+      prev.includes(colIndex)
+        ? prev.filter((index) => index !== colIndex)
+        : [...prev, colIndex]
+    );
   };
 
   // Parse uploaded sheet data into subtenders
@@ -208,124 +309,236 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
   // Download table as Excel
   const handleDownload = () => {
     const worksheetData = [];
-  
+
     worksheetData.push([...headers]);
     subTenders.forEach((subTender) => {
       const subTenderHeaderRow = new Array(headers.length).fill("");
-      subTenderHeaderRow[0] = subTender.id
+      subTenderHeaderRow[0] = subTender.id;
       subTenderHeaderRow[1] = subTender.name;
       worksheetData.push(subTenderHeaderRow);
       worksheetData.push(...subTender.rows);
-  
+
       worksheetData.push([]);
     });
-  
+
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-  
+
     // Build a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-  
+
     // Download the file
     XLSX.writeFile(workbook, "editable_subtender_table.xlsx");
   };
 
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <h2 className="text-2xl font-bold mb-4">Editable Subtender Table</h2>
-
       {/* File Upload */}
-      <div className="mb-4">
-        <label className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded cursor-pointer">
-          Upload Excel Sheet
-          <input
-            type="file"
-            accept=".xlsx, .xls"
-            onChange={handleFileUpload}
-            className="hidden"
-          />
-        </label>
+      <div className="mb-4 flex justify-between items-center">
+        {/* Auction Items Heading */}
+        <h2 className="text-2xl font-bold mb-4">Auction Items</h2>
       </div>
 
       {/* Main Action Buttons */}
-      <div className="flex space-x-4 mb-4">
-        <button
-          type="button"
-          onClick={handleAddSubTender}
-          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Add SubTender
-        </button>
-        <button
-          type="button"
-          onClick={handleAddColumn}
-          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Add Column
-        </button>
-        <button
-          type="button"
-          onClick={handleDeleteColumn}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Delete Column
-        </button>
-        <button
-          type="button"
-          onClick={handleDownload}
-          className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded"
-        >
-          Download Table
-        </button>
+      <div className="flex space-x-4 mb-4 justify-between items-center">
+        {subTenders.length > 0 && (
+          <button
+            type="button"
+            onClick={openAddSubTenderModal}
+            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+          >
+            Add SubTender
+          </button>
+        )}
+
+        {/* Render SubTenders */}
+
+        {/* Modal for Adding SubTender */}
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center" style={{zIndex:5}}>
+            <div className="bg-white p-6 rounded shadow-md w-96">
+              <h2 className="text-lg font-semibold mb-4">
+                Enter SubTender Name
+              </h2>
+              <input
+                type="text"
+                value={newSubTenderName}
+                onChange={handleSubTenderNameChange}
+                className="w-full mb-4 p-2 border border-gray-300 rounded"
+                placeholder="Enter SubTender name"
+              />
+              <div className="flex justify-end space-x-4">
+                <button
+                  onClick={closeModal}
+                  className="bg-gray-500 text-white py-2 px-4 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAddSubTender}
+                  className="bg-blue-500 text-white py-2 px-4 rounded"
+                >
+                  Yes, Add SubTender
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        {subTenders.length > 0 && (
+          <div className=" flex gap-2">
+            <button
+              type="button"
+              onClick={handleAddColumn}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Add Column
+            </button>
+            {/* Render SubTenders and their respective tables */}
+
+            {/* Modal for Adding Column */}
+            {showModal && subTenders.length > 0 && (
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                <div className="bg-white p-6 rounded shadow-md w-96">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Enter Column Name
+                  </h2>
+                  <input
+                    type="text"
+                    value={newColumnName}
+                    onChange={handleColumnNameChange}
+                    className="w-full mb-4 p-2 border border-gray-300 rounded"
+                    placeholder="Enter new column name"
+                  />
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      onClick={handleCloseModal}
+                      className="bg-gray-500 text-white py-2 px-4 rounded"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddColumnConfirm}
+                      className="bg-blue-500 text-white py-2 px-4 rounded"
+                    >
+                      Yes, Add Column
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleDeleteColumn}
+              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+            >
+              Delete Columns
+            </button>
+
+            {/* Delete Column Modal */}
+            {showDeleteColumnModal && subTenders.length > 0 && (
+              <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+                  <h2 className="text-xl font-bold mb-4">
+                    Select Columns to Delete
+                  </h2>
+                  <div className="mb-4">
+                    {headers.map((header, index) => (
+                      <div key={index} className="flex items-center mb-2">
+                        <input
+                          type="checkbox"
+                          id={`col_${index}`}
+                          className="mr-2"
+                          onChange={() => handleCheckboxChange(index)}
+                        />
+                        <label
+                          htmlFor={`col_${index}`}
+                          className="text-gray-700"
+                        >
+                          {header}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-end space-x-4">
+                    <button
+                      onClick={(event) => {
+                        event.preventDefault(); // Prevent the default action (if any)
+                        setShowDeleteColumnModal(false); // Close the modal
+                      }}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={(event) => {
+                        event.preventDefault(); // Prevent the default action (if any)
+                        handleDeleteSelectedColumns(); // Call the function to delete selected columns
+                      }}
+                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Render SubTenders and their respective tables */}
-      {subTenders.map((subTender) => (
-        <div key={subTender.id} className="mb-6 border border-black p-2">
-          <div className="flex items-center justify-between mb-2">
-            <h3 className="text-xl font-semibold">
-              {subTender.id}. {subTender.name}
+      {subTenders.map((subTender, subTenderIndex) => (
+        <div
+          key={subTender.id}
+          className="mb-6 border rounded-lg shadow-lg bg-white p-4"
+        >
+          {/* SubTender Header */}
+          <div className="flex items-center justify-between mb-4 border-b pb-2">
+            <h3 className="text-xl font-semibold text-gray-800 flex items-center">
+              <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2">
+                {subTenderIndex + 1}
+              </span>
+              {subTender.name}
             </h3>
             <button
               type="button"
               onClick={() => handleDeleteSubTender(subTender.id)}
-              className="hover:bg-red-600 hover:text-white text-black font-bold py-1 px-3 rounded flex items-center"
+              className="text-red-500 hover:text-white bg-red-100 hover:bg-red-500 font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
             >
               <FaTrash className="mr-1" />
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={() => handleAddRowToSubTender(subTender.id)}
-            className="mb-2 bg-blue-400 hover:bg-blue-500 text-white font-bold py-1 px-3 rounded"
-          >
-            Add Row
-          </button>
+          {/* Add Row Button */}
+
+          {/* Table */}
           <div className="overflow-x-auto">
             <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
-              <thead className="bg-gray-200">
+              <thead className="bg-blue-100 text-gray-700">
                 <tr>
                   {headers.map((header, index) => (
                     <th
                       key={index}
-                      className="border border-gray-300 px-4 py-2 font-bold text-gray-600"
+                      className="border border-gray-300 px-4 py-2 font-bold"
                     >
                       {header}
                     </th>
                   ))}
-                  <th className="border border-gray-300 px-4 py-2 font-bold text-gray-600">
+                  <th className="border border-gray-300 px-4 py-2 font-bold text-center">
                     Actions
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {subTender.rows.map((row, rowIndex) => (
-                  <tr key={rowIndex} className="odd:bg-gray-100 even:bg-white">
+                  <tr
+                    key={rowIndex}
+                    className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+                  >
                     {row.map((cell, cellIndex) => (
                       <td
                         key={cellIndex}
-                        className="border border-gray-300 px-4 py-2 text-gray-700"
+                        className="border border-gray-300 px-4 py-2"
                         contentEditable
                         suppressContentEditableWarning
                         onBlur={(e) =>
@@ -344,9 +557,10 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(subTender.id, rowIndex)}
-                        className=" bg-gray-300 text-white font-bold py-1 px-3 rounded flex items-center"
+                        className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center m-auto items-center space-x-1 transition-all duration-200"
                       >
-                        <FaTrash className="mr-1" /> 
+                        <FaTrash className="w-4 h-4 " />{" "}
+                        {/* Adjust the width and height if needed */}
                       </button>
                     </td>
                   </tr>
@@ -354,11 +568,80 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
               </tbody>
             </table>
           </div>
-          <ToastContainer />
+          <div className="flex justify-between items-center mt-2">
+            <button
+              type="button"
+              onClick={() => handleAddRowToSubTender(subTender.id)}
+              className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
+            >
+              <span className="mr-1">➕</span> Add Row
+            </button>
+          </div>
         </div>
       ))}
 
-      {/* ToastContainer for notifications (place one at a global level) */}
+      {/* Download Button */}
+      {subTenders.length > 0 ? (
+        <div className="flex justify-end mt-6">
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-6 rounded"
+          >
+            Download Table
+          </button>
+        </div>
+      ) : (
+        <div className="container mx-auto p-6 gap-6">
+          {/* Combined Section for Upload and Create Excel */}
+          <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+            {/* Left Section - Upload Excel */}
+            <div className="w-full md:w-[48%] p-8 rounded-lg bg-white shadow-xl transform transition-all duration-300 ease-in-out hover:scale-105">
+              <p className="text-lg text-blue-700 font-semibold mb-2">
+                Upload your Excel sheet
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Easily upload your Excel file to start working on your data.
+              </p>
+              <div className="mt-4">
+                <label className="bg-blue-600 hover:bg-blue-700 text-white font-bold w-fit py-2 px-6 rounded-full cursor-pointer flex items-center shadow-lg">
+                  <i className="mr-2 fas fa-upload transition-all duration-200 ease-in-out transform hover:scale-110"></i>{" "}
+                  Upload Sheet
+                  <input
+                    type="file"
+                    accept=".xlsx, .xls"
+                    onChange={handleFileUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+            </div>
+
+            {/* Right Section - Customize Excel */}
+            <div className="w-full md:w-[48%] p-8 rounded-lg bg-white shadow-xl transform transition-all duration-300 ease-in-out hover:scale-105">
+              <p className="text-lg text-green-700 font-semibold mb-2">
+                Create your Excel sheet
+              </p>
+              <p className="text-sm text-gray-600 mb-4">
+                Customize your sheet by adding the data you need.
+              </p>
+              <div className="mt-4">
+                <button
+                  type="button"
+                  onClick={openAddSubTenderModal}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg"
+                >
+                  <i className="mr-2 fas fa-edit transition-all duration-200 ease-in-out transform hover:scale-110"></i>{" "}
+                  Create Sheet
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ToastContainer for notifications */}
+      <ToastContainer />
     </div>
   );
 }

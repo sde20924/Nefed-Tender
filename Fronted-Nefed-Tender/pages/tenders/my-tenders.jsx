@@ -16,11 +16,7 @@ const MyTender = () => {
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-<<<<<<< HEAD
-        const data = await callApiGet("/tender-applications");
-=======
         const data = await callApiGet("tender-applications");
->>>>>>> 4879f794e22edc5aa86a66c8f9c8c8bf25e9da88
         const acceptedApplications = data?.data?.filter(
           (app) => app.status === "accepted"
         );
