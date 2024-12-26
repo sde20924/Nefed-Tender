@@ -36,8 +36,6 @@ const initialFields = [
 const AddTender = () => {
   const router = useRouter();
 
-  // State Management
-
   // Tenders Details
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
@@ -259,6 +257,15 @@ const AddTender = () => {
   const [counterOfferTimer, setCounterOfferTimer] = useState("");
   const [applicationStart, setApplicationStart] = useState(null);
   const [applicationEnd, setApplicationEnd] = useState(null);
+  const [headers, setHeaders] = useState([
+    "S.No",                   
+    "Item",
+    "Item Description",
+    "UOM",
+    "Total Qty",
+    "Rate",
+  ]);
+  const [subTenders, setSubTenders] = useState([]); 
 
   const parseDate = (date) => (date ? new Date(date) : null);
   const handleApplicationStartChange = (date) => {
@@ -316,6 +323,10 @@ const AddTender = () => {
       tender_id: tender_id, // Generate a random tender ID based on the current timestamp if not provided
       audi_key: null, // Set to null if not applicable
       auct_field: auctionFields,
+      editable_sheet: {
+        headers, // Headers from EditableSheet
+        sub_tenders: subTenders, // SubTender data with rows
+      },
     };
 
     console.log("form data here 1", formData);
@@ -324,7 +335,7 @@ const AddTender = () => {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
       toast.success(response.msg);
-      router.push("/tender");
+      // router.push("/tender");
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to create tender.");
@@ -462,7 +473,11 @@ const AddTender = () => {
             </button>
             </div>
 
-          <EditableSheet />
+          <EditableSheet 
+          headers={headers}
+          setHeaders={setHeaders}
+          subTenders={subTenders}
+          setSubTenders={setSubTenders}/>
         </form>
       </div>
       <ToastContainer />

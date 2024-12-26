@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const verifyUser = require('../../middleware/verifyUser')
+const verifyUser = require('../../middleware/verifyUser')    
 const getAllVerifiedBuyersController = require("../../controllers/misc/getAllVerifiedBuyersController");
 const getAllPendingBuyersController = require("../../controllers/admin/rejectedAndPendingUsers/getAllPendingBuyersController");
 const getAllRejectedBuyersController = require('../../controllers/admin/rejectedAndPendingUsers/getAllRejectedBuyersController');

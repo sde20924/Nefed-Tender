@@ -4,16 +4,8 @@ import { FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"; // Importing toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
-export default function EditableSheet() {
-  const [headers, setHeaders] = useState([
-    "S.No",
-    "Item",
-    "Item Description",
-    "UOM",
-    "Total Qty",
-    "Rate",
-  ]);
-  const [subTenders, setSubTenders] = useState([]); // Subtenders data
+export default function EditableSheet({ headers, setHeaders, subTenders, setSubTenders }) {
+ 
 
   console.log("header",headers)
   console.log("tender",subTenders);
