@@ -347,6 +347,11 @@ const TenderDetail = () => {
             </div>
           )}
         </div>
+        {/* Table Data Shown From Here in buyer Side  */}
+        <div>Add table here</div>
+
+        {/*  */}
+        
       </div>
 
       {/* Toast Container */}

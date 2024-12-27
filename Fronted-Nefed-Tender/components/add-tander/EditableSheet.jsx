@@ -15,7 +15,7 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
   const openAddSubTenderModal = () => {
     setIsModalOpen(true); // Show modal
   };
-
+ const[showModal, setShowModal] = useState(false);
   // Function to handle input change for SubTender name
   const handleSubTenderNameChange = (e) => {
     setNewSubTenderName(e.target.value); // Set the new SubTender name
