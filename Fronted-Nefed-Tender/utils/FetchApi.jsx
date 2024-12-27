@@ -1,5 +1,4 @@
 const BASE_URL_LOCAL = "http://localhost:8002/";
-const BASE_URL_ = "http://localhost:8002/";
 const BASE_URL = "https://api.tender.shippingbaba.com/";
 const BASE_URL_TENDER = "https://tenderapi.nafedtrackandtrace.com/";
 const BASE_URL_VESSEL = "https://tender-vessel-module.nafedtrackandtrace.com/";
