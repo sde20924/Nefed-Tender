@@ -7,31 +7,34 @@ const getTenderAuctionItemsController = asyncErrorHandler(async (req, res) => {
 
     // Validation to ensure tender_id is provided
     if (!tender_id) {
-        return res.status(400).send({ msg: 'tender_id is required' });
+        return res.status(400).send({ msg: 'tender_id is required', success: false });
     }
 
     try {
         // Query to fetch all auction items related to the tender_id
-        const auctionItems = await db.query(
-            `SELECT * FROM tender_auct_items WHERE tender_id LIKE $1`,
-            [`%${tender_id.replace('tender_', '')}%`]
-        );
+        const query = `
+            SELECT * 
+            FROM tender_auct_items 
+            WHERE tender_id LIKE ?
+        `;
+        const [rows] = await db.execute(query, [`%${tender_id.replace('tender_', '')}%`]);
 
         // If no auction items found, send a 404 response
-        if (auctionItems.rows.length === 0) {
-            return res.status(404).send({ msg: 'No auction items found for the provided tender_id' });
+        if (rows.length === 0) {
+            return res.status(404).send({ msg: 'No auction items found for the provided tender_id', success: false });
         }
 
         // Return the list of auction items
         return res.status(200).send({
             msg: 'Auction items fetched successfully',
-            auction_items: auctionItems.rows
+            success: true,
+            auction_items: rows
         });
 
     } catch (error) {
         console.error("Error fetching auction items:", error.message); // Log error for debugging
-        return res.status(500).send({ msg: 'Error fetching auction items', error: error.message });
+        return res.status(500).send({ msg: 'Error fetching auction items', success: false, error: error.message });
     }
 });
 
-module.exports = {getTenderAuctionItemsController};
+module.exports = { getTenderAuctionItemsController };

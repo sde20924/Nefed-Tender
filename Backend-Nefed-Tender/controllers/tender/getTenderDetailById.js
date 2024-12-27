@@ -20,31 +20,8 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
       WHERE mt.tender_id = ?
     `;
 
-    // Query to fetch tender headers
-    const tenderHeadersQuery = `
-      SELECT 
-        th.header_id, 
-        th.table_head, 
-        th.\`order\`
-      FROM tender_header th
-      WHERE th.tender_id = ?
-      ORDER BY th.\`order\`
-    `;
-
-    // Query to fetch sub-tenders and row data
-    const subTendersQuery = `
-      SELECT 
-        st.subtender_id, 
-        st.subtender_name, 
-        shrd.row_data, 
-        shrd.type
-      FROM subtender st
-      LEFT JOIN seller_header_row_data shrd ON st.subtender_id = shrd.subtender_id
-      WHERE shrd.header_id = ?
-    `;
-
-    // Execute the main tender details query
-    const tenderResult = await db.query(tenderDetailsQuery, [tenderId]);
+    // Execute the query with the parameterized tenderId
+    const [rows] = await db.execute(tenderDetailsQuery, [tenderId]);
 
     // If no tender is found, return a 404 response
     if (tenderResult[0].length === 0) {

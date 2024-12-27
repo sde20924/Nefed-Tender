@@ -13,19 +13,19 @@ const getTenderApplicationsByUser = async (req, res) => {
       SELECT ta.*, mt.tender_title
       FROM tender_application ta
       INNER JOIN manage_tender mt ON ta.tender_id = mt.tender_id
-      WHERE ta.user_id = $1
+      WHERE ta.user_id = ?
     `;
     
-    const result = await db.query(query, [user_id]);
+    const [result] = await db.query(query, [user_id]);
 
-    if (result.rows.length === 0) {
+    if (result.length === 0) {
       return res.status(404).send({ msg: 'No tender applications found for the user', success: false });
     }
 
     res.status(200).send({
       msg: 'Tender applications retrieved successfully',
       success: true,
-      data: result.rows,
+      data: result,
     });
   } catch (error) {
     console.error('Error retrieving tender applications:', error.message);

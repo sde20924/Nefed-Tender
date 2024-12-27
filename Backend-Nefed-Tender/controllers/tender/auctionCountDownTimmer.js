@@ -9,9 +9,9 @@ const db = require('../../config/config'); // Import your database connection
 const countDownTimer = async (req, res) => {
   try {
     // Query to fetch tender data including auction start and end times
-    const tenders = await db.query('SELECT tender_id, tender_title, auct_start_time, auct_end_time, qty, app_start_time, app_end_time FROM manage_tender');
-    
-    const tendersWithCountdown = tenders.rows.map((tender) => {
+    const [tenders] = await db.query('SELECT tender_id, tender_title, auct_start_time, auct_end_time, qty, app_start_time, app_end_time FROM manage_tender');
+
+    const tendersWithCountdown = tenders.map((tender) => {
       const now = Date.now();
       const startTimeMs = tender.auct_start_time * 1000;  // Auction start time in milliseconds
       const endTimeMs = tender.auct_end_time * 1000;      // Auction end time in milliseconds

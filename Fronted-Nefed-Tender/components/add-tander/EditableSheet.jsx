@@ -109,56 +109,108 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
   };
 
   // Delete a specific row within a subtender
+  // const handleDeleteRow = (subTenderId, rowIndex) => {
+  //   if (window.confirm("Are you sure you want to delete this row?")) {
+  //     setSubTenders((prev) =>
+  //       prev.map((subTender) => {
+  //         if (subTender.id === subTenderId) {
+  //           const updatedRows = subTender.rows.filter(
+  //             (_, index) => index !== rowIndex
+  //           );
+
+  //           // Reassign S.No after deletion
+  //           const reassignedRows = updatedRows.map((row, i) => {
+  //             row[0] = `${subTender.id}.${i + 1}`;
+  //             return row;
+  //           });
+
+  //           return { ...subTender, rows: reassignedRows };
+  //         }
+  //         return subTender;
+  //       })
+  //     );
+  //   }
+  // };
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Modal visibility state
+  const [rowToDelete, setRowToDelete] = useState(null); // Store the row information to be deleted
+
+  // Handle row deletion logic
   const handleDeleteRow = (subTenderId, rowIndex) => {
-    if (window.confirm("Are you sure you want to delete this row?")) {
-      setSubTenders((prev) =>
-        prev.map((subTender) => {
-          if (subTender.id === subTenderId) {
-            const updatedRows = subTender.rows.filter(
-              (_, index) => index !== rowIndex
-            );
+    setRowToDelete({ subTenderId, rowIndex });
+    setShowDeleteModal(true); // Show the modal when trying to delete a row
+  };
 
-            // Reassign S.No after deletion
-            const reassignedRows = updatedRows.map((row, i) => {
-              row[0] = `${subTender.id}.${i + 1}`;
-              return row;
-            });
+  // Confirm deletion and update the state
+  const handleConfirmDeleterow = () => {
+    const { subTenderId, rowIndex } = rowToDelete;
 
-            return { ...subTender, rows: reassignedRows };
-          }
-          return subTender;
-        })
-      );
-    }
+    setSubTenders((prev) =>
+      prev.map((subTender) => {
+        if (subTender.id === subTenderId) {
+          const updatedRows = subTender.rows.filter(
+            (_, index) => index !== rowIndex
+          );
+
+          // Reassign row numbers after deletion
+          const reassignedRows = updatedRows.map((row, i) => {
+            row[0] = `${subTender.id}.${i + 1}`;
+            return row;
+          });
+
+          return { ...subTender, rows: reassignedRows };
+        }
+        return subTender;
+      })
+    );
+
+    // Show toast for successful deletion
+    toast.success("Row deleted successfully.");
+
+    // Close the modal and reset the deletion info
+    setShowDeleteModal(false);
+    setRowToDelete(null);
+  };
+
+  // Cancel the deletion (close modal)
+  const handleRowCellDelete = () => {
+    setShowDeleteModal(false);
+    setRowToDelete(null); // Reset row to delete
   };
 
   // Delete an entire SubTender table
+
+  const [deleteTableModal, setDeleteTableModal] = useState(false); // To control modal visibility
+  const [subTenderToDelete, setSubTenderToDelete] = useState(null); // To store the SubTender that is being deleted
+
   const handleDeleteSubTender = (subTenderId) => {
-    if (!window.confirm("Are you sure you want to delete this table?")) {
-      return;
-    }
+    setSubTenderToDelete(subTenderId); // Store the SubTender ID to be deleted
+    setDeleteTableModal(true); // Show the modal for confirmation
+  };
 
-    // 1) Filter out the deleted SubTender
-    // 2) Reindex the remaining SubTenders’ ids
-    // 3) Reassign row numbers for each SubTender
-    const updatedSubTenders = subTenders
-      .filter((st) => st.id !== subTenderId)
-      .map((st, newIndex) => {
-        const newId = newIndex + 1;
-        // Also reassign row numbering to reflect this new SubTender id
-        const updatedRows = st.rows.map((row, i) => {
-          row[0] = `${newId}.${i + 1}`;
-          return row;
-        });
-        return {
-          ...st,
-          id: newId,
-          rows: updatedRows,
-        };
+  const handleConfirmDelete = () => {
+    // Filter out the deleted SubTender
+    const updatedSubTenders = subTenders.filter(
+      (st) => st.id !== subTenderToDelete
+    );
+
+    // Reindex the remaining SubTenders' ids and reassign row numbers for each SubTender
+    const reindexedSubTenders = updatedSubTenders.map((st, newIndex) => {
+      const newId = newIndex + 1;
+      const updatedRows = st.rows.map((row, i) => {
+        row[0] = `${newId}.${i + 1}`; // Reassign row numbering
+        return row;
       });
+      return { ...st, id: newId, rows: updatedRows };
+    });
 
-    setSubTenders(updatedSubTenders);
-    toast.success("Table has been deleted.");
+    setSubTenders(reindexedSubTenders); // Update the state with the new list of SubTenders
+    setDeleteTableModal(false); // Close the modal
+
+    toast.success("SubTender has been deleted successfully."); // Show success message with toast
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteTableModal(false); // Close the modal without deleting
   };
 
   // Delete a specific column
@@ -338,7 +390,10 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
 
         {/* Modal for Adding SubTender */}
         {isModalOpen && (
-          <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center" style={{zIndex:5}}>
+          <div
+            className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center"
+            style={{ zIndex: 5 }}
+          >
             <div className="bg-white p-6 rounded shadow-md w-96">
               <h2 className="text-lg font-semibold mb-4">
                 Enter SubTender Name
@@ -411,7 +466,11 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
             )}
 
             <button
-              onClick={handleDeleteColumn}
+              // onClick={handleDeleteColumn}
+              onClick={(event) => {
+                event.preventDefault(); // Prevent the default action (if any)
+                handleDeleteColumn(); // Call the function to delete selected columns
+              }}
               className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
             >
               Delete Columns
@@ -477,19 +536,47 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
         >
           {/* SubTender Header */}
           <div className="flex items-center justify-between mb-4 border-b pb-2">
+            {/* SubTender Name Section */}
             <h3 className="text-xl font-semibold text-gray-800 flex items-center">
               <span className="bg-blue-500 text-white rounded-full w-6 h-6 flex items-center justify-center mr-2">
                 {subTenderIndex + 1}
               </span>
               {subTender.name}
             </h3>
+
+            {/* Delete Button */}
             <button
               type="button"
               onClick={() => handleDeleteSubTender(subTender.id)}
-              className="text-red-500 hover:text-white bg-red-100 hover:bg-red-500 font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
+              className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center items-center space-x-1 transition-all duration-200"
             >
-              <FaTrash className="mr-1" />
+              <FaTrash className="w-4 h-4" />
             </button>
+
+            {/* Delete Confirmation Modal */}
+            {deleteTableModal && (
+              <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                <div className="bg-white p-6 rounded shadow-md w-96">
+                  <h2 className="text-lg font-semibold mb-4">
+                    Are you sure you want to delete this table?
+                  </h2>
+                  <div className="flex justify-center space-x-4">
+                    <button
+                      onClick={handleConfirmDelete}
+                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                    >
+                      Yes, Delete
+                    </button>
+                    <button
+                      onClick={handleCancelDelete}
+                      className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Add Row Button */}
@@ -545,6 +632,29 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
                         <FaTrash className="w-4 h-4 " />{" "}
                         {/* Adjust the width and height if needed */}
                       </button>
+                      {showDeleteModal && (
+                        <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                          <div className="bg-white p-6 rounded shadow-md w-96">
+                            <h2 className="text-lg font-semibold mb-4">
+                              Are you sure you want to delete this row?
+                            </h2>
+                            <div className="flex justify-center space-x-4">
+                              <button
+                                onClick={handleConfirmDeleterow}
+                                className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                              >
+                                Yes, Delete
+                              </button>
+                              <button
+                                onClick={handleRowCellDelete}
+                                className="bg-gray-300 hover:bg-gray-400 text-black font-bold py-2 px-4 rounded"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </td>
                   </tr>
                 ))}

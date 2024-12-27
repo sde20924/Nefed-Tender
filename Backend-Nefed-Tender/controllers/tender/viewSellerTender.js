@@ -5,20 +5,17 @@ const asyncErrorHandler = require('../../utils/asyncErrorHandler'); // Adjusted 
 const getSellerTendersController = asyncErrorHandler(async (req, res) => {
   try {
     const sellerId = req.user.user_id; // Assuming the user ID is correctly set in the middleware
-    // Query to fetch tenders for the specific seller
-    const sellerTenderQuery = `SELECT * FROM manage_tender WHERE user_id = $1`;
-    const { rows: sellerTenders } = await db.query(sellerTenderQuery, [sellerId]);
 
-    // Prepare the response data
-    const showSellerTenders = sellerTenders;
+    // Query to fetch tenders for the specific seller
+    const sellerTenderQuery = `SELECT * FROM manage_tender WHERE user_id = ?`;
+    const [sellerTenders] = await db.execute(sellerTenderQuery, [sellerId]);
 
     // Return the response in the desired format
     return res.status(200).json({
-      data: showSellerTenders,
+      data: sellerTenders,
       msg: "Seller tender data fetched successfully",
       success: true,
     });
-
   } catch (error) {
     console.error("Error fetching seller tenders:", error.message);
     return res.status(500).send({

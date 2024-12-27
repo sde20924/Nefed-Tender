@@ -1,5 +1,4 @@
-
-const db = require('../../config/config'); 
+const db = require('../../config/config');  // MySQL db connection
 
 // Delete Tender Controller
 const deleteTenderController = async (req, res) => {
@@ -7,8 +6,15 @@ const deleteTenderController = async (req, res) => {
 
   try {
     // SQL query to delete tender by tender_id
-    const deleteQuery = 'DELETE FROM manage_tender WHERE tender_id = $1';
-    await db.query(deleteQuery, [id]);
+    const deleteQuery = 'DELETE FROM manage_tender WHERE tender_id = ?';
+
+    // Execute the query with the tender_id parameter
+    const [result] = await db.execute(deleteQuery, [id]);
+
+    // If no rows were affected, it means the tender was not found
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ success: false, msg: 'Tender not found' });
+    }
 
     res.status(200).json({ success: true, msg: 'Tender deleted successfully' });
   } catch (error) {
@@ -17,4 +23,4 @@ const deleteTenderController = async (req, res) => {
   }
 };
 
-module.exports = {deleteTenderController};
+module.exports = { deleteTenderController };

@@ -13,7 +13,9 @@ const AuctionBids = () => {
   const fetchAuctionBids = async (selectedTender) => {
     setLoadingBids(true);
     try {
-      const response = await callApiGet(`tender-Auction-bids/${selectedTender}`);
+      const response = await callApiGet(
+        `tender-Auction-bids/${selectedTender}`
+      );
       if (response && response.success) {
         setBids(response.allBids || []);
         setError("");
@@ -44,17 +46,16 @@ const AuctionBids = () => {
         subTitle={"View tenders, update them, delete them"}
         title={"All Tenders"}
       />
-      <div className="container m-4 p-4 bg-white shadow-md rounded-md w-auto">
-        <div className="mb-6 bg-gray-50 rounded-md">
-          <div className="flex items-center justify-between">
-            <div className="flex-1">
+      <div className="container mx-auto m-4 p-4 bg-white shadow-md rounded-md">
+        <div className="mb-6 bg-gray-50 rounded-md p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1 text-center sm:text-left">
               {selectedTender && (
                 <span className="text-lg font-semibold">
                   Auction Bids for: {selectedTender}
                 </span>
               )}
             </div>
-            {/* Use TenderSelect component */}
             <TenderSelect
               selectedTender={selectedTender}
               onChange={handleTenderChange}
@@ -62,25 +63,34 @@ const AuctionBids = () => {
           </div>
         </div>
 
-        {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="">No Bids Found</p>}
+        {loadingBids && <p className="text-center text-blue-500 font-semibold">Loading auction bids...</p>}
+        {error && <p className="text-center text-red-500">No Bids Found</p>}
 
         <div className="overflow-x-auto mt-4">
           <div className="p-4 bg-gray-50 rounded-md shadow-md">
             <table className="min-w-full bg-white border border-gray-300">
               <thead>
                 <tr>
-                  <th className="px-4 py-2 border-b text-center">Sno</th>
-                  <th className="px-4 py-2 border-b text-center">#</th>
-                  <th className="px-4 py-2 border-b">User</th>
-                  <th className="px-4 py-2 border-b">Company Name</th>
-                  <th className="px-4 py-2 border-b text-right">Amount</th>
-                  <th className="px-4 py-2 border-b text-right">FOB</th>
-                  <th className="px-4 py-2 border-b text-right">Freight</th>
-                  <th className="px-4 py-2 border-b text-center">Status</th>
-                  <th className="px-4 py-2 border-b text-right">Round</th>
-                  <th className="px-4 py-2 border-b text-right">Qty</th>
-                  <th className="px-4 py-2 border-b text-right">Bided At</th>
+                  {[
+                    "Sno",
+                    "#",
+                    "User",
+                    "Company Name",
+                    "Amount",
+                    "FOB",
+                    "Freight",
+                    "Status",
+                    "Round",
+                    "Qty",
+                    "Bided At",
+                  ].map((header) => (
+                    <th
+                      key={header}
+                      className="px-4 py-2 border-b text-sm font-medium text-gray-700 "
+                    >
+                      {header}
+                    </th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
@@ -106,29 +116,30 @@ const AuctionBids = () => {
                         <td className="border-t px-6 py-3 text-center">
                           #{bid.user_id}
                         </td>
-                        <td className="border-t px-6 py-3">{`${bid.first_name} ${bid.last_name}`}</td>
-                        <td className="border-t px-6 py-3">{bid.company_name}</td>
+                        <td className="border-t px-6 py-3">
+                          {`${bid.first_name} ${bid.last_name}`}
+                        </td>
+                        <td className="border-t px-6 py-3">
+                          {bid.company_name}
+                        </td>
                         <td className="border-t px-6 py-3 text-right">
                           $
                           {bid.bid_amount
                             ? Number(bid.bid_amount).toFixed(2)
                             : "--"}
                         </td>
-
                         <td className="border-t px-6 py-3 text-right">
                           $
                           {bid.fob_amount
                             ? Number(bid.fob_amount).toFixed(2)
                             : "--"}
                         </td>
-
                         <td className="border-t px-6 py-3 text-right">
                           $
                           {bid.freight_amount
                             ? Number(bid.freight_amount).toFixed(2)
                             : "--"}
                         </td>
-
                         <td className="border-t px-6 py-3 text-center">
                           <span
                             className={`px-4 py-1 inline-block text-sm leading-5 font-semibold rounded-full min-w-[80px] text-center ${

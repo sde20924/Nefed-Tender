@@ -13,16 +13,17 @@ const announceWinner = async (req, res) => {
     // Update the tender_bid_room table to mark the winner
     const updateQuery = `
       UPDATE tender_bid_room
-      SET status = $1,
-          qty_secured = $2,
-          round = $3
-      WHERE tender_id = $4 AND user_id = $5;
+      SET status = ?,
+          qty_secured = ?,
+          round = ?
+      WHERE tender_id = ? AND user_id = ?;
     `;
     const values = [status, qty_secured, round, tender_id, winner_user_id];
 
-    const result = await db.query(updateQuery, values);
+    // Execute the update query
+    const [result] = await db.execute(updateQuery, values);
 
-    if (result.rowCount === 0) {
+    if (result.affectedRows === 0) {
       return res.status(404).json({ success: false, message: "No bid found for the given tender and user." });
     }
 
@@ -33,4 +34,4 @@ const announceWinner = async (req, res) => {
   }
 };
 
-module.exports = { announceWinner };    
+module.exports = { announceWinner };

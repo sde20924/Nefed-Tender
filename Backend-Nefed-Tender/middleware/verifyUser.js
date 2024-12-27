@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 const verifyUser = asyncErrorHandler(async (req, res, next) => {
   const token = req.headers["authorization"];
-console.log("-=-=-=-=-=-=-=-=-=-=userVerifyApi",token)
+   console.log("-=-=-=-=-=-=-=-=-=-=userVerifyApi",token)
   if (!token) {
     return res.status(401).json({ message: "Authorization token is missing" });
   }

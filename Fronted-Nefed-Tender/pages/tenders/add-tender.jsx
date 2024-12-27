@@ -240,11 +240,11 @@ const AddTender = () => {
   // Tender Details Form
   const [currency, setCurrency] = useState("INR(₹)");
   const [startingPrice, setStartingPrice] = useState("");
-  const [quantity, setQuantity] = useState("");
+  // const [quantity, setQuantity] = useState("");
   const [destinationPort, setDestinationPort] = useState("");
   const [bagSize, setBagSize] = useState("");
   const [bagType, setBagType] = useState("");
-  const [measurmentUnit, setMeasurmentUnit] = useState("");
+  // const [measurmentUnit, setMeasurmentUnit] = useState("");
   const [auctionStart, setAuctionStart] = useState(null);
   const [auctionEnd, setAuctionEnd] = useState(null);
   const [extensionMinutes, setExtensionMinutes] = useState("");
@@ -299,11 +299,11 @@ const AddTender = () => {
       custom_form: JSON.stringify(formFields), // Stringify custom form fields if needed
       currency, // Currency type
       start_price: startingPrice, // Starting price for the tender
-      qty: quantity, // Quantity
+      // qty: quantity, // Quantity
       dest_port: destinationPort, // Destination port
       bag_size: bagSize, // Size of the bag
       bag_type: bagType, // Type of the bag
-      measurement_unit: measurmentUnit, // Measurement unit
+      // measurement_unit: measurmentUnit, // Measurement unit
       app_start_time: Math.floor(new Date(applicationStart).getTime() / 1000), // Application start time as Unix timestamp
       app_end_time: Math.floor(new Date(applicationEnd).getTime() / 1000), // Application end time as Unix timestamp
       auct_start_time: Math.floor(new Date(auctionStart).getTime() / 1000), // Auction start time as Unix timestamp
@@ -322,7 +322,7 @@ const AddTender = () => {
       auction_type: auctionType, // Set to null if not applicable
       tender_id: tender_id, // Generate a random tender ID based on the current timestamp if not provided
       audi_key: null, // Set to null if not applicable
-      auct_field: auctionFields,
+      // auct_field: auctionFields,
       editable_sheet: {
         headers, // Headers from EditableSheet
         sub_tenders: subTenders, // SubTender data with rows
@@ -401,8 +401,6 @@ const AddTender = () => {
 
               {/* Auction Items */}
               <AuctionItems
-                auctionFields={auctionFields}
-                handleAddAuction={handleAddAuction}
                 handleRemoveAuction={handleRemoveAuction}
                 handleAuctionInputChange={handleAuctionInputChange}
                 auctionType={auctionType}
@@ -427,16 +425,16 @@ const AddTender = () => {
                 setCurrency={setCurrency}
                 startingPrice={startingPrice}
                 setStartingPrice={setStartingPrice}
-                quantity={quantity}
-                setQuantity={setQuantity}
+                // quantity={quantity}
+                // setQuantity={setQuantity}
                 destinationPort={destinationPort}
                 setDestinationPort={setDestinationPort}
                 bagSize={bagSize}
                 setBagSize={setBagSize}
                 bagType={bagType}
                 setBagType={setBagType}
-                measurmentUnit={measurmentUnit}
-                setMeasurmentUnit={setMeasurmentUnit}
+                // measurmentUnit={measurmentUnit}
+                // setMeasurmentUnit={setMeasurmentUnit}
                 applicationStart={applicationStart}
                 handleApplicationStartChange={handleApplicationStartChange}
                 applicationEnd={applicationEnd}
@@ -464,7 +462,14 @@ const AddTender = () => {
               />
             </div>
           </div>
+<<<<<<< HEAD
 
+=======
+<<<<<<< HEAD
+=======
+
+>>>>>>> b4573fa1d4a7ca0cd46b5ad45342c9084e43bfc2
+>>>>>>> 78822eb3a15aebd2a83575343677e542cb640374
           {/* Submit Button */}
            {/* Sticky Submit Button */}
            {/* <div className="fixed bottom-8 right-4 p-4">
@@ -480,17 +485,18 @@ const AddTender = () => {
           headers={headers}
           setHeaders={setHeaders}
           subTenders={subTenders}
+<<<<<<< HEAD
           setSubTenders={setSubTenders}/>
+=======
+<<<<<<< HEAD
+          setSubTenders={setSubTenders} z-0/>
+=======
+          setSubTenders={setSubTenders}/>
+>>>>>>> b4573fa1d4a7ca0cd46b5ad45342c9084e43bfc2
+>>>>>>> 78822eb3a15aebd2a83575343677e542cb640374
         </form>
         {/* Sticky Submit Button */}
-        <div className="flex justify-center sm:justify-end sm:fixed sm:bottom-4 sm:right-4 w-full p-4">
-          <button
-            type="submit"
-            className="bg-gradient-to-r from-blue-500 to-blue-700 text-white font-bold py-3 px-6 rounded-md shadow-lg hover:shadow-xl hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring focus:ring-blue-300 w-full sm:w-auto"
-          >
-            Create
-          </button>
-        </div>
+        
       </div>
 
       <ToastContainer />
