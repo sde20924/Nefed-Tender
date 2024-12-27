@@ -4,26 +4,8 @@ import { FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"; // Importing toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
-<<<<<<< HEAD
 export default function EditableSheet({ headers, setHeaders, subTenders, setSubTenders }) {
  
-=======
-export default function EditableSheet() {
-  const [headers, setHeaders] = useState([
-    "S.No",
-    "Item",
-    "Item Description",
-    "UOM",
-    "Total Qty",
-    "Rate",
-  ]);
-  const [subTenders, setSubTenders] = useState([]); // Subtenders data
-  const [showModal, setShowModal] = useState(false); // To show/hide the modal
-  const [newColumnName, setNewColumnName] = useState("");
-
-  console.log("header", headers);
-  console.log("tender", subTenders);
->>>>>>> 79ea23c82e9361e3e278b5c197159f4ba2b3c88b
 
   // Add a new subtender
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
@@ -33,6 +15,7 @@ export default function EditableSheet() {
   const openAddSubTenderModal = () => {
     setIsModalOpen(true); // Show modal
   };
+  const [showModal, setShowModal] = useState(false);
 
   // Function to handle input change for SubTender name
   const handleSubTenderNameChange = (e) => {

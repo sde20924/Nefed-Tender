@@ -465,27 +465,22 @@ const AddTender = () => {
             </div>
           </div>
 
-<<<<<<< HEAD
           {/* Submit Button */}
            {/* Sticky Submit Button */}
-           <div className="fixed bottom-8 right-4 p-4">
+           {/* <div className="fixed bottom-8 right-4 p-4">
             <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
               Create
             </button>
-            </div>
+            </div> */}
 
           <EditableSheet 
           headers={headers}
           setHeaders={setHeaders}
           subTenders={subTenders}
           setSubTenders={setSubTenders}/>
-=======
-          {/* Editable Sheet */}
-          <EditableSheet />
->>>>>>> 79ea23c82e9361e3e278b5c197159f4ba2b3c88b
         </form>
         {/* Sticky Submit Button */}
         <div className="flex justify-center sm:justify-end sm:fixed sm:bottom-4 sm:right-4 w-full p-4">
