@@ -462,14 +462,6 @@ const AddTender = () => {
               />
             </div>
           </div>
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
-=======
-
->>>>>>> b4573fa1d4a7ca0cd46b5ad45342c9084e43bfc2
->>>>>>> 78822eb3a15aebd2a83575343677e542cb640374
           {/* Submit Button */}
            {/* Sticky Submit Button */}
            {/* <div className="fixed bottom-8 right-4 p-4">
@@ -485,15 +477,8 @@ const AddTender = () => {
           headers={headers}
           setHeaders={setHeaders}
           subTenders={subTenders}
-<<<<<<< HEAD
           setSubTenders={setSubTenders}/>
-=======
-<<<<<<< HEAD
-          setSubTenders={setSubTenders} z-0/>
-=======
-          setSubTenders={setSubTenders}/>
->>>>>>> b4573fa1d4a7ca0cd46b5ad45342c9084e43bfc2
->>>>>>> 78822eb3a15aebd2a83575343677e542cb640374
+
         </form>
         {/* Sticky Submit Button */}
         
