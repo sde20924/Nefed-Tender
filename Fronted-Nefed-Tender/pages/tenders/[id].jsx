@@ -215,14 +215,14 @@ const TenderDetail = () => {
         title={"Tender Details"}
       />
 
-      <div className="bg-white w-full mx-8">
+      <div className="bg-white m-4">
         <h1 className="p-4 text-lg">
           <b>{tender.tender_title}</b>
         </h1>
-      </div>
+      </div>  
 
-      <div className="flex container mx-auto p-4">
-        <div className="w-2/4 bg-white shadow-md rounded p-6 max-w-xl mx-auto divide-y">
+      <div className="flex md:flex-row flex-col container mx-auto p-4 ">
+        <div className="l:w-2/4 w-full bg-white shadow-md rounded p-6 max-w-xl mx-auto divide-y ">
           {/* Application Schedule Section */}
           <h5 className="text-lg font-bold mb-2 text-center">
             Application Schedule
@@ -302,7 +302,7 @@ const TenderDetail = () => {
             </div>
           </div>
         </div>
-        <div className="w-2/4 container mx-auto p-4">
+        <div className="l    :w-2/4 w-full container mx-auto p-4">
           {/* Application Closing Countdown */}
           <div className="bg-red-100 border border-red-300 text-red-700 p-4 rounded-lg mb-6 flex justify-between items-center">
             <span className="flex items-center">
@@ -415,7 +415,10 @@ const TenderDetail = () => {
           )}
         </div>
         {/* Table Data Shown From Here in buyer Side  */}
-        <div className="space-y-8">
+
+        {/*  */}
+      </div>
+      <div className="space-y-8">
           {editableSheet.sub_tenders.map((subTender) => (
             <div
               key={subTender.id}
@@ -458,9 +461,6 @@ const TenderDetail = () => {
             </div>
           ))}
         </div>
-
-        {/*  */}
-      </div>
 
       {/* Toast Container */}
       <ToastContainer />

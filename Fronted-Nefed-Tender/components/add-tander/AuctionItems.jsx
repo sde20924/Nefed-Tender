@@ -83,9 +83,9 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
     });
     setShowAddBuyerFields(false);
   };
-  console.log("buyer",buyersList);
-  console.log("buyer-selected",selectedBuyers);
-  console.log("buyer-filtered",filteredBuyers);
+  // console.log("buyer",buyersList);
+  // console.log("buyer-selected",selectedBuyers);
+  // console.log("buyer-filtered",filteredBuyers);
   
 
   const toggleSelectBuyer = (buyer) => {
