@@ -1,51 +1,47 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+const axios = require('axios');
 
-const getUserInfo = asyncErrorHandler(async (req, res) => {
-  const { user_id, login_as } = req.params;
+const getUserInfo = async (req, res) => {
+    const { user_id, login_as } = req.user;
 
-  const tableName = {
-    admin: 'admin',
-    buyer: 'buyer',
-    seller: 'seller',
-    manager: 'manager'
-  }[login_as];
+    try {
+        const externalApiPayload = {
+            required_keys: 'user_id, email, phone_number, company_name',
+            user_ids: [
+                { type: login_as, user_id: parseInt(user_id, 10) },
+            ],
+        };
 
-  if (!tableName) {
-    return res.status(400).send({ msg: 'Invalid user type', sts: "FAILED", success: false });
-  }
+        const externalApiEndpoint = 'https://tender-auth-module.nafedtrackandtrace.com/taqw-yvsu';
+        const externalApiResponse = await axios.post(externalApiEndpoint, externalApiPayload);
 
-  const userQuery = `SELECT u.*, t.name AS tag_name
-    FROM ${tableName} u
-    LEFT JOIN tags t ON u.tag_id = t.id
-    WHERE u.user_id = $1`;
-  const { rows } = await db.query(userQuery, [user_id]);
+        // Check if the API response is valid
+        const apiUserData = externalApiResponse.data?.data || [];
+        if (!Array.isArray(apiUserData)) {
+            throw new Error("Invalid API response format: 'data' is not an array");
+        }
 
-  if (rows.length === 0) {
-    return res.status(404).send({ msg: 'User not found', success: false });
-  }
+        const userDetails = apiUserData.find(user => user.user_id === parseInt(user_id, 10)) || {};
+        if (!userDetails) {
+            return res.status(404).json({ msg: "User not found in external API", success: false });
+        }
 
-  const userDetails = rows[0];
-  const { tag_id } = userDetails;
+        // Mock managers and documents for response
+        const managers = []; 
+        const userDocuments = []; 
 
-  let managers = [];
-  if (['buyer', 'seller', 'admin'].includes(login_as)) {
-    const managerQuery = `SELECT * FROM manager WHERE created_by = $1 AND is_blocked = false ORDER BY created_on DESC`;
-    const managerResult = await db.query(managerQuery, [user_id]);
-    managers = managerResult.rows;
-  }
-
-  // Fetch user documents based on tag_id
-  const documentQuery = `SELECT doc_name, doc_url FROM user_documents WHERE user_id = $1 AND tag_id = $2`;
-  const documentResult = await db.query(documentQuery, [user_id, tag_id]);
-  const userDocuments = documentResult.rows;
-
-  return res.status(200).send({
-    userDetails: {...userDetails, userDocuments},
-    managers,
-    msg: 'User details fetched successfully',
-    success: true
-  });
-});
+        res.status(200).json({
+            userDetails: { ...userDetails, userDocuments },
+            managers,
+            msg: "User details fetched successfully",
+            success: true,
+        });
+    } catch (error) {
+        res.status(500).json({
+            msg: 'Error fetching user info',
+            error: error.message,
+            success: false,
+        });
+    }
+};
 
 module.exports = getUserInfo;

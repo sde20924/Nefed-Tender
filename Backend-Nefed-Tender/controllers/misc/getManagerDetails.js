@@ -8,7 +8,7 @@ const getManagerDetails = asyncErrorHandler(async (req, res) => {
     const query = `
     SELECT *
     FROM manager
-    WHERE manager_id = $1 AND created_by = $2
+    WHERE manager_id = ? AND created_by = ?
     `;
 
     try {

@@ -15,7 +15,7 @@ const isAdmin = async (req, res, next) => {
     const { user_id, login_as } = req.user;
 
     // Query the database to check the user's role in the authentication table
-    const { rows } = await db.query('SELECT user_id, registered_as, email FROM "authentication" WHERE user_id = $1 AND registered_as = $2', [user_id, 'admin']);
+    const { rows } = await db.query('SELECT user_id, registered_as, email FROM "authentication" WHERE user_id = ? AND registered_as = $2', [user_id, 'admin']);
 
     if (rows.length === 0) {
       return res.status(403).send({ msg: 'Access denied. Only Admin can access.', success: false });

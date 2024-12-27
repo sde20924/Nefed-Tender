@@ -9,7 +9,7 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
     return res.status(401).json({ message: "Authorization token is missing" });
   }
   try {
-    const response = await axios.get(userVerifyApi, {
+    const response = await axios.get(`${userVerifyApi}xqwysr-taqw`, {
       headers: {
         Authorization: token,
       },

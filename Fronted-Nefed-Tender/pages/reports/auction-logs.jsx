@@ -48,12 +48,12 @@ const AuctionLogs = () => {
         title={"All Tenders"}
       />
       <div className="container mx-auto m-4 p-4 bg-white shadow-md rounded-md">
-      <div className="mb-6 bg-gray-50 rounded-md p-4">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex-1 text-center sm:text-left">
+        <div className="mb-6 bg-gray-50 rounded-md p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1 text-center sm:text-left">
               {selectedTender && (
                 <span className="text-lg font-semibold">
-                 Selected Tender ID: {selectedTender || "N/A"}
+                  Selected Tender ID: {selectedTender || "N/A"}
                 </span>
               )}
             </div>
@@ -79,17 +79,35 @@ const AuctionLogs = () => {
         {/* Table Section */}
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white border border-gray-300 rounded-lg">
-            <thead>             
-              <tr className="bg-gray-100 border-b text-sm font-medium text-gray-700 text-left uppercase text-gray-700 ">
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-center border-b">Sno</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-center border-b">ID</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 border-b">Company Name</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">Bid</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">Fob</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">Freight</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">Round</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">Bid Date</th>
-                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">Bid Time</th>
+            <thead>
+              <tr className="bg-gray-100 border-b text-sm font-medium text-gray-700 text-left uppercase text-gray-700">
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-center border-b">
+                  Sno
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-center border-b">
+                  ID
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 border-b">
+                  Company Name
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">
+                  Bid
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">
+                  Fob
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">
+                  Freight
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">
+                  Round
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">
+                  Bid Date
+                </th>
+                <th className="px-4 py-3 border-b text-sm font-medium text-gray-700 text-right border-b">
+                  Bid Time
+                </th>
               </tr>
             </thead>
             <tbody className="text-sm text-gray-600">
