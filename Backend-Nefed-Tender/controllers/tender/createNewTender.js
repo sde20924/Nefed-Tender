@@ -130,8 +130,10 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
       );
     }
 
-    // Handle `editable_sheet`: Insert headers and sub-tenders
-    const { headers, sub_tenders } = editable_sheet;
+    
+
+ // Handle `editable_sheet`: Insert headers and sub-tenders
+const { headers, sub_tenders } = editable_sheet;
 
     // Insert headers into `tender_header` table
     for (let i = 0; i < headers.length; i++) {
