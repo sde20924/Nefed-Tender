@@ -30,23 +30,27 @@ const TenderDetail = () => {
 
           // Filter applications to find any with the status "submitted"
           const acceptedApplications = applicationsData.data.filter(
-            (app) => 
-                (app.status === "submitted" || app.status === "accepted") && 
-                app.tender_id === id
-        );
-        
+            (app) =>
+              (app.status === "submitted" || app.status === "accepted") &&
+              app.tender_id === id
+          );
 
           if (acceptedApplications.length > 0) {
             setIsApplicationSubmitted(true); // If any submitted application exists, set the flag to true
           } else {
             // Fetch previously uploaded files for "draft" status
-            const uploadedFilesData = await callApiGet(`tender/${id}/files-status`);
+            const uploadedFilesData = await callApiGet(
+              `tender/${id}/files-status`
+            );
             if (uploadedFilesData.success) {
               setUploadedFiles(uploadedFilesData.data); // Set the uploaded files from the server
             }
           }
         } catch (error) {
-          console.error("Error fetching tender details or applications:", error.message);
+          console.error(
+            "Error fetching tender details or applications:",
+            error.message
+          );
         }
       };
 
@@ -60,10 +64,14 @@ const TenderDetail = () => {
     const interval = setInterval(() => {
       const timeLeft = endTimeMs - new Date().getTime();
       if (timeLeft > 0) {
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const hours = Math.floor(
+          (timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)
+        );
         const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
         const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-        setTimeLeft(`${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`);
+        setTimeLeft(
+          `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+        );
       } else {
         clearInterval(interval);
         setTimeLeft("00:00:00");
@@ -88,7 +96,10 @@ const TenderDetail = () => {
           const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
           const tenderDocId = tender_doc_id; // Get the tender_doc_id
 
-          const newUploadedFiles = [...uploadedFiles, { tender_doc_id: tenderDocId, doc_url: fileUrl }];
+          const newUploadedFiles = [
+            ...uploadedFiles,
+            { tender_doc_id: tenderDocId, doc_url: fileUrl },
+          ];
           setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
 
           toast.success("File uploaded successfully");
@@ -110,18 +121,21 @@ const TenderDetail = () => {
     }
 
     // Check if all required files are uploaded
-    if (uploadedFiles.length < (tender.tenderDocuments ? tender.tenderDocuments.length : 0)) {
+    if (
+      uploadedFiles.length <
+      (tender.tenderDocuments ? tender.tenderDocuments.length : 0)
+    ) {
       toast.error("Please upload all required documents before saving.");
       return;
     }
-    
+
     try {
       const apiResponse = await callApiPost("submit-file-url", {
         file_url: uploadedFiles,
         tender_id: id,
         status: "draft",
         tender_application_id: uploadedFiles[0]?.tender_application_id || null,
-        tender_user_doc_id: uploadedFiles[0]?.tender_user_doc_id || null
+        tender_user_doc_id: uploadedFiles[0]?.tender_user_doc_id || null,
       }); // Send all uploaded file URLs to your backend
 
       if (apiResponse.success) {
@@ -149,7 +163,7 @@ const TenderDetail = () => {
         tender_id: id,
         status: "submitted",
         tender_application_id: uploadedFiles[0]?.tender_application_id || null,
-        tender_user_doc_id: uploadedFiles[0]?.tender_user_doc_id || null
+        tender_user_doc_id: uploadedFiles[0]?.tender_user_doc_id || null,
       }); // Send all uploaded file URLs to your backend with status submitted
 
       if (apiResponse.success) {
@@ -163,6 +177,30 @@ const TenderDetail = () => {
       console.error("Error submitting application:", error.message);
       toast.error("Error submitting application.");
     }
+  };
+
+  // state to store the table data 
+
+  const editableSheet = {
+    headers: ["S.No", "Item", "Item Description", "UOM", "Total Qty", "Rate"],
+    sub_tenders: [
+      {
+        id: 1,
+        name: "dsdsd",
+        rows: [
+          ["1.1", "dsds", "dsds", "ds", "", ""],
+          ["1.2", "dsds", "dsds", "ds", "", ""],
+        ],
+      },
+      {
+        id: 2,
+        name: "dsds",
+        rows: [
+          ["2.1", "dsds", "dsds", "ds", "", ""],
+          ["2.2", "dsds", "dsds", "ds", "", ""],
+        ],
+      },
+    ],
   };
 
   if (!tender) {
@@ -186,28 +224,40 @@ const TenderDetail = () => {
       <div className="flex container mx-auto p-4">
         <div className="w-2/4 bg-white shadow-md rounded p-6 max-w-xl mx-auto divide-y">
           {/* Application Schedule Section */}
-          <h5 className="text-lg font-bold mb-2 text-center">Application Schedule</h5>
+          <h5 className="text-lg font-bold mb-2 text-center">
+            Application Schedule
+          </h5>
           <div className="mb-2">
             <div className="flex justify-between mb-2 divide-y">
               <span>Start Date/Time:</span>
-              <span>{new Date(tender.app_start_time * 1000).toLocaleString()}</span>
+              <span>
+                {new Date(tender.app_start_time * 1000).toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between mb-2">
               <span>End Date/Time:</span>
-              <span>{new Date(tender.app_end_time * 1000).toLocaleString()}</span>
+              <span>
+                {new Date(tender.app_end_time * 1000).toLocaleString()}
+              </span>
             </div>
           </div>
 
           {/* Auction Schedule Section */}
-          <h5 className="text-lg font-bold mb-2 text-center">Auction Schedule</h5>
+          <h5 className="text-lg font-bold mb-2 text-center">
+            Auction Schedule
+          </h5>
           <div className="mb-2 divide-y">
             <div className="flex justify-between mb-2">
               <span>Start Date/Time:</span>
-              <span>{new Date(tender.auct_start_time * 1000).toLocaleString()}</span>
+              <span>
+                {new Date(tender.auct_start_time * 1000).toLocaleString()}
+              </span>
             </div>
             <div className="flex justify-between mb-2">
               <span>End Date/Time:</span>
-              <span>{new Date(tender.auct_end_time * 1000).toLocaleString()}</span>
+              <span>
+                {new Date(tender.auct_end_time * 1000).toLocaleString()}
+              </span>
             </div>
           </div>
 
@@ -265,10 +315,16 @@ const TenderDetail = () => {
           {/* Conditionally show file upload section or success UI */}
           {isApplicationSubmitted ? (
             <div className="text-center">
-              <img src="/img/check-mark.webp" alt="Success" className="mx-auto mb-4 h-56 w-56" />
+              <img
+                src="/img/check-mark.webp"
+                alt="Success"
+                className="mx-auto mb-4 h-56 w-56"
+              />
               <h3 className="text-lg font-bold">Application Submitted!</h3>
               <p>Your Application has been submitted!</p>
-              <p className="text-sm text-gray-600 mt-2">For further information, visit <strong>My Tenders</strong>.</p>
+              <p className="text-sm text-gray-600 mt-2">
+                For further information, visit <strong>My Tenders</strong>.
+              </p>
             </div>
           ) : (
             <div className="bg-white shadow-md rounded-lg p-6">
@@ -278,14 +334,17 @@ const TenderDetail = () => {
               <div className="mb-2">
                 <h6 className="text-md font-semibold mb-2">Attached Files</h6>
                 <p className="text-sm text-gray-600 mb-2">
-                  Please upload the following documents and details. All documents
-                  to be uploaded.
+                  Please upload the following documents and details. All
+                  documents to be uploaded.
                 </p>
 
                 {/* Map through tender documents */}
                 {tender.tenderDocuments && tender.tenderDocuments.length > 0 ? (
                   tender.tenderDocuments.map((doc, index) => (
-                    <div key={index} className="border rounded-md p-4 mb-2 bg-blue-50">
+                    <div
+                      key={index}
+                      className="border rounded-md p-4 mb-2 bg-blue-50"
+                    >
                       <div className="flex items-center mb-2">
                         <i className="fas fa-file-alt text-blue-400 mr-2"></i>
                         <span className="font-medium">{doc.doc_label}</span>
@@ -297,16 +356,22 @@ const TenderDetail = () => {
                         <input
                           type="file"
                           className="mr-4"
-                          onChange={(e) => handleFileChange(e, doc.doc_key, doc.tender_doc_id)}
+                          onChange={(e) =>
+                            handleFileChange(e, doc.doc_key, doc.tender_doc_id)
+                          }
                           required
                           disabled={isCountdownComplete}
                         />
                         <span>
-                          {uploadedFiles.find((file) => file.tender_doc_id === doc.tender_doc_id) ? (
+                          {uploadedFiles.find(
+                            (file) => file.tender_doc_id === doc.tender_doc_id
+                          ) ? (
                             <a
                               href={
-                                uploadedFiles.find((file) => file.tender_doc_id === doc.tender_doc_id)
-                                  .doc_url
+                                uploadedFiles.find(
+                                  (file) =>
+                                    file.tender_doc_id === doc.tender_doc_id
+                                ).doc_url
                               }
                               target="_blank"
                               rel="noopener noreferrer"
@@ -321,14 +386,16 @@ const TenderDetail = () => {
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500 mb-2">No documents required for this tender.</p>
+                  <p className="text-sm text-gray-500 mb-2">
+                    No documents required for this tender.
+                  </p>
                 )}
               </div>
 
               {/* Save Application Button */}
               <button
                 onClick={handleSaveApplication}
-                className={`bg-${!uploadedFiles[0]?.doc_url ? 'gray' : 'blue'}-500 text-white font-bold py-2 px-4 rounded-lg mt-4 mr-4`}
+                className={`bg-${!uploadedFiles[0]?.doc_url ? "gray" : "blue"}-500 text-white font-bold py-2 px-4 rounded-lg mt-4 mr-4`}
                 disabled={!uploadedFiles[0]?.doc_url}
               >
                 Save Application
@@ -336,22 +403,63 @@ const TenderDetail = () => {
 
               {/* Show Submit Application Button only if the application is saved */}
               {/* {isApplicationSaved && ( */}
-                <button
-                  onClick={handleSubmitApplication}
-                  className={`bg-${!uploadedFiles[0]?.doc_url ? 'gray' : 'green'}-500 text-white font-bold py-2 px-4 rounded-lg mt-4`}
-                  disabled={!uploadedFiles[0]?.doc_url}
-                >
-                  Submit Application
-                </button>
+              <button
+                onClick={handleSubmitApplication}
+                className={`bg-${!uploadedFiles[0]?.doc_url ? "gray" : "green"}-500 text-white font-bold py-2 px-4 rounded-lg mt-4`}
+                disabled={!uploadedFiles[0]?.doc_url}
+              >
+                Submit Application
+              </button>
               {/* )} */}
             </div>
           )}
         </div>
         {/* Table Data Shown From Here in buyer Side  */}
-        <div>Add table here</div>
+        <div className="space-y-8">
+          {editableSheet.sub_tenders.map((subTender) => (
+            <div
+              key={subTender.id}
+              className="border border-gray-300 p-4 rounded"
+            >
+              <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
+              <div className="overflow-x-auto">
+                <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                  <thead className="bg-blue-100 text-gray-700">
+                    <tr>
+                      {editableSheet.headers.map((header, index) => (
+                        <th
+                          key={index}
+                          className="border border-gray-300 px-4 py-2 font-bold"
+                        >
+                          {header}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subTender.rows.map((row, rowIndex) => (
+                      <tr
+                        key={rowIndex}
+                        className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+                      >
+                        {row.map((cell, cellIndex) => (
+                          <td
+                            key={cellIndex}
+                            className="border border-gray-300 px-4 py-2"
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
 
         {/*  */}
-        
       </div>
 
       {/* Toast Container */}
@@ -360,5 +468,5 @@ const TenderDetail = () => {
   );
 };
 
-TenderDetail.layout = UserDashboard;  
+TenderDetail.layout = UserDashboard;
 export default TenderDetail;
