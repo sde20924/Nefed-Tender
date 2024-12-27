@@ -6,12 +6,12 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
   try {
     const tenderId = req.params.id; // Extract tender ID from request parameters
 
-    // Query to fetch tender details, associated documents, headers, sub-tenders, and row data
+    // Fetch tender details and associated documents
     const tenderDetailsQuery = `
       SELECT 
-        mt.*, -- All columns from manage_tender
-        trd.doc_key, 
+        mt.*, 
         trd.tender_doc_id, 
+        trd.doc_key, 
         trd.doc_label, 
         trd.doc_ext, 
         trd.doc_size
@@ -20,11 +20,10 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
       WHERE mt.tender_id = ?
     `;
 
-    // Execute the query with the parameterized tenderId
-    const [rows] = await db.execute(tenderDetailsQuery, [tenderId]);
+    const [tenderRows] = await db.execute(tenderDetailsQuery, [tenderId]);
 
     // If no tender is found, return a 404 response
-    if (tenderResult[0].length === 0) {
+    if (tenderRows.length === 0) {
       return res.status(404).json({
         msg: 'Tender not found',
         success: false,
@@ -32,47 +31,84 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
     }
 
     // Extract the main tender details
-    const tenderDetails = tenderResult[0].map(row => ({
-      ...row, // Base tender details
-    }))[0];
-
-    // Fetch tender headers
-    const headerResults = await db.query(tenderHeadersQuery, [tenderId]);
-    const headers = headerResults[0].map(row => ({
-      header_id: row.header_id,
-      table_head: row.table_head,
-      order: row.order,
-    }));
-
-    // Fetch sub-tenders for each header
-    const subTenders = [];
-    for (const header of headers) {
-      const subTenderResult = await db.query(subTendersQuery, [header.header_id]);
-
-      subTenders.push({
-        header_id: header.header_id,
-        header_name: header.table_head,
-        subtenders: subTenderResult[0].map(row => ({
-          subtender_id: row.subtender_id,
-          subtender_name: row.subtender_name,
-          row_data: JSON.parse(row.row_data), // Parse JSON data
-          type: row.type,
-        })),
-      });
-    }
-
-    // Combine the results
-    const combinedData = {
-      ...tenderDetails,
-      tenderDocuments: tenderResult[0]
+    const tenderDetails = {
+      ...tenderRows[0],
+      tenderDocuments: tenderRows
         .filter(row => row.doc_key)
         .map(doc => ({
-          doc_key: doc.doc_key,
           tender_doc_id: doc.tender_doc_id,
+          doc_key: doc.doc_key,
           doc_label: doc.doc_label,
           doc_ext: doc.doc_ext,
           doc_size: doc.doc_size,
         })),
+    };
+
+    // Fetch tender headers
+    const headerQuery = `
+      SELECT header_id, table_head, \`order\`
+      FROM tender_header
+      WHERE tender_id = ?
+      ORDER BY \`order\`
+    `;
+    const [headerRows] = await db.execute(headerQuery, [tenderId]);
+
+    const headers = headerRows.map(header => ({
+      header_id: header.header_id,
+      table_head: header.table_head,
+      order: header.order,
+    }));
+
+    // Fetch sub-tenders and row data for each header
+    const subTenders = [];
+    for (const header of headers) {
+      const subTendersQuery = `
+        SELECT 
+          st.subtender_id, 
+          st.subtender_name, 
+          shrd.row_data, 
+          shrd.type
+        FROM subtender st
+        LEFT JOIN seller_header_row_data shrd 
+          ON st.subtender_id = shrd.subtender_id
+        WHERE shrd.header_id = ?
+      `;
+
+      const [subTenderRows] = await db.execute(subTendersQuery, [header.header_id]);
+
+      const subtenderData = subTenderRows.reduce((acc, row) => {
+        const existingSubTender = acc.find(st => st.subtender_id === row.subtender_id);
+
+        if (existingSubTender) {
+          existingSubTender.row_data.push({
+            row: JSON.parse(row.row_data),
+            type: row.type,
+          });
+        } else {
+          acc.push({
+            subtender_id: row.subtender_id,
+            subtender_name: row.subtender_name,
+            row_data: [
+              {
+                row: JSON.parse(row.row_data),
+                type: row.type,
+              },
+            ],
+          });
+        }
+        return acc;
+      }, []);
+
+      subTenders.push({
+        header_id: header.header_id,
+        header_name: header.table_head,
+        subtenders: subtenderData,
+      });
+    }
+
+    // Combine all the results
+    const combinedData = {
+      ...tenderDetails,
       headers,
       subTenders,
     };

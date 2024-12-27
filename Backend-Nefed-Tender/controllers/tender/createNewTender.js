@@ -1,4 +1,4 @@
-const db = require("../../config/config"); 
+const db = require("../../config/config");
 const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Async error handler middleware
 
 // Controller to create a new tender
@@ -35,8 +35,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     auction_type,
     tender_id,
     audi_key = null,
-    editable_sheet, 
+    editable_sheet, // Includes headers and sub_tenders
   } = req.body;
+
   // Validation to ensure required fields are provided
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
@@ -64,6 +65,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
       missingFields,
     });
   }
+
   try {
     const parsedAttachments =
       typeof attachments === "string" ? JSON.parse(attachments) : attachments;
@@ -75,50 +77,48 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
     // Insert the new tender data into the `manage_tender` table
     const [newTender] = await db.query(
-        `INSERT INTO manage_tender (
-          user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt,
-          emd_amt, emt_lvl_amt, custom_form, currency, start_price, dest_port,
-          bag_size, bag_type, app_start_time, app_end_time,
-          auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
-          aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
-          qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-          tender_id, audi_key
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`, // Match the column count
-        [
-          user_id,
-          tender_title,
-          tender_slug,
-          tender_desc,
-          tender_cat,
-          tender_opt,
-          emd_amt,
-          emt_lvl_amt,
-          JSON.stringify(parsedCustomForm),
-          currency,
-          start_price,
-          dest_port,
-          bag_size,
-          bag_type,
-          app_start_time,
-          app_end_time,
-          auct_start_time,
-          auct_end_time,
-          time_frame_ext,
-          extended_at,
-          amt_of_ext,
-          aut_auct_ext_bfr_end_time,
-          min_decr_bid_val,
-          timer_ext_val,
-          qty_split_criteria,
-          counter_offr_accept_timer,
-          img_url,
-          auction_type,
-          tender_id,
-          audi_key,
-        ]
+      `INSERT INTO manage_tender (
+        user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt,
+        emd_amt, emt_lvl_amt, custom_form, currency, start_price, dest_port,
+        bag_size, bag_type, app_start_time, app_end_time,
+        auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
+        aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
+        qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
+        tender_id, audi_key
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [
+        user_id,
+        tender_title,
+        tender_slug,
+        tender_desc,
+        tender_cat,
+        tender_opt,
+        emd_amt,
+        emt_lvl_amt,
+        JSON.stringify(parsedCustomForm),
+        currency,
+        start_price,
+        dest_port,
+        bag_size,
+        bag_type,
+        app_start_time,
+        app_end_time,
+        auct_start_time,
+        auct_end_time,
+        time_frame_ext,
+        extended_at,
+        amt_of_ext,
+        aut_auct_ext_bfr_end_time,
+        min_decr_bid_val,
+        timer_ext_val,
+        qty_split_criteria,
+        counter_offr_accept_timer,
+        img_url,
+        auction_type,
+        tender_id,
+        audi_key,
+      ]
     );
-
-    const createdTenderId = newTender.insertId;
 
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
@@ -126,50 +126,68 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
       await db.query(
         `INSERT INTO tender_required_doc (tender_id, doc_key, doc_label, doc_ext, doc_size)
          VALUES (?, ?, ?, ?, ?)`,
-        [createdTenderId, key, label, extension, maxFileSize]
+        [tender_id, key, label, extension, maxFileSize]
       );
     }
 
-    
+    // Handle `editable_sheet`: Insert headers and sub-tenders
+    const { headers, sub_tenders } = editable_sheet;
 
- // Handle `editable_sheet`: Insert headers and sub-tenders
-const { headers, sub_tenders } = editable_sheet;
-
-    // Insert headers into `tender_header` table
+    // Insert headers into `tender_header` table and get the header_id
     for (let i = 0; i < headers.length; i++) {
       const headerName = headers[i];
-      await db.query(
+      const [headerResult] = await db.query(
         `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
-        [createdTenderId, headerName, i + 1]
+        [tender_id, headerName, i + 1]
       );
-    }
+      const headerId = headerResult.insertId; // Get the header_id for the inserted header
 
-    // Insert sub-tenders and their rows into `subtender` and `seller_header_row_data`
-    for (const subTender of sub_tenders) {
-      const { name, rows } = subTender;
+      for (const subTender of sub_tenders) {
+        const { name, rows } = subTender;
 
-      // Insert subtender into `subtender` table
-      const [subTenderResult] = await db.query(
-        `INSERT INTO subtender (subtender_name) VALUES (?)`,
-        [name]
-      );
-      const subtenderId = subTenderResult.insertId; // Correctly retrieve the inserted ID
-
-      // Insert rows into `seller_header_row_data` table
-      for (const row of rows) {
-        await db.query(
-          `INSERT INTO seller_header_row_data (header_id, row_data, subtender_id, seller_id)
-           VALUES (?, ?, ?, ?)`,
-          [createdTenderId, JSON.stringify(row), subtenderId, user_id] // Use the retrieved subtenderId
+        // Check if the subtender exists, insert if not
+        let [subTenderResult] = await db.query(
+          `SELECT subtender_id FROM subtender WHERE subtender_name = ?`,
+          [name]
         );
+
+        let subtenderId;
+        if (subTenderResult.length === 0) {
+          const [newSubTender] = await db.query(
+            `INSERT INTO subtender (subtender_name) VALUES (?)`,
+            [name]
+          );
+          subtenderId = newSubTender.insertId;
+        } else {
+          subtenderId = subTenderResult[0].subtender_id;
+        }
+
+        // Insert rows into `seller_header_row_data` table
+        for (const row of rows) {
+          for (let j = 0; j < row.length; j++) {
+            const cellData = row[j];
+
+            await db.query(
+              `INSERT INTO seller_header_row_data (header_id, row_data, subtender_id, seller_id, \`order\`, type)
+               VALUES (?, ?, ?, ?, ?, ?)`,
+              [
+                headerId, // Store the header_id
+                cellData, // Insert the individual row element as `row_data`
+                subtenderId, // Link the row to the correct subtender
+                user_id, // Assuming seller_id is the user_id
+                j + 1, // Assign an order to the element in the row (1, 2, 3,...)
+                cellData === "" || cellData === null ? "edit" : "view", // Check if the cell is editable or not
+              ]
+            );
+          }
+        }
       }
     }
 
-// Commit the transaction
-await db.query("COMMIT");
+    // Commit the transaction
+    await db.query("COMMIT");
 
-res.status(201).send({ msg: "Tender created successfully", tender_id: createdTenderId });
-
+    res.status(201).send({ msg: "Tender created successfully", tender_id: tender_id });
   } catch (error) {
     await db.query("ROLLBACK");
     console.error("Error creating tender:", error.message);
