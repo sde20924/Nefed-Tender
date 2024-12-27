@@ -7,6 +7,7 @@ const generateTenderId = () => {
     return uuidv4(); // Generates a universally unique identifier (UUID)
 };
 
+
 // Controller to clone a tender for the specific seller
 const cloneTenderController = asyncErrorHandler(async (req, res) => {
     const { id } = req.params; // Tender ID that needs to be cloned
@@ -14,8 +15,8 @@ const cloneTenderController = asyncErrorHandler(async (req, res) => {
 
     try {
         // Query to find the tender to be cloned, making sure it belongs to the seller
-        const tenderQuery = `SELECT * FROM manage_tender WHERE tender_id = $1 AND user_id = $2`;
-        const { rows: tenderToClone } = await db.query(tenderQuery, [id, sellerId]);
+        const tenderQuery = `SELECT * FROM manage_tender WHERE tender_id = ? AND user_id = ?`;
+        const [tenderToClone] = await db.query(tenderQuery, [id, sellerId]);
 
         if (tenderToClone.length === 0) {
             return res.status(404).json({ success: false, msg: "Tender not found or not authorized" });
@@ -23,6 +24,7 @@ const cloneTenderController = asyncErrorHandler(async (req, res) => {
 
         const tender = tenderToClone[0];
         const newTenderId = generateTenderId(); // Generate a new tender ID
+    
         const newTitle = `${tender.tender_title.trim()} - Clone`;
 
         // Clone the tender and insert it into the manage_tender table
@@ -32,12 +34,8 @@ const cloneTenderController = asyncErrorHandler(async (req, res) => {
                 currency, start_price, qty, dest_port, bag_size, bag_type, measurement_unit, app_start_time, app_end_time,
                 auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext, aut_auct_ext_bfr_end_time, 
                 min_decr_bid_val, timer_ext_val, qty_split_criteria, counter_offr_accept_timer, img_url, auction_type, audi_key
-            ) VALUES (
-                $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, 
-                $24, $25, $26, $27, $28, $29, $30, $31
-            ) RETURNING tender_id;
-        `;
-        
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+
         // Set values for the new tender, keeping the same data but with a new ID and updated title
         const values = [
             newTenderId, sellerId, newTitle, tender.tender_slug, tender.tender_desc, tender.tender_cat, tender.tender_opt,
@@ -47,11 +45,12 @@ const cloneTenderController = asyncErrorHandler(async (req, res) => {
             tender.min_decr_bid_val, tender.timer_ext_val, tender.qty_split_criteria, tender.counter_offr_accept_timer,
             tender.img_url, tender.auction_type, tender.audi_key
         ];
-        
-        const clonedTender = await db.query(cloneQuery, values);
-        
+
+        // Execute the insert query
+        const [result] = await db.query(cloneQuery, values);
+
         // Return success response with the new tender ID
-        res.status(201).json({ success: true, msg: 'Tender cloned successfully', clonedId: clonedTender.rows[0].tender_id });
+        res.status(201).json({ success: true, msg: 'Tender cloned successfully', clonedId: newTenderId });
     } catch (error) {
         console.error('Error cloning tender:', error);
         res.status(500).json({ success: false, msg: 'Failed to clone tender', error: error.message });

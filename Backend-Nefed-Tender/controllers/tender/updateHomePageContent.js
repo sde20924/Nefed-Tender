@@ -1,4 +1,4 @@
-const db = require('../../config/config'); 
+const db = require('../../config/config');
 
 // Function to insert homepage content
 const updateHomepageContent = async (req, res) => {
@@ -8,11 +8,11 @@ const updateHomepageContent = async (req, res) => {
 
     try {
         // Perform the insert query
-        await db.query(
-            'INSERT INTO homepage_content (title, subheading, description) VALUES ($1, $2, $3)',
+        await db.execute(
+            'INSERT INTO homepage_content (title, subheading, description) VALUES (?, ?, ?)',
             [title, subheading, description]
         );
-        
+
         // Send a success response back to the client
         res.json({ message: 'Homepage content inserted successfully' });
     } catch (error) {

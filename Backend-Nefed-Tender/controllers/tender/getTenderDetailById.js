@@ -17,10 +17,11 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         trd.doc_size
       FROM manage_tender mt
       LEFT JOIN tender_required_doc trd ON mt.tender_id = trd.tender_id
-      WHERE mt.tender_id = $1
+      WHERE mt.tender_id = ?
     `;
-    
-    const { rows } = await db.query(tenderDetailsQuery, [tenderId]);
+
+    // Execute the query with the parameterized tenderId
+    const [rows] = await db.execute(tenderDetailsQuery, [tenderId]);
 
     // If no tender is found, return a 404 response
     if (rows.length === 0) {

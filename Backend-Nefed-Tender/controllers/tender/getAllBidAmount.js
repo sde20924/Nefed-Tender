@@ -1,38 +1,38 @@
 const db = require('../../config/config'); // Import your database configuration
 
 const getTenderBidsByTenderId = async (req, res) => {
-  const { tender_id } = req.params; // Extract tenderId from the request parameters
+  const { tender_id } = req.params; // Extract tender_id from the request parameters
 
   try {
-    // Debug: Check if tenderId exists in tender_bid_room
-    const checkTenderResult = await db.query(
-      `SELECT * FROM tender_bid_room WHERE tender_id = $1`,
+    // Debug: Check if tender_id exists in tender_bid_room
+    const [checkTenderResult] = await db.query(
+      `SELECT * FROM tender_bid_room WHERE tender_id = ?`,
       [tender_id]
     );
 
-    if (checkTenderResult.rows.length === 0) {
+    if (checkTenderResult.length === 0) {
       console.log(`No records found in tender_bid_room for tender_id: ${tender_id}`);
       return res.status(404).send({ msg: 'No bids found for the selected tender', success: false });
     }
 
     // Step 1: Get all users and their bid amounts who placed bids on the specified tender
-    const bidsResult = await db.query(
+    const [bidsResult] = await db.query(
       `SELECT tbr.user_id, b.first_name, b.last_name, b.company_name, tbr.bid_amount
        FROM tender_bid_room tbr
        JOIN buyer b ON tbr.user_id = b.user_id
-       WHERE tbr.tender_id = $1
+       WHERE tbr.tender_id = ?
        ORDER BY tbr.user_id, tbr.bid_amount DESC`,
       [tender_id]
     );
 
     // If no bids found, return 404
-    if (bidsResult.rows.length === 0) {
+    if (bidsResult.length === 0) {
       return res.status(404).send({ msg: 'No bids found for the selected tender', success: false });
     }
 
     // Step 2: Organize bids by user
     const bidsMap = {};
-    bidsResult.rows.forEach((row) => {
+    bidsResult.forEach((row) => {
       const { user_id, first_name, last_name, company_name, bid_amount } = row;
 
       if (!bidsMap[user_id]) {

@@ -6,11 +6,11 @@ import "react-datepicker/dist/react-datepicker.css";
 const FullDetails = ({
   currency, setCurrency,
   startingPrice, setStartingPrice,
-  quantity, setQuantity,
+  // quantity, setQuantity,
   destinationPort, setDestinationPort,
   bagSize, setBagSize,
   bagType, setBagType,
-  measurmentUnit, setMeasurmentUnit,
+  // measurmentUnit, setMeasurmentUnit,
   applicationStart, handleApplicationStartChange,
   applicationEnd, handleApplicationEndChange,
   auctionStart, setAuctionStart,
@@ -74,7 +74,7 @@ const FullDetails = ({
       </div>
 
       {/* Quantity */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label
           className="block text-gray-700 text-sm font-bold mb-2"
           htmlFor="quantity"
@@ -95,7 +95,7 @@ const FullDetails = ({
           }
           required
         />
-      </div>
+      </div> */}
 
       {/* Destination Port */}
       <div className="mb-4">
@@ -155,7 +155,7 @@ const FullDetails = ({
       </div>
 
       {/* Measurement Unit */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label
           className="block text-gray-700 text-sm font-bold mb-2"
           htmlFor="measurmentUnit"
@@ -171,7 +171,7 @@ const FullDetails = ({
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           required
         />
-      </div>
+      </div> */}
 
       {/* Application Start Date/Time */}
       <div className="mb-4">
