@@ -478,7 +478,6 @@ const AddTender = () => {
           setHeaders={setHeaders}
           subTenders={subTenders}
           setSubTenders={setSubTenders}/>
-
         </form>
         {/* Sticky Submit Button */}
         

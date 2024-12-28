@@ -45,21 +45,34 @@ const tenderPartyWise = () => {
         subTitle={"View tenders, update them, delete them"}
         title={"All Tenders"}
       />
-      <div className="container m-4 p-4 bg-white shadow-md rounded-md w-auto mb-6">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex-1">
-            {selectedTender && (
-              <span className="text-lg font-semibold">
-                Selected Tender ID: {selectedTender}
-              </span>
-            )}
+     <div className="container mx-auto m-4 p-4 bg-white shadow-md rounded-md">
+        <div className="mb-6 bg-gray-50 rounded-md p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1 text-center sm:text-left">
+              {selectedTender && (
+                <span className="text-lg font-semibold">
+                  Selected Tender ID: {selectedTender || "N/A"}
+                </span>
+              )}
+            </div>
+            <TenderSelect
+              selectedTender={selectedTender}
+              onChange={handleTenderChange}
+            />
           </div>
-          {/* Use TenderSelect component */}
-          <TenderSelect selectedTender={selectedTender} onChange={handleTenderChange} />
         </div>
 
-        {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="">No Bids Found</p>}
+        {/* Loading and Error Messages */}
+        {loadingBids && (
+          <p className="text-center text-blue-500 font-semibold">
+            Loading auction Logs...
+          </p>
+        )}
+        {error && (
+          <p className="text-center text-red-500 font-semibold">
+            No Logs Found
+          </p>
+        )}
 
         {bids.length > 0 && (
           <div className="overflow-x-auto">

@@ -45,12 +45,16 @@ const BidPosition = () => {
         subTitle={"View tenders, update them, delete them"}
         title={"All Tenders"}
       />
-      <div className="container m-4 w-auto p-6 bg-white shadow-md rounded-md">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex-1 text-lg font-semibold">
-            {selectedTender && `Selected Tender ID: ${selectedTender}`}
-          </div>
-          <div className="flex items-center space-x-4">
+      <div className="container mx-auto m-4 p-4 bg-white shadow-md rounded-md">
+        <div className="mb-6 bg-gray-50 rounded-md p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1 text-center sm:text-left">
+              {selectedTender && (
+                <span className="text-lg font-semibold">
+                  Selected Tender ID: {selectedTender || "N/A"}
+                </span>
+              )}
+            </div>
             <TenderSelect
               selectedTender={selectedTender}
               onChange={handleTenderChange}
@@ -58,8 +62,17 @@ const BidPosition = () => {
           </div>
         </div>
 
-        {loadingBids && <p>Loading auction bids...</p>}
-        {error && <p className="">No Bids Found</p>}
+        {/* Loading and Error Messages */}
+        {loadingBids && (
+          <p className="text-center text-blue-500 font-semibold">
+            Loading auction Logs...
+          </p>
+        )}
+        {error && (
+          <p className="text-center text-red-500 font-semibold">
+            No Logs Found
+          </p>
+        )}
 
         <div className="overflow-x-auto mt-4">
           <table className="min-w-full bg-white border border-gray-300">
@@ -77,8 +90,8 @@ const BidPosition = () => {
               {!loadingBids && bids.length === 0 && (
                 <tr>
                   <td colSpan="6" className="text-center py-4 text-gray-500">
-                    No data record found.  
-                     <span className="text-blue-400">Select Tender</span>
+                    No data record found.
+                    <span className="text-blue-400">Select Tender</span>
                   </td>
                 </tr>
               )}
@@ -91,7 +104,9 @@ const BidPosition = () => {
                       className="hover:bg-gray-100 transition-all duration-200 text-center"
                     >
                       <td className="border-t px-4 py-3">{index + 1}</td>
-                      <td className="border-t px-4 py-3">{bid.bid_id || "--"}</td>
+                      <td className="border-t px-4 py-3">
+                        {bid.bid_id || "--"}
+                      </td>
                       <td className="border-t px-4 py-3">{bid.company_name}</td>
                       <td className="border-t px-4 py-3">{`${bid.first_name} ${bid.last_name}`}</td>
                       <td className="border-t px-4 py-3">${bidAmount}</td>

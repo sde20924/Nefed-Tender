@@ -10,23 +10,25 @@ const switchUser = asyncErrorHandler(async (req, res) => {
     }
 
     // Verify the user exists in the specified role table
-    const userQuery = `SELECT * FROM "${login_as}" WHERE user_id = $1`;
-    const userResult = await db.query(userQuery, [user_id]);
-    if (userResult.rows.length === 0) {
+    const userQuery = `SELECT * FROM ${login_as} WHERE user_id = ?`;
+    const [userResult] = await db.query(userQuery, [user_id]);
+
+    if (userResult.length === 0) {
         return res.status(404).json({ msg: 'User not found', success: false });
     }
 
     // Verify the manager has permission to switch to this user
     const managerCheckQuery = `
         SELECT * FROM user_manager_assignments
-        WHERE user_id = $1 AND manage_as = $2
+        WHERE user_id = ? AND manage_as = ?
     `;
-    const managerCheckResult = await db.query(managerCheckQuery, [req.user.user_id, login_as]);
-    if (managerCheckResult.rows.length === 0) {
+    const [managerCheckResult] = await db.query(managerCheckQuery, [req.user.user_id, login_as]);
+
+    if (managerCheckResult.length === 0) {
         return res.status(403).json({ msg: 'You do not have permission to switch to this user', success: false });
     }
 
-    const user = userResult.rows[0];
+    const user = userResult[0];
 
     // Generate a token for the user
     const token = generateUserToken(user.user_id, login_as, user.email);

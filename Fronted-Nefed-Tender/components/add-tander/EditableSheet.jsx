@@ -4,9 +4,12 @@ import { FaTrash } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify"; // Importing toast for notifications
 import "react-toastify/dist/ReactToastify.css";
 
-export default function EditableSheet({ headers, setHeaders, subTenders, setSubTenders }) {
- 
-
+export default function EditableSheet({
+  headers,
+  setHeaders,
+  subTenders,
+  setSubTenders,
+}) {
   // Add a new subtender
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
@@ -608,9 +611,13 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
                     {row.map((cell, cellIndex) => (
                       <td
                         key={cellIndex}
-                        className="border border-gray-300 px-4 py-2"
+                        className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
                         contentEditable
                         suppressContentEditableWarning
+                        style={{
+                          wordWrap: "break-word", // Ensure text wrapping
+                          whiteSpace: "pre-wrap", // Preserve spaces and wrap text
+                        }}
                         onBlur={(e) =>
                           handleCellEdit(
                             subTender.id,
@@ -629,8 +636,7 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
                         onClick={() => handleDeleteRow(subTender.id, rowIndex)}
                         className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center m-auto items-center space-x-1 transition-all duration-200"
                       >
-                        <FaTrash className="w-4 h-4 " />{" "}
-                        {/* Adjust the width and height if needed */}
+                        <FaTrash className="w-4 h-4 " />
                       </button>
                       {showDeleteModal && (
                         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
@@ -661,6 +667,7 @@ export default function EditableSheet({ headers, setHeaders, subTenders, setSubT
               </tbody>
             </table>
           </div>
+
           <div className="flex justify-between items-center mt-2">
             <button
               type="button"
