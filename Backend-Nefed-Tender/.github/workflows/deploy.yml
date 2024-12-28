@@ -15,6 +15,6 @@ jobs:
           server: ftp.nafedtrackandtrace.com
           username: tender_ftp@api.tender.shippingbaba.com
           password: dev2@2024
-          local-dir: ./
+          local-dir: ./Backend-Nefed-Tender/
           server-dir: /
           port: 21
