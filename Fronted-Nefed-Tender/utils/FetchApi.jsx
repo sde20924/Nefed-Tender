@@ -9,7 +9,7 @@ const callApiBase = async ({
   method = "GET",
   body,
   headers = {},
-  baseUrl = BASE_URL,
+  baseUrl = BASE_URL_LOCAL,
 }) => {
   try {
     const options = {
