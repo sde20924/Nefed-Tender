@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
 const verifyUser = asyncErrorHandler(async (req, res, next) => {
   const token = req.headers["authorization"];
-   console.log("-=-=-=-=-=-=-=-=-=-=userVerifyApi",token)
+
   if (!token) {
     return res.status(401).json({ message: "Authorization token is missing" });
   }
@@ -14,7 +14,6 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
         Authorization: token,
       },
     });
-    console.log("-=-=-=-respone ",response.data.success)
 
     if (response.data.success) {
       const userData = response.data.verifiedData;
@@ -27,7 +26,7 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
         token,
         isAdmin: userData.login_as == "admin" ? true : false,
       };
-      console.log("-=-=-=-=-=--=req.user",req.user)
+
       next();
     } else {
       res.status(401).json({ msg: "User verification failed" });
