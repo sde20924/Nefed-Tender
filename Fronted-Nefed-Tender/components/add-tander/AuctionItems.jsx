@@ -1,9 +1,9 @@
 // components/AddTender/AuctionItems.js
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
-import { authApiGet } from "@/utils/FetchApi";
-import { Formik, Form, Field, ErrorMessage } from 'formik';
-import * as Yup from 'yup';
+import { authApiGet , authApi } from "@/utils/FetchApi";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
   const [accessType, setAccessType] = useState("public");
   const [showPopup, setShowPopup] = useState(false);
@@ -13,7 +13,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
     first_name: "",
     last_name: "",
     email: "",
-    phone: "",
+    phone_number: "",
     company_name: "",
   });
   const [buyersList, setBuyersList] = useState([]);
@@ -91,7 +91,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
       first_name: "",
       last_name: "",
       email: "",
-      phone: "",
+      phone_number: "",
       company_name: "",
     });
     setShowAddBuyerFields(false);
@@ -106,15 +106,30 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-    phone: Yup.string()
+      phone_number: Yup.string()
       .matches(/^\d+$/, "Phone number must contain only numbers")
       .required("Phone number is required"),
-      company_name: Yup.string().required("Company name is required"),
+    company_name: Yup.string().required("Company name is required"),
   });
 
-  const onSubmit = (values, { resetForm }) => {
-    handleAddBuyer(values);
-    resetForm(); // Clear the form after submission
+  const onSubmit = async (values, { resetForm }) => {
+    try {
+      console.log("Submitting Values:", values);
+  
+      // API call
+      const response = await authApi("zwqaeq-vqt-ctrqw", "POST", values);
+  
+      // Handle response
+      if (response.success) {
+        console.log("Buyer added successfully:", response.data);
+        handleAddBuyer(response.data); // Update your state or perform further actions
+        resetForm(); // Clear the form
+      } else {
+        console.error("Failed to add buyer:", response.message);
+      }
+    } catch (error) {
+      console.error("Error while adding buyer:", error);
+    }
   };
   const toggleSelectBuyer = (buyer) => {
     setSelectedBuyers((prev) => {
@@ -266,12 +281,18 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                       Add Buyer Details:
                     </h4>
                     <Formik
-                      buyerDetails={buyerDetails}
-                      validationSchema={validationSchema}
+                      initialValues={{
+                        first_name: "",
+                        last_name: "",
+                        email: "",
+                        phone_number: "",
+                        company_name: "",
+                      }}
+                      // validationSchema={validationSchema}
                       onSubmit={onSubmit}
                     >
-                      {() => (
-                        <Form className="mt-4">
+                      {({handleSubmit}) => (
+                        <>
                           <div className="mb-4">
                             <label className="block text-sm font-medium mt-2">
                               First Name:
@@ -279,7 +300,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                             <Field
                               type="text"
                               name="first_name"
-                              placeholder="first_name"
+                              placeholder="First name"
                               className="w-full border border-gray-300 rounded-md p-2 mb-1"
                             />
                             <ErrorMessage
@@ -329,12 +350,12 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                             </label>
                             <Field
                               type="text"
-                              name="phone"
+                              name="phone_number"
                               placeholder="Buyer phone"
                               className="w-full border border-gray-300 rounded-md p-2 mb-1"
                             />
                             <ErrorMessage
-                              name="phone"
+                              name="phone_number"
                               component="div"
                               className="text-red-500 text-sm"
                             />
@@ -358,12 +379,13 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                           </div>
 
                           <button
-                            type="submit"
+                            // type="submit"
+                            onClick={handleSubmit}
                             className="bg-green-500 text-white px-4 py-2 rounded-md"
                           >
                             Save Buyer and Add to List
                           </button>
-                        </Form>
+      </>
                       )}
                     </Formik>
                   </div>
