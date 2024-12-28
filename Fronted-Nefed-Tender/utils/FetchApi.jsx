@@ -1,4 +1,5 @@
-const BASE_URL_LOCAL = "https://api.tender.shippingbaba.com/";
+const BASE_URL_LOCAL = "http://localhost:8002/";
+const BASE_URL = "https://api.tender.shippingbaba.com/";
 const BASE_URL_TENDER = "https://tenderapi.nafedtrackandtrace.com/";
 const BASE_URL_VESSEL = "https://tender-vessel-module.nafedtrackandtrace.com/";
 const AUTH_URL = "https://tender-auth-module.nafedtrackandtrace.com/";
@@ -42,6 +43,7 @@ const callApi = (route, method, body) =>
   callApiBase({ route, method, body, baseUrl: BASE_URL_TENDER });
 const authApi = (route, method, body) =>
   callApiBase({ route, method, body, baseUrl: AUTH_URL });
+const authApiGet = (route) => callApiBase({ route, baseUrl: AUTH_URL  });
 const callApiGet = (route) => callApiBase({ route });
 const callApiPost = (route, body) =>
   callApiBase({ route, method: "POST", body });
@@ -78,6 +80,7 @@ const viewOfferingGetApi = (route) =>
 export {
   callApi,
   authApi,
+  authApiGet,
   callApiGet,
   callApiPost,
   callApiDelete,

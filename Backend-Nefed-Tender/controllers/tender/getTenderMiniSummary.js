@@ -13,17 +13,17 @@ const getTenderMiniSummary = async (req, res) => {
       LEFT JOIN (
         SELECT tender_id, MIN(bid_amount) AS bid_amount, fob_amount, freight_amount
         FROM tender_bid_room
-        WHERE tender_id = $1
+        WHERE tender_id = ?
         GROUP BY tender_id, fob_amount, freight_amount
       ) tbr ON mt.tender_id = tbr.tender_id
-      WHERE mt.tender_id = $1;
+      WHERE mt.tender_id = ?;
     `;
 
-    const values = [tender_id];
-    const result = await db.query(query, values);
+    // Execute the query with the tender_id as a parameter
+    const [rows] = await db.execute(query, [tender_id, tender_id]);
 
     // If no result is found, return an error response
-    if (result.rows.length === 0) {
+    if (rows.length === 0) {
       return res.status(404).send({ msg: 'No tender details found for the given ID', success: false });
     }
 
@@ -31,7 +31,7 @@ const getTenderMiniSummary = async (req, res) => {
     res.status(200).send({
       msg: 'Tender details and lowest bid retrieved successfully',
       success: true,
-      data: result.rows[0],
+      data: rows[0],
     });
   } catch (error) {
     console.error('Error retrieving tender details and lowest bid:', error.message);

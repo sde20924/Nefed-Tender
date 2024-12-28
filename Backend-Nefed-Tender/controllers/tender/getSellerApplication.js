@@ -1,46 +1,62 @@
-const db = require('../../config/config'); // Database configuration (replace with your actual path)
+const db = require('../../config/config'); // MySQL database configuration
 
 const getSubmittedTenderApplications = async (req, res) => {
-  const { user_id } = req.user; // Extract `user_id` from the token
+  // Validate user authentication
+  if (!req.user || !req.user.user_id) {
+    return res.status(400).send({ msg: 'User not authenticated', success: false });
+  }
+
+  const { user_id } = req.user;
 
   try {
-    // Step 1: Get `tender_id` and `tender_title` from `manage_tender` table where `user_id` matches
-    const tenderIdsResult = await db.query(
-      `SELECT tender_id, tender_title FROM manage_tender WHERE user_id = $1`,
-      [user_id]
-    );
+    // Query to fetch tenders created by the user
+    const tenderIdsQuery = `
+      SELECT tender_id, tender_title 
+      FROM manage_tender 
+      WHERE user_id = ?
+    `;
+    const [tenderIdsResult] = await db.execute(tenderIdsQuery, [user_id]);
+    console.log("Tenders for user:", tenderIdsResult);
 
-    // If no tenders found, return 404
-    if (tenderIdsResult.rows.length === 0) {
+    // Check if no tenders are found
+    if (!tenderIdsResult.length) {
       return res.status(404).send({ msg: 'No tenders found for the user', success: false });
     }
 
-    // Extract tender_ids from the result
-    const tenderIds = tenderIdsResult.rows.map(row => row.tender_id.trim());
+    // Extract tender IDs
+    const tenderIds = tenderIdsResult.map(row => row.tender_id);
 
-    // Step 2: Get applications from `tender_application` table where `tender_id` matches and `status` is "submitted"
-    const applicationsResult = await db.query(
-      `SELECT ta.*, mt.tender_title, b.first_name, b.last_name, b.company_name
-       FROM tender_application ta
-       INNER JOIN manage_tender mt ON ta.tender_id = mt.tender_id
-       INNER JOIN buyer b ON ta.user_id = b.user_id
-       WHERE ta.tender_id = ANY($1::varchar[]) AND ta.status = 'submitted'`,
-      [tenderIds]
-    );
+    // Prepare placeholders for the IN clause
+    const placeholders = tenderIds.map(() => '?').join(',');
 
-    // If no submitted applications found, return 404
-    if (applicationsResult.rows.length === 0) {
+    // Query to fetch submitted applications for the user's tenders
+    const applicationsQuery = `
+      SELECT ta.*, mt.tender_title
+      FROM tender_application ta
+      INNER JOIN manage_tender mt ON ta.tender_id = mt.tender_id
+      WHERE ta.tender_id IN (${placeholders}) AND ta.status = 'submitted'
+    `;
+    const [applicationsResult] = await db.execute(applicationsQuery, tenderIds);
+    console.log("Applications for tenders:", applicationsResult);
+
+    // Check if no applications are found
+    if (!applicationsResult.length) {
       return res.status(404).send({ msg: 'No submitted applications found for the user tenders', success: false });
     }
 
+    // Return the result
     res.status(200).send({
       msg: 'Submitted tender applications retrieved successfully',
       success: true,
-      data: applicationsResult.rows,
+      data: applicationsResult,
     });
   } catch (error) {
     console.error('Error retrieving submitted tender applications:', error.message);
-    res.status(500).send({ msg: 'Error retrieving submitted tender applications', success: false });
+    res.status(500).send({
+      msg: 'Error retrieving submitted tender applications',
+      success: false,
+      error: error.message,
+    });
   }
 };
 

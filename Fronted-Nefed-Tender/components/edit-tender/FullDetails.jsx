@@ -51,20 +51,6 @@ const FullDetails = ({ tenderData, setTenderData }) => {
         />
       </div>
 
-      {/* Quantity */}
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          Quantity<span className="text-red-500">*</span>
-        </label>
-        <input
-          type="number"
-          value={tenderData.quantity || ""}
-          onChange={(e) => handleChange("quantity", e.target.value)}
-          placeholder="Enter Quantity"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          required
-        />
-      </div>
 
       {/* Destination Port */}
       <div className="mb-4">
@@ -112,19 +98,6 @@ const FullDetails = ({ tenderData, setTenderData }) => {
       </div>
 
       {/* Measurement Unit */}
-      <div className="mb-4">
-        <label className="block text-gray-700 text-sm font-bold mb-2">
-          Measurement Unit<span className="text-red-500">*</span>
-        </label>
-        <input
-          type="text"
-          value={tenderData.measurementUnit || ""}
-          onChange={(e) => handleChange("measurementUnit", e.target.value)}
-          placeholder="Enter Measurement Unit"
-          className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-          required
-        />
-      </div>
 
       {/* Application Start */}
       <div className="mb-4">

@@ -4,28 +4,26 @@ const asyncErrorHandler = require('../../utils/asyncErrorHandler'); // Adjusted 
 
 // Controller to get all tenders
 const getAllTendersController = asyncErrorHandler(async (req, res) => {
-  // try {
-  //   const result = await db.query(`SELECT * FROM manage_tender`);  
-  //   res.status(200).json(result.rows);
-  // } catch (error) {
-  //   console.error("Error fetching tenders:", error.message);
-  //   res.status(500).send({ msg: "Error fetching tenders", error: error.message });
-  // }
-  const tenderQuery=`SELECT * FROM manage_tender`;
-const {rows:tenders}=await db.query( tenderQuery);
-const showTender=tenders;
+  try {
+    const tenderQuery = `SELECT * FROM manage_tender`;
+    const [tenders] = await db.execute(tenderQuery); // Execute the query and get the result
 
-return res.status(200).json({
-  data: showTender,
-  msg: "tender data fetched successfully",
-  success:true
-})
-
-
+    // Send the result as the response
+    return res.status(200).json({
+      data: tenders,
+      msg: "Tender data fetched successfully",
+      success: true,
+    });
+  } catch (error) {
+    console.error("Error fetching tenders:", error.message);
+    return res.status(500).json({
+      msg: "Error fetching tender data",
+      success: false,
+      error: error.message,
+    });
+  }
 });
 
 module.exports = {
   getAllTendersController,
 };
-
-

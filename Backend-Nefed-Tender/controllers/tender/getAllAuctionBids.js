@@ -27,7 +27,6 @@ const getAllAuctionBids = async (req, res) => {
                 b.company_name,
                 b.phone_number,
                 b.email,
-                b.user_id,
                 mt.dest_port,
                 mt.auct_start_time,
                 mt.auct_end_time,
@@ -42,7 +41,7 @@ const getAllAuctionBids = async (req, res) => {
                 FROM 
                     tender_bid_room
                 WHERE 
-                    tender_id = $1
+                    tender_id = ?
                 GROUP BY 
                     user_id
             ) lb ON tbr.user_id = lb.user_id AND tbr.bid_amount = lb.lowest_bid_amount
@@ -51,18 +50,18 @@ const getAllAuctionBids = async (req, res) => {
             INNER JOIN 
                 manage_tender mt ON tbr.tender_id = mt.tender_id
             WHERE 
-                tbr.tender_id = $1;
+                tbr.tender_id = ?;
         `;
-        const values = [tender_id];
-        const result = await db.query(query, values);
+        const values = [tender_id, tender_id];
+        const [result] = await db.query(query, values);
 
         // Handle no results found
-        if (result.rows.length === 0) {
+        if (result.length === 0) {
             return res.status(404).json({ success: false, message: "No bids found for this tender." });
         }
 
         // Success response
-        res.status(200).json({ success: true, allBids: result.rows });
+        res.status(200).json({ success: true, allBids: result });
     } catch (error) {
         console.error('Error fetching bids:', error);
         res.status(500).json({ success: false, message: 'Server error. Please try again later.' });

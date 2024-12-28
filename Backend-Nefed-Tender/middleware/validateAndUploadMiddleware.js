@@ -18,7 +18,7 @@ const validateAndUploadMiddleware = asyncErrorHandler(async (req, res, next) => 
     FROM tags t
     JOIN required_documents d ON t.id = d.tag_id
     WHERE t.id = (
-      SELECT tag_id FROM ${login_as} WHERE user_id = $1
+      SELECT tag_id FROM ${login_as} WHERE user_id = ?
     )
   `;
   const { rows: requiredDocuments } = await db.query(tagQuery, [user_id]);

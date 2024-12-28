@@ -1,88 +1,138 @@
 // components/AddTender/AuctionItems.js
-import React from 'react';
-import { FaPlus, FaTrash } from "react-icons/fa";
+import React, { useEffect, useState } from "react";
+import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
+import { authApiGet } from "@/utils/FetchApi";
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
+  const [accessType, setAccessType] = useState("public");
+  const [showPopup, setShowPopup] = useState(false);
+  const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
+  const [buyerEmail, setBuyerEmail] = useState("");
+  const [buyerDetails, setBuyerDetails] = useState({
+    first_name: "",
+    last_name: "",
+    email: "",
+    phone: "",
+    company_name: "",
+  });
+  const [buyersList, setBuyersList] = useState([]);
+  const [filteredBuyers, setFilteredBuyers] = useState([]);
+  const [selectedBuyers, setSelectedBuyers] = useState([]);
 
-const AuctionItems = ({
-  auctionFields,
-  handleAddAuction,
-  handleRemoveAuction,
-  handleAuctionInputChange,
-  auctionType,
-  handleAuctionTypeChange
-}) => {
+  // call apis to get the data
+  useEffect(() => {
+    const fetchBuyers = async () => {
+      try {
+        const response = await authApiGet("ac");
+        if (response && response.data) {
+          setBuyersList(response.data);
+          console.log("resdata", response.data);
+        } else {
+          console.error("No data received from buyers API");
+        }
+      } catch (error) {
+        console.error("Error fetching buyers:", error);
+      }
+    };
+
+    fetchBuyers();
+  }, []);
+
+  const handleAccessChange = (type) => {
+    setAccessType(type);
+    if (type === "private") {
+      setShowPopup(true);
+      setShowAddBuyerFields(false); // Reset add buyer form
+    } else {
+      setShowPopup(false);
+      handlePublicAccess();
+    }
+  };
+
+  const handlePublicAccess = () => {
+    console.log("Data sent to all buyers.");
+    // Call your API or function to send data to all buyers
+  };
+
+  const handleSearchBuyer = (input) => {
+    setBuyerEmail(input);
+
+    if (input.trim() === "") {
+      // Show all buyers when the input is empty
+      setFilteredBuyers(buyersList);
+    } else {
+      // Filter buyers based on multiple fields
+      const matchingBuyers = buyersList.filter((buyer) => {
+        const searchTerm = input.toLowerCase();
+        return (
+          buyer.email.toLowerCase().includes(searchTerm) ||
+          buyer.first_name.toLowerCase().includes(searchTerm) ||
+          buyer.last_name.toLowerCase().includes(searchTerm) ||
+          buyer.company_name.toLowerCase().includes(searchTerm)
+        );
+      });
+      setFilteredBuyers(matchingBuyers);
+    }
+  };
+
+  // Show all buyers when popup is opened
+  React.useEffect(() => {
+    if (showPopup) {
+      setFilteredBuyers(buyersList);
+    }
+  }, [showPopup, buyersList]);
+
+  const handleAddBuyer = () => {
+    const newBuyer = { ...buyerDetails };
+    setBuyersList([...buyersList, newBuyer]);
+    setFilteredBuyers([...filteredBuyers, newBuyer]);
+    setBuyerDetails({
+      first_name: "",
+      last_name: "",
+      email: "",
+      phone: "",
+      company_name: "",
+    });
+    setShowAddBuyerFields(false);
+  };
+  // console.log("buyer",buyersList);
+  // console.log("buyer-selected",selectedBuyers);
+  // console.log("buyer-filtered",filteredBuyers);
+
+  const validationSchema = Yup.object().shape({
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
+    phone: Yup.string()
+      .matches(/^\d+$/, "Phone number must contain only numbers")
+      .required("Phone number is required"),
+      company_name: Yup.string().required("Company name is required"),
+  });
+
+  const onSubmit = (values, { resetForm }) => {
+    handleAddBuyer(values);
+    resetForm(); // Clear the form after submission
+  };
+  const toggleSelectBuyer = (buyer) => {
+    setSelectedBuyers((prev) => {
+      if (prev.some((b) => b.email === buyer.email)) {
+        return prev.filter((b) => b.email !== buyer.email);
+      }
+      return [...prev, buyer];
+    });
+  };
+
+  const handleSendTender = () => {
+    console.log("Tender sent to selected buyers:", selectedBuyers);
+    // API call to send tender to selected buyers
+  };
+
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
       <h2 className="text-2xl font-bold mb-4">Auction items</h2>
-
-      {auctionFields.map((auction, index) => (
-        <div key={index} className="mb-6 border-b pb-4">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="text-lg font-semibold">
-              Auction Details<span className="text-red-500">*</span>
-            </h3>
-            <button
-              type="button"
-              onClick={
-                index === 0
-                  ? handleAddAuction
-                  : () => handleRemoveAuction(index)
-              }
-              className={`${
-                index === 0 ? "bg-green-500" : "bg-red-500"
-              } text-white p-2 rounded-full`}
-            >
-              {index === 0 ? <FaPlus /> : <FaTrash />}
-            </button>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Auction Item
-              </label>
-              <input
-                type="text"
-                placeholder="Enter auction item"
-                value={auction.name}
-                onChange={(e) =>
-                  handleAuctionInputChange(
-                    index,
-                    "name",
-                    e.target.value
-                  )
-                }
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                required
-              />
-            </div>
-
-            <div>
-              <label className="block text-gray-700 text-sm font-bold mb-2">
-                Quantity of Auction
-              </label>
-              <input
-                type="number"
-                placeholder="Enter auction quantity"
-                value={auction.quantity}
-                onChange={(e) =>
-                  handleAuctionInputChange(
-                    index,
-                    "quantity",
-                    e.target.value
-                  )
-                }
-                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-                onFocus={(e) =>
-                  e.target.addEventListener("wheel", (event) =>
-                    event.preventDefault()
-                  )
-                }
-                required
-              />
-            </div>
-          </div>
-        </div>
-      ))}
 
       {/* Auction Type Section */}
       <div>
@@ -125,6 +175,210 @@ const AuctionItems = ({
             />
             <span className="ml-2">Other</span>
           </label>
+        </div>
+        <div className="mt-2">
+          <h2 className="text-lg font-bold mb-4">Access User:</h2>
+          <div className="flex items-center gap-4">
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="access"
+                value="public"
+                checked={accessType === "public"}
+                onChange={() => handleAccessChange("public")}
+                className="mr-2"
+              />
+              Public
+            </label>
+            <label className="flex items-center">
+              <input
+                type="radio"
+                name="access"
+                value="private"
+                checked={accessType === "private"}
+                onChange={() => handleAccessChange("private")}
+                className="mr-2"
+              />
+              Private
+            </label>
+          </div>
+
+          {/* Private Pop-up */}
+          {showPopup && (
+            <div className="fixed inset-0 bg-gray-800 bg-opacity-50 flex justify-center items-center z-10">
+              <div className="bg-white p-6 rounded-md shadow-lg w-96 relative">
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className="absolute top-2 right-2 text-gray-500 hover:text-black"
+                >
+                  <FaTimes />
+                </button>
+                <h3 className="text-lg font-bold mb-4">Private Access</h3>
+                <div>
+                  <label className="block text-sm font-medium mb-2">
+                    Search Buyer by Email:
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Enter buyer email"
+                    value={buyerEmail}
+                    onChange={(e) => handleSearchBuyer(e.target.value)}
+                    className="w-full border border-gray-300 rounded-md p-2 mb-2"
+                  />
+                  <ul className="bg-gray-100 border border-gray-300 rounded-md max-h-60 overflow-y-auto overflow-x-hidden mb-4">
+                    {filteredBuyers.length > 0 ? (
+                      filteredBuyers.map((buyer, index) => (
+                        <li
+                          key={index}
+                          className="px-4 py-2 flex items-center hover:bg-gray-200 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={selectedBuyers.some(
+                              (b) => b.email === buyer.email
+                            )}
+                            onChange={() => toggleSelectBuyer(buyer)}
+                            className="mr-2"
+                          />
+                          {buyer.first_name} {buyer.last_name} ({buyer.email}) -{" "}
+                          {buyer.company_name}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="px-4 py-2 text-gray-500">
+                        No matching buyers found
+                      </li>
+                    )}
+                  </ul>
+                  {filteredBuyers.length === 0 && (
+                    <button
+                      onClick={() => setShowAddBuyerFields(true)}
+                      className="bg-green-500 text-white px-4 py-2 rounded-md"
+                    >
+                      Add New Buyer
+                    </button>
+                  )}
+                </div>
+
+                {showAddBuyerFields && (
+                  <div className="mt-6">
+                    <h4 className="text-sm font-semibold">
+                      Add Buyer Details:
+                    </h4>
+                    <Formik
+                      buyerDetails={buyerDetails}
+                      validationSchema={validationSchema}
+                      onSubmit={onSubmit}
+                    >
+                      {() => (
+                        <Form className="mt-4">
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium mt-2">
+                              First Name:
+                            </label>
+                            <Field
+                              type="text"
+                              name="first_name"
+                              placeholder="first_name"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="first_name"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Last Name:
+                            </label>
+                            <Field
+                              type="text"
+                              name="last_name"
+                              placeholder="Last name"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="last_name"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Email:
+                            </label>
+                            <Field
+                              type="email"
+                              name="email"
+                              placeholder="Buyer email"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="email"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Phone:
+                            </label>
+                            <Field
+                              type="text"
+                              name="phone"
+                              placeholder="Buyer phone"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="phone"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Company Name:
+                            </label>
+                            <Field
+                              type="text"
+                              name="company_name"
+                              placeholder="Company name"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="company_name"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <button
+                            type="submit"
+                            className="bg-green-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Save Buyer and Add to List
+                          </button>
+                        </Form>
+                      )}
+                    </Formik>
+                  </div>
+                )}
+                {filteredBuyers.length > 0 && (
+                  <button
+                    onClick={handleSendTender}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
+                  >
+                    Send Tender
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -90,7 +90,6 @@ const ApplicationDetails = () => {
 
   const getBuyersDetails = async () => {
     const data = await callApiGet(`admin/get-user-info/buyer/${id}`);
-    console.log(data);
     if (data.success) {
       if (data.userDetails) {
         setNewBuyerDetails(data.userDetails);

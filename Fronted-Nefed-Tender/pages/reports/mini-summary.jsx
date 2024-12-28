@@ -47,15 +47,16 @@ const MiniSummary = () => {
         subTitle={"View summary of selected tenders"}
         title={"Tender Mini Summary"}
       />
-      <div className="container mx-auto my-4 p-6 bg-white shadow-md rounded-md">
-        <div className="mb-6 flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <span className="text-lg font-semibold">
-              Selected Tender ID: {selectedTender || "N/A"}
-            </span>
-          </div>
-          <div className="ml-auto">
-            {/* Use TenderSelect component */}
+      <div className="container mx-auto m-4 p-4 bg-white shadow-md rounded-md">
+        <div className="mb-6 bg-gray-50 rounded-md p-4">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex-1 text-center sm:text-left">
+              {selectedTender && (
+                <span className="text-lg font-semibold">
+                  Selected Tender ID: {selectedTender || "N/A"}
+                </span>
+              )}
+            </div>
             <TenderSelect
               selectedTender={selectedTender}
               onChange={handleTenderChange}
@@ -63,8 +64,12 @@ const MiniSummary = () => {
           </div>
         </div>
 
-        {loading && <p>Loading tender summary...</p>}
-        {error && <p className="text-red-500">{error}</p>}
+        {loading && (<p className="text-center text-blue-500 font-semibold">
+            Loading auction Logs...
+          </p>)}
+        {error && <p className="text-center text-red-500 font-semibold">
+            No Logs Found
+          </p>}
 
         {tenderData && (
           <div className="overflow-x-auto mt-4">

@@ -1,41 +1,40 @@
-const jwt = require('jsonwebtoken');
-const db = require('../config/config');
+const axios = require("axios");
+const { userVerifyApi } = require("../utils/external/api");
+const asyncErrorHandler = require("../utils/asyncErrorHandler");
 
-const verifyUser = async (req, res, next) => {
-  const token = req.headers['authorization'];
+const verifyUser = asyncErrorHandler(async (req, res, next) => {
+  const token = req.headers["authorization"];
+
   if (!token) {
-    return res.status(403).send({ msg: 'No token provided', success: false });
+    return res.status(401).json({ message: "Authorization token is missing" });
   }
-
   try {
-    const decoded = jwt.verify(token.replace('Bearer ', ''), process.env.JWT_SECRET);
-    req.user = decoded;
+    const response = await axios.get(`${userVerifyApi}xqwysr-taqw`, {
+      headers: {
+        Authorization: token,
+      },
+    });
 
-    // Query the database to check the user's role
-    const query = `
-    SELECT user_id, registered_as, email
-    FROM authentication
-    WHERE user_id = $1
-  `;
-    const { rows } = await db.query(query, [req.user.user_id]);
+    if (response.data.success) {
+      const userData = response.data.verifiedData;
+      console.log(
+        `User "${userData.email}" logged in as "${userData.login_as}" with user_id "${userData.user_id}"`
+      );
 
-    if (rows.length === 0) {
-      return res.status(403).send({ msg: 'Access denied. User not found.', success: false });
+      req.user = {
+        ...userData,
+        token,
+        isAdmin: userData.login_as == "admin" ? true : false,
+      };
+
+      next();
+    } else {
+      res.status(401).json({ msg: "User verification failed" });
     }
-
-    const user = rows[0];
-
-
-    if (user.registered_as !== req.user.login_as && user.email !== req.user.email) {
-      return res.status(403).send({ msg: 'Access denied. Not authorized.', success: false });
-    }
-    console.log("-=-==-==--user",user);
-
-    next();
   } catch (error) {
-    console.error('Error in verifyUser middleware:', error);
-    return res.status(500).send({ msg: 'Failed to authenticate token', success: false });
+    console.log(error);
+    res.status(401).json(error.response.data);
   }
-};
+});
 
 module.exports = verifyUser;

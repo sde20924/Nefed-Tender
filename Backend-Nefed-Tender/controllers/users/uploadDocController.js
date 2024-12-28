@@ -13,7 +13,7 @@ const uploadDocController = asyncErrorHandler(async (req, res) => {
   // Insert or update document URLs in user_documents table
   const insertPromises = Object.entries(uploadedFiles).map(async ([docName, docUrl]) => {
     const tagQuery = `
-      SELECT tag_id FROM ${login_as} WHERE user_id = $1
+      SELECT tag_id FROM ${login_as} WHERE user_id = ?
     `;
     const { rows } = await db.query(tagQuery, [user_id]);
 
@@ -25,7 +25,7 @@ const uploadDocController = asyncErrorHandler(async (req, res) => {
 
     // Check if the document already exists
     const checkDocQuery = `
-      SELECT * FROM user_documents WHERE user_id = $1 AND tag_id = $2 AND doc_name = $3
+      SELECT * FROM user_documents WHERE user_id = ? AND tag_id = ? AND doc_name = ?
     `;
     const { rows: existingDocRows } = await db.query(checkDocQuery, [user_id, tag_id, docName]);
 
@@ -34,7 +34,7 @@ const uploadDocController = asyncErrorHandler(async (req, res) => {
       const updateDocQuery = `
         UPDATE user_documents
         SET doc_url = $4
-        WHERE user_id = $1 AND tag_id = $2 AND doc_name = $3
+        WHERE user_id = ? AND tag_id = ? AND doc_name = ?
       `;
       await db.query(updateDocQuery, [user_id, tag_id, docName, docUrl]);
     } else {
@@ -53,7 +53,7 @@ const uploadDocController = asyncErrorHandler(async (req, res) => {
   const updateStatusQuery = `
     UPDATE ${login_as}
     SET status = 'pending'
-    WHERE user_id = $1
+    WHERE user_id = ?
   `;
   await db.query(updateStatusQuery, [user_id]);
 

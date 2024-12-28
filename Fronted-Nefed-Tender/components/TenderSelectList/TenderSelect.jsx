@@ -31,27 +31,30 @@ const TenderSelect = ({ selectedTender, onChange }) => {
 
   return (
     <div className="ml-4">
-      {error && <p className="text-red-500">{error}</p>}
-      <select
-        id="tenderDropdown"
-        value={selectedTender}
-        onChange={onChange}
-        className="block w-80 pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
-      >
-        <option value="">Select Tender</option>
-        {Array.isArray(tenders) && tenders.length > 0 ? (
-          tenders.map((tender) => (
-            <option key={tender.tender_id} value={tender.tender_id}>
-              {tender.tender_title.trim()}
-            </option>
-          ))
-        ) : (
-          <option value="" disabled>
-            No tenders available
-          </option>
-        )}
-      </select>
-    </div>
+  {error && <p className="text-red-500 text-sm italic mb-2">{error}</p>}
+  <select
+    id="tenderDropdown"
+    value={selectedTender}
+    onChange={onChange}
+    className="block w-80 pl-4 pr-10 py-3 bg-white text-gray-700 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm hover:border-gray-400 transition ease-in-out duration-200"
+  >
+    <option value="" className="text-gray-400">
+      Select Tender
+    </option>
+    {Array.isArray(tenders) && tenders.length > 0 ? (
+      tenders.map((tender) => (
+        <option key={tender.tender_id} value={tender.tender_id}>
+          {tender.tender_title.trim()}
+        </option>
+      ))
+    ) : (
+      <option value="" disabled>
+        No tenders available
+      </option>
+    )}
+  </select>
+</div>
+
   );
 };
 
