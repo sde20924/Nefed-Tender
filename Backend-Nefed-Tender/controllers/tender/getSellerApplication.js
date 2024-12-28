@@ -9,12 +9,14 @@ const getSubmittedTenderApplications = async (req, res) => {
   const { user_id } = req.user;
 
   try {
+    // Query to fetch tenders created by the user
     const tenderIdsQuery = `
       SELECT tender_id, tender_title 
       FROM manage_tender 
       WHERE user_id = ?
     `;
     const [tenderIdsResult] = await db.execute(tenderIdsQuery, [user_id]);
+    console.log("Tenders for user:", tenderIdsResult);
 
     // Check if no tenders are found
     if (!tenderIdsResult.length) {
@@ -24,16 +26,18 @@ const getSubmittedTenderApplications = async (req, res) => {
     // Extract tender IDs
     const tenderIds = tenderIdsResult.map(row => row.tender_id);
 
-
+    // Prepare placeholders for the IN clause
     const placeholders = tenderIds.map(() => '?').join(',');
-    const applicationsQuery = `mbmbbbnnnn
-      SELECT ta.*, mt.tender_title, b.first_name, b.last_name, b.company_name
+
+    // Query to fetch submitted applications for the user's tenders
+    const applicationsQuery = `
+      SELECT ta.*, mt.tender_title
       FROM tender_application ta
       INNER JOIN manage_tender mt ON ta.tender_id = mt.tender_id
-      INNER JOIN buyer b ON ta.user_id = b.user_id
       WHERE ta.tender_id IN (${placeholders}) AND ta.status = 'submitted'
     `;
     const [applicationsResult] = await db.execute(applicationsQuery, tenderIds);
+    console.log("Applications for tenders:", applicationsResult);
 
     // Check if no applications are found
     if (!applicationsResult.length) {
