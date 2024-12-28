@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { callApiGet, callApiPost } from '../../utils/FetchApi'; 
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
-import { toast, ToastContainer } from 'react-toastify';
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+
 
 const Modal = ({ isOpen, onClose, onSubmit }) => {
   const [reason, setReason] = useState('');
@@ -45,7 +45,7 @@ const Modal = ({ isOpen, onClose, onSubmit }) => {
           </button>
         </div>
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

@@ -6,8 +6,8 @@ import * as Yup from "yup";
 import Admin from "@/layouts/Admin";
 import { useRouter } from "next/router";
 import { callApi } from "@/utils/FetchApi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 // Validation schema
 const validationSchema = Yup.object({

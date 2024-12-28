@@ -8,8 +8,8 @@ import { FaPlus, FaTrash } from "react-icons/fa";
 import { useDropzone } from "react-dropzone";
 import { DragDropContext } from "react-beautiful-dnd";
 import { callApiPost } from "@/utils/FetchApi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 import EditableSheet from "@/components/add-tander/EditableSheet";
 import TendersDetails from "@/components/add-tander/TenderDetails";
 import ImageUpload from "@/components/add-tander/ImageUpload";
@@ -483,7 +483,7 @@ const AddTender = () => {
         
       </div>
 
-      <ToastContainer />
+      
     </>
   );
 };

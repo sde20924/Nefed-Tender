@@ -3,8 +3,8 @@ import React from "react";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
 import { callApi } from "@/utils/FetchApi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 // Yup validation schema for OTP
 const OTPVerificationSchema = Yup.object().shape({

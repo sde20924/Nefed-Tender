@@ -8,8 +8,8 @@ import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import StepIndicator from '@/components/chartered-components/StepIndicator';
 import { vesselCallApi } from '../../utils/FetchApi.jsx';
-import { toast, ToastContainer } from 'react-toastify';
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+
 
 function StepForm() {
     const [currentPage, setCurrentPage] = useState(1);
@@ -206,7 +206,7 @@ function StepForm() {
                     </div>
                 </div>
             </div>
-            <ToastContainer />
+            
         </div>
     );
 }

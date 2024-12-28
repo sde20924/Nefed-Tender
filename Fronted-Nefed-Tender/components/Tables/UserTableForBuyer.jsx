@@ -7,8 +7,8 @@ import DataNotAvailable from "../DataNotAvailable/DataNotAvailable";
 import { useDispatch, useSelector } from "react-redux";
 import { blockBuyer, deleteBuyer, updateMSG } from "@/store/slices/buyersSlice";
 import LoginButton from "../Buttons/LoginButton";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const UserTable = ({ users }) => {
   const router = useRouter();
@@ -207,7 +207,7 @@ const UserTable = ({ users }) => {
           </button>
         ))}
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

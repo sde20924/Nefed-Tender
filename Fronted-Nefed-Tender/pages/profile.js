@@ -12,8 +12,8 @@ import {
 } from "@/store/slices/profileSlice";
 import { useDispatch, useSelector } from "react-redux";
 import UploadFilesModal from "@/components/Modal/UploadFilesModal";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 export default function ProfilePage() {
   const rating = {
@@ -483,7 +483,6 @@ export default function ProfilePage() {
             </div>
           </div>
         </div>
-        <ToastContainer/>
       </main>
     </>
   );

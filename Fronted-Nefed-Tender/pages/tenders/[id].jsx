@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { callApiGet, callApiPost, uploadDocApi } from "@/utils/FetchApi"; // Import API call functions
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+
 
 const TenderDetail = () => {
   const router = useRouter();
@@ -476,7 +476,7 @@ const TenderDetail = () => {
     </div>
 
       {/* Toast Container */}
-      <ToastContainer />
+      
     </>
   );
 };

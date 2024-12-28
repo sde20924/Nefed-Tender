@@ -427,7 +427,7 @@ const BuyerRegistrationForm = () => {
           </Formik>
         )}
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

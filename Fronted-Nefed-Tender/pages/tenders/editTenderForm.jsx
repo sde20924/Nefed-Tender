@@ -3,9 +3,9 @@
 import React, { useCallback, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
 import "react-quill/dist/quill.snow.css";
-import "react-toastify/dist/ReactToastify.css";
+
 import "react-datepicker/dist/react-datepicker.css";
 
 import UserDashboard from "@/layouts/UserDashboard";
@@ -309,7 +309,7 @@ const EditTenderForm = () => {
         </form>
       </div>
 
-      <ToastContainer />
+      
     </>
   );
 };

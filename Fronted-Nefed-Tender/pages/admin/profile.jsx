@@ -13,8 +13,8 @@ import {
   updateMSG,
   updateProfile,
 } from "@/store/slices/profileSlice";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 function ProfilePage() {
   const [isEditable, setIsEditable] = useState(false);
@@ -255,7 +255,7 @@ function ProfilePage() {
         </div>
         
       </main>
-      <ToastContainer />
+      
     </>
   );
 }

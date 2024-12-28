@@ -6,8 +6,8 @@ import UserDashboard from "@/layouts/UserDashboard";
 import { callApi, callApiGet } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const TagDetails = () => {
   const [allBuyers, setAllBuyers] = useState(null);
@@ -127,7 +127,7 @@ const TagDetails = () => {
         onDelete={handleDeleteUsers}
         regular={id === "2" ? true : false}
       />
-      <ToastContainer />
+      
     </div>
   );
 };

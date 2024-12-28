@@ -6,8 +6,8 @@ import * as Yup from "yup";
 import Auth from "@/layouts/Auth";
 import { callApi } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
-import { toast,ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const ForgetPassword = () => {
   const router = useRouter();

@@ -6,8 +6,8 @@ import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { useDispatch, useSelector } from "react-redux";
 import { addManager, getAllManagers } from "@/store/slices/managersSlice";
 import ConfirmationDialog from "../DialogBox/DialogBox";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const validationSchema = Yup.object({
   first_name: Yup.string()

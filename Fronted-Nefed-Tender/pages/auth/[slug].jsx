@@ -6,8 +6,8 @@ import Auth from "@/layouts/Auth";
 import { useRouter } from "next/router";
 import { authApi } from "@/utils/FetchApi";
 Auth
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 import SetNewPasswordForm from "@/components/OTPVerification/SetNewPasswordForm";
 const validationSchema = Yup.object({
     email: Yup.string()
@@ -305,7 +305,7 @@ export default function Login() {
                         </div>
                     </div>
                 </div>
-            <ToastContainer />
+            
             </div>
         </>
     );

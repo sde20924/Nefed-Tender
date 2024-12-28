@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { FaTrash } from "react-icons/fa";
-import { toast, ToastContainer } from "react-toastify"; // Importing toast for notifications
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify"; // Importing toast for notifications
+
 
 export default function EditableSheet({
   headers,
@@ -742,7 +742,7 @@ export default function EditableSheet({
       )}
 
       {/* ToastContainer for notifications */}
-      <ToastContainer />
+      
     </div>
   );
 }

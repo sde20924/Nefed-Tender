@@ -10,8 +10,8 @@ import DocumentViews from "@/components/DocumentsView/DocumentsView";
 import { useDispatch, useSelector } from "react-redux";
 import { acceptSeller, rejectSeller } from "@/store/slices/sellerSlice";
 import { getAllApprovedSellers, getAllRejectedSellers } from "@/utils/getData";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const ApplicationDetails = () => {
   const router = useRouter();
@@ -221,7 +221,7 @@ const ApplicationDetails = () => {
           }}
         />
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

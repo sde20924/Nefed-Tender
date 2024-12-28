@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import { callApiGet, callApiPost } from '../../utils/FetchApi'; // Assuming both methods are exported
-import { toast, ToastContainer } from 'react-toastify';
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from 'react-toastify';
+
 
 const EditHomepage = () => {
   // State variables to hold the title, subheading, and description
@@ -109,7 +109,7 @@ const EditHomepage = () => {
           </div>
         </form>
       </div>
-      <ToastContainer />
+      
     </>
   );
 };

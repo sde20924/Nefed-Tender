@@ -4,8 +4,8 @@ import React, { useState, useEffect } from "react";
 import { callApiGet , callApiPost ,callApiDelete } from "@/utils/FetchApi";
 import moment from "moment";
 import { useRouter } from 'next/router';
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const Tenders = () => {
   const router = useRouter();
@@ -196,7 +196,7 @@ const Tenders = () => {
       </table>
     </div>
   </div>
-  <ToastContainer />
+  
 </div>
 
     </>

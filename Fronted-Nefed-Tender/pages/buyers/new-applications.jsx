@@ -7,8 +7,8 @@ import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addAllNewBuyers } from "@/store/slices/buyersSlice";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const NewApplications = () => {
   const router = useRouter();
@@ -178,7 +178,7 @@ const NewApplications = () => {
       {/* TABLE CODE START */}
 
       {/* TABLE CODE END*/}
-      <ToastContainer />
+      
     </div>
   );
 };

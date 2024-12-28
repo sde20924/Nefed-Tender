@@ -7,8 +7,8 @@ import { useRouter } from "next/router";
 import DataNotAvailable from "@/components/DataNotAvailable/DataNotAvailable";
 import LoadingScreen from "@/components/LoadingScreen/LoadingScreen";
 import { callApi, callApiGet } from "@/utils/FetchApi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const validationSchema = Yup.object({
   first_name: Yup.string()
@@ -312,7 +312,7 @@ const UpdateManagers = () => {
           </form>
         </div>
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

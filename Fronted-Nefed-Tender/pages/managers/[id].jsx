@@ -5,8 +5,8 @@ import UserDashboard from "@/layouts/UserDashboard";
 import { callApiGet } from "@/utils/FetchApi";
 import { useRouter } from "next/router";
 import React, { useEffect, useState } from "react";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const user = {
   id: 1,
@@ -105,7 +105,7 @@ const ManagersDetails = () => {
           </div>
         </div>
       </div>
-      <ToastContainer />
+      
     </>
   );
 };

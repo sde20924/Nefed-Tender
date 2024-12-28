@@ -12,8 +12,8 @@ import {
   updateMSGSeller,
 } from "@/store/slices/sellerSlice";
 import LoginButton from "../Buttons/LoginButton";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const UserTableForSeller = ({ users }) => {
   const router = useRouter();

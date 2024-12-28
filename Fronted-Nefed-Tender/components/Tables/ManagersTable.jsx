@@ -12,8 +12,8 @@ import {
   updateMSGManager,
 } from "@/store/slices/managersSlice";
 import LoginButton from "../Buttons/LoginButton";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 const ManagersTable = ({ users }) => {
   const router = useRouter();
   const [isDialogOpenDlt, setIsDialogOpenDlt] = useState(false);
@@ -218,7 +218,7 @@ useEffect(()=>{
           </button>
         ))}
       </div>
-       <ToastContainer />
+       
     </div>
   );
 };

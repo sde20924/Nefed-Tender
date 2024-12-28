@@ -5,8 +5,8 @@ import * as Yup from "yup";
 import { useState } from "react";
 import { AiFillEye, AiFillEyeInvisible } from "react-icons/ai";
 import { callApi } from "@/utils/FetchApi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const SetNewPasswordForm = ({ data, closeSetPass }) => {
   const [showPassword, setShowPassword] = useState(false);
@@ -133,7 +133,7 @@ const SetNewPasswordForm = ({ data, closeSetPass }) => {
           </div>
         </form>
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

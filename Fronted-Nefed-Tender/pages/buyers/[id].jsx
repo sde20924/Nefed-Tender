@@ -11,8 +11,8 @@ import { callApi, callApiGet } from "@/utils/FetchApi";
 import LoadingScreen from "@/components/LoadingScreen/LoadingScreen";
 import DataNotAvailable from "@/components/DataNotAvailable/DataNotAvailable";
 import DocumentViews from "@/components/DocumentsView/DocumentsView";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const validationSchema = Yup.object({
   name: Yup.string()
@@ -326,7 +326,7 @@ const BuyersDetails = () => {
           <IndividualManagers managers={managers} />
         </div>
       </div>
-      <ToastContainer />
+      
     </div>
   );
 };

@@ -11,8 +11,8 @@ import {
   getAllNewSellers,
   updateMSGSeller,
 } from "@/store/slices/sellerSlice";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const NewApplications = () => {
   const router = useRouter();
@@ -181,7 +181,7 @@ const NewApplications = () => {
         </div>
       )}
       {/* TABLE CODE END*/}
-      < ToastContainer />
+      
     </div>
   );
 };

@@ -1,8 +1,8 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import { toast } from "react-toastify";
+
 
 const UserDropdown = () => {
   const router = useRouter();
@@ -75,7 +75,7 @@ const UserDropdown = () => {
           </button>
         </div>
       )}
-      <ToastContainer />
+      
     </div>
   );
 };

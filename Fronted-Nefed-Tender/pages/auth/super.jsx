@@ -7,7 +7,7 @@ import Admin from "@/layouts/Admin";
 import { useRouter } from "next/router";
 import { callApi } from "@/utils/FetchApi";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css"; // Import Toastify CSS
+ // Import Toastify CSS
 
 // Validation schema
 const validationSchema = Yup.object({
@@ -154,7 +154,7 @@ export default function SuperAdmin() {
           </div>
         </div>
       </div>
-      <ToastContainer />
+      
     </>
   );
 }
