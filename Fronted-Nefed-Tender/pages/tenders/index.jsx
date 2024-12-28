@@ -32,9 +32,7 @@ const Tenders = () => {
   const handleActionClick = (tenderId) => {
     // Toggle the menu for the clicked tender
     setSelectedTenderId((prevSelectedId) => (prevSelectedId === tenderId ? null : tenderId));
-  };
-
-  
+  };  
 
   const handleMenuOptionClick = async (option, tender) => {
     if (option === "edit") {
@@ -99,11 +97,7 @@ const Tenders = () => {
       }
     }
     setSelectedTenderId(null); // Close the menu after the option is selected
-  };
-  
-  
-
-  
+  };  
 
   return (
     <>
@@ -148,7 +142,7 @@ const Tenders = () => {
               <td className="px-4 py-4 whitespace-nowrap text-sm relative">
                 <button
                   onClick={() => handleActionClick(tender.tender_id)}
-                  className="bg-gray-200 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400"
+                  className="bg-gray-200 px-4 py-2 rounded-full text-sm font-medium hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-gray-400 z-20"
                 >
                   Action
                 </button>
