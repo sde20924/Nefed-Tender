@@ -6,6 +6,7 @@ import { callApiGet, callApiPost, uploadDocApi } from "@/utils/FetchApi"; // Imp
 import { ToastContainer, toast } from "react-toastify";
 
 
+
 const TenderDetail = () => {
   const router = useRouter();
   const { id } = router.query; // Extract the tender ID from the route
@@ -25,6 +26,7 @@ const TenderDetail = () => {
           const tenderData = await callApiGet(`tender/${id}`);
           setEditableSheet(tenderData.data)
           setTender(tenderData.data);
+          console.log("dnhjufnjdbnjd",tenderData)
           calculateTimeLeft(tenderData.data.app_end_time);
 
           // Fetch applications from server to check if any application is submitted
@@ -44,6 +46,7 @@ const TenderDetail = () => {
             const uploadedFilesData = await callApiGet(
               `tender/${id}/files-status`
             );
+            console.log("-=-=-=-=-=uploadfile -=-=-=-=-=-=",uploadedFilesData)
             if (uploadedFilesData.success) {
               setUploadedFiles(uploadedFilesData.data); // Set the uploaded files from the server
             }
@@ -97,10 +100,10 @@ const TenderDetail = () => {
         if (response && response.uploaded_data) {
           const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
           const tenderDocId = tender_doc_id; // Get the tender_doc_id
-
+          const tempDocId=response.uploaded_data.temp_doc_id;
           const newUploadedFiles = [
             ...uploadedFiles,
-            { tender_doc_id: tenderDocId, doc_url: fileUrl },
+            { tender_doc_id: tenderDocId, doc_url: fileUrl,TempDocId:tempDocId },
           ];
           setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
 
@@ -132,14 +135,14 @@ const TenderDetail = () => {
     }
 
     try {
+      console.log(uploadedFiles)
       const apiResponse = await callApiPost("submit-file-url", {
-        file_url: uploadedFiles,
+        file_url: uploadedFiles[0]?.doc_url,
         tender_id: id,
         status: "draft",
         tender_application_id: uploadedFiles[0]?.tender_application_id || null,
-        tender_user_doc_id: uploadedFiles[0]?.tender_user_doc_id || null,
+        tender_user_doc_id: uploadedFiles[0]?.temp_doc_id || null,
       }); // Send all uploaded file URLs to your backend
-
       if (apiResponse.success) {
         toast.success("Your application has been saved successfully.");
         setIsApplicationSaved(true); // Set the application as saved
@@ -160,6 +163,7 @@ const TenderDetail = () => {
     }
 
     try {
+      console.log(uploadedFiles)
       const apiResponse = await callApiPost("submit-file-url", {
         file_url: uploadedFiles,
         tender_id: id,
