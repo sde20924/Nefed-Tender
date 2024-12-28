@@ -17,6 +17,8 @@ import QuickOptions from "@/components/edit-tender/QuickOptions";
 import EMDDetails from "@/components/edit-tender/EMDDetails";
 import Attachments from "@/components/edit-tender/Attachments";
 import FullDetails from "@/components/edit-tender/FullDetails";
+import EditTAble from "@/components/edit-tender/EditTAble";
+
 // import CustomFormBuilder from "@/components/edit-tender/CustomForm"; // Commented out as per previous instructions
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
@@ -33,6 +35,8 @@ const initialFields = [
 ];
 
 const EditTenderForm = () => {
+  const [headers, setHeaders] = useState([]);
+  const [subTenders, setSubTenders] = useState([]);
   const router = useRouter();
   const { id } = router.query;
 
@@ -100,6 +104,8 @@ const EditTenderForm = () => {
         try {
           const response = await callApiGet(`tender/${id}`);
           const data = response.data || {};
+          setHeaders(response.data.headers);
+          setSubTenders(response.data.sub_tenders);
 
           setTenderData((prev) => ({
             ...prev,
@@ -115,7 +121,15 @@ const EditTenderForm = () => {
                   ...att,
                   file: null, // Handle existing files as needed
                 }))
-              : [{ key: "", extension: "", maxFileSize: "", label: "", file: null }],
+              : [
+                  {
+                    key: "",
+                    extension: "",
+                    maxFileSize: "",
+                    label: "",
+                    file: null,
+                  },
+                ],
             currency: data.currency?.trim() || "INR(₹)",
             startingPrice: data.start_price?.toString() || "",
             quantity: data.qty?.toString() || "",
@@ -146,7 +160,6 @@ const EditTenderForm = () => {
             timerExtendedValue: data.timer_ext_val?.toString() || "",
             qtySplittingCriteria: data.qty_split_criteria?.trim() || "",
             counterOfferTimer: data.counter_offr_accept_timer?.toString() || "",
-
           }));
 
           console.log("attachments data here :", tenderData.attachments);
@@ -212,6 +225,7 @@ const EditTenderForm = () => {
     try {
       const response = await callApiPost(`update-tender/${id}`, formData);
       console.log("responses: ", response);
+      setData(response.data);
       toast.success(response.msg);
       router.push("/tenders");
     } catch (error) {
@@ -297,6 +311,13 @@ const EditTenderForm = () => {
             </div>
           </div>
 
+          <EditTAble
+            headers={headers}
+            setHeaders={setHeaders}
+            subTenders={subTenders}
+            setSubTenders={setSubTenders}
+          />
+
           {/* Sticky Submit Button */}
           <div className="fixed bottom-8 right-4">
             <button
@@ -308,8 +329,6 @@ const EditTenderForm = () => {
           </div>
         </form>
       </div>
-
-      
     </>
   );
 };
