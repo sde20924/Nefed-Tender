@@ -15,13 +15,15 @@ const TenderDetail = () => {
   const [uploadedFiles, setUploadedFiles] = useState([]); // State to keep track of uploaded files
   const [isApplicationSubmitted, setIsApplicationSubmitted] = useState(false); // State to track if the application is submitted
   const [isApplicationSaved, setIsApplicationSaved] = useState(false); // Track if the application is saved
-
+  const [iseditableSheet, setEditableSheet] = useState(null);
+  const [editedData, setEditedData] = useState({});
   useEffect(() => {
     if (id) {
       const fetchTenderDetails = async () => {
         try {
           // Fetch tender details by ID
           const tenderData = await callApiGet(`tender/${id}`);
+          setEditableSheet(tenderData.data)
           setTender(tenderData.data);
           calculateTimeLeft(tenderData.data.app_end_time);
 
@@ -180,28 +182,19 @@ const TenderDetail = () => {
   };
 
   // state to store the table data 
-
-  const editableSheet = {
-    headers: ["S.No", "Item", "Item Description", "UOM", "Total Qty", "Rate"],
-    sub_tenders: [
-      {
-        id: 1,
-        name: "dsdsd",
-        rows: [
-          ["1.1", "dsds", "dsds", "ds", "", ""],
-          ["1.2", "dsds", "dsds", "ds", "", ""],
-        ],
+  const handleInputChange = (subTenderId, rowIndex, cellIndex, value) => {
+    setEditedData((prev) => ({
+      ...prev,
+      [subTenderId]: {
+        ...(prev[subTenderId] || {}),
+        [rowIndex]: {
+          ...(prev[subTenderId]?.[rowIndex] || {}),
+          [cellIndex]: value,
+        },
       },
-      {
-        id: 2,
-        name: "dsds",
-        rows: [
-          ["2.1", "dsds", "dsds", "ds", "", ""],
-          ["2.2", "dsds", "dsds", "ds", "", ""],
-        ],
-      },
-    ],
+    }));
   };
+
 
   if (!tender) {
     return <p>Loading...</p>; // Show loading state while fetching data
@@ -419,48 +412,68 @@ const TenderDetail = () => {
         {/*  */}
       </div>
       <div className="space-y-8">
-          {editableSheet.sub_tenders.map((subTender) => (
-            <div
-              key={subTender.id}
-              className="border border-gray-300 p-4 rounded"
-            >
-              <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
-              <div className="overflow-x-auto">
-                <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
-                  <thead className="bg-blue-100 text-gray-700">
-                    <tr>
-                      {editableSheet.headers.map((header, index) => (
-                        <th
-                          key={index}
-                          className="border border-gray-300 px-4 py-2 font-bold"
-                        >
-                          {header}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {subTender.rows.map((row, rowIndex) => (
-                      <tr
-                        key={rowIndex}
-                        className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+      {iseditableSheet.sub_tenders.map((subTender) => (
+        <div
+          key={subTender.id}
+          className="border border-gray-300 p-4 rounded"
+        >
+          <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
+          <div className="overflow-x-auto">
+            <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+              <thead className="bg-blue-100 text-gray-700">
+                <tr>
+                  {iseditableSheet.headers.map((header, index) => (
+                    <th
+                      key={index}
+                      className="border border-gray-300 px-4 py-2 font-bold"
+                    >
+                      {header.table_head}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {subTender.rows.map((row, rowIndex) => (
+                  <tr
+                    key={rowIndex}
+                    className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+                  >
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
                       >
-                        {row.map((cell, cellIndex) => (
-                          <td
-                            key={cellIndex}
-                            className="border border-gray-300 px-4 py-2"
-                          >
-                            {cell}
-                          </td>
-                        ))}
-                      </tr>
+                        {cell.type === "edit" ? (
+                          <input
+                            type="text"
+                            value={
+                              editedData[subTender.id]?.[rowIndex]?.[cellIndex] ??
+                              cell.data ??
+                              ""
+                            }
+                            onChange={(e) =>
+                              handleInputChange(
+                                subTender.id,
+                                rowIndex,
+                                cellIndex,
+                                e.target.value
+                              )
+                            }
+                            className="  rounded px-2 py-1"
+                          />
+                        ) : (
+                          cell.data
+                        )}
+                      </td>
                     ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
+      ))}
+    </div>
 
       {/* Toast Container */}
       <ToastContainer />

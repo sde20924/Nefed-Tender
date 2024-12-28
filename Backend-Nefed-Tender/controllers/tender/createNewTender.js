@@ -154,8 +154,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         let subtenderId;
         if (subTenderResult.length === 0) {
           const [newSubTender] = await db.query(
-            `INSERT INTO subtender (subtender_name) VALUES (?)`,
-            [name]
+            `INSERT INTO subtender (subtender_name,tender_id) VALUES (?,?)`,
+            [name,tender_id]
           );
           subtenderId = newSubTender.insertId;
         } else {
@@ -163,24 +163,32 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         }
 
         // Insert rows into `seller_header_row_data` table
-        for (const row of rows) {
+        for (const [rowIndex, row] of rows.entries()) { 
           for (let j = 0; j < row.length; j++) {
             const cellData = row[j];
-
             await db.query(
-              `INSERT INTO seller_header_row_data (header_id, row_data, subtender_id, seller_id, \`order\`, type)
-               VALUES (?, ?, ?, ?, ?, ?)`,
+              `INSERT INTO seller_header_row_data (
+                header_id, 
+                row_data, 
+                subtender_id, 
+                seller_id, 
+                \`order\`, 
+                type, 
+                row_number
+              ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
-                headerId, // Store the header_id
-                cellData, // Insert the individual row element as `row_data`
-                subtenderId, // Link the row to the correct subtender
-                user_id, // Assuming seller_id is the user_id
-                j + 1, // Assign an order to the element in the row (1, 2, 3,...)
-                cellData === "" || cellData === null ? "edit" : "view", // Check if the cell is editable or not
+                headerId, 
+                cellData, 
+                subtenderId, 
+                user_id,
+                j + 1, 
+                cellData === "" || cellData === null ? "edit" : "view", 
+                rowIndex + 1 
               ]
             );
           }
         }
+        
       }
     }
 
