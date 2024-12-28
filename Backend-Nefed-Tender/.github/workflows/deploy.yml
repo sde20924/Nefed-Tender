@@ -1,0 +1,20 @@
+name: Tender Module Deploy
+on:
+  push:
+    branches:
+      - main
+jobs:
+  ftp-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Tender Module Deploy
+        uses: SamKirkland/FTP-Deploy-Action@4.3.0
+        with:
+          server: ftp.nafedtrackandtrace.com
+          username: tender_ftp@api.tender.shippingbaba.com
+          password: dev2@2024
+          local-dir: ./
+          server-dir: /
+          port: 21
