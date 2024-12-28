@@ -64,6 +64,7 @@ export default function EditableSheet({
 
   // Add a new column to the table
   // Show Modal when adding a column
+  const [newColumnName,setNewColumnName] = useState("")
   const handleAddColumn = () => {
     setShowModal(true); // Open modal
   };

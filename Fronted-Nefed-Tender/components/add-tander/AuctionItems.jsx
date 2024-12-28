@@ -1,37 +1,43 @@
 // components/AddTender/AuctionItems.js
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
-
+import { authApiGet , authApi } from "@/utils/FetchApi";
+import { Formik, Form, Field, ErrorMessage } from "formik";
+import * as Yup from "yup";
 const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
   const [accessType, setAccessType] = useState("public");
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
   const [buyerDetails, setBuyerDetails] = useState({
-    firstName: "",
-    lastName: "",
+    first_name: "",
+    last_name: "",
     email: "",
-    phone: "",
-    companyName: "",
+    phone_number: "",
+    company_name: "",
   });
-  const [buyersList, setBuyersList] = useState([
-    {
-      firstName: "John",
-      lastName: "Doe",
-      email: "john@example.com",
-      phone: "1234567890",
-      companyName: "Acme Corp",
-    },
-    {
-      firstName: "Jane",
-      lastName: "Smith",
-      email: "jane@example.com",
-      phone: "0987654321",
-      companyName: "Global Inc",
-    },
-  ]);
+  const [buyersList, setBuyersList] = useState([]);
   const [filteredBuyers, setFilteredBuyers] = useState([]);
   const [selectedBuyers, setSelectedBuyers] = useState([]);
+
+  // call apis to get the data
+  useEffect(() => {
+    const fetchBuyers = async () => {
+      try {
+        const response = await authApiGet("ac");
+        if (response && response.data) {
+          setBuyersList(response.data);
+          console.log("resdata", response.data);
+        } else {
+          console.error("No data received from buyers API");
+        }
+      } catch (error) {
+        console.error("Error fetching buyers:", error);
+      }
+    };
+
+    fetchBuyers();
+  }, []);
 
   const handleAccessChange = (type) => {
     setAccessType(type);
@@ -51,18 +57,25 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
 
   const handleSearchBuyer = (input) => {
     setBuyerEmail(input);
+
     if (input.trim() === "") {
       // Show all buyers when the input is empty
       setFilteredBuyers(buyersList);
     } else {
-      // Filter buyers based on input
-      const matchingBuyers = buyersList.filter((buyer) =>
-        buyer.email.toLowerCase().includes(input.toLowerCase())
-      );
+      // Filter buyers based on multiple fields
+      const matchingBuyers = buyersList.filter((buyer) => {
+        const searchTerm = input.toLowerCase();
+        return (
+          buyer.email.toLowerCase().includes(searchTerm) ||
+          buyer.first_name.toLowerCase().includes(searchTerm) ||
+          buyer.last_name.toLowerCase().includes(searchTerm) ||
+          buyer.company_name.toLowerCase().includes(searchTerm)
+        );
+      });
       setFilteredBuyers(matchingBuyers);
     }
   };
-  
+
   // Show all buyers when popup is opened
   React.useEffect(() => {
     if (showPopup) {
@@ -75,19 +88,49 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
     setBuyersList([...buyersList, newBuyer]);
     setFilteredBuyers([...filteredBuyers, newBuyer]);
     setBuyerDetails({
-      firstName: "",
-      lastName: "",
+      first_name: "",
+      last_name: "",
       email: "",
-      phone: "",
-      companyName: "",
+      phone_number: "",
+      company_name: "",
     });
     setShowAddBuyerFields(false);
   };
   // console.log("buyer",buyersList);
   // console.log("buyer-selected",selectedBuyers);
   // console.log("buyer-filtered",filteredBuyers);
-  
 
+  const validationSchema = Yup.object().shape({
+    first_name: Yup.string().required("First name is required"),
+    last_name: Yup.string().required("Last name is required"),
+    email: Yup.string()
+      .email("Invalid email address")
+      .required("Email is required"),
+      phone_number: Yup.string()
+      .matches(/^\d+$/, "Phone number must contain only numbers")
+      .required("Phone number is required"),
+    company_name: Yup.string().required("Company name is required"),
+  });
+
+  const onSubmit = async (values, { resetForm }) => {
+    try {
+      console.log("Submitting Values:", values);
+  
+      // API call
+      const response = await authApi("zwqaeq-vqt-ctrqw", "POST", values);
+  
+      // Handle response
+      if (response.success) {
+        console.log("Buyer added successfully:", response.data);
+        handleAddBuyer(response.data); // Update your state or perform further actions
+        resetForm(); // Clear the form
+      } else {
+        console.error("Failed to add buyer:", response.message);
+      }
+    } catch (error) {
+      console.error("Error while adding buyer:", error);
+    }
+  };
   const toggleSelectBuyer = (buyer) => {
     setSelectedBuyers((prev) => {
       if (prev.some((b) => b.email === buyer.email)) {
@@ -104,7 +147,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
 
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
-      <h2 className="text-2xl font-bold mb-4">Auction items</h2>  
+      <h2 className="text-2xl font-bold mb-4">Auction items</h2>
 
       {/* Auction Type Section */}
       <div>
@@ -197,7 +240,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                     onChange={(e) => handleSearchBuyer(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 mb-2"
                   />
-                  <ul className="bg-gray-100 border border-gray-300 rounded-md max-h-32 overflow-y-auto mb-4">
+                  <ul className="bg-gray-100 border border-gray-300 rounded-md max-h-60 overflow-y-auto overflow-x-hidden mb-4">
                     {filteredBuyers.length > 0 ? (
                       filteredBuyers.map((buyer, index) => (
                         <li
@@ -212,8 +255,8 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                             onChange={() => toggleSelectBuyer(buyer)}
                             className="mr-2"
                           />
-                          {buyer.firstName} {buyer.lastName} ({buyer.email}) -{" "}
-                          {buyer.companyName}
+                          {buyer.first_name} {buyer.last_name} ({buyer.email}) -{" "}
+                          {buyer.company_name}
                         </li>
                       ))
                     ) : (
@@ -237,83 +280,114 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                     <h4 className="text-sm font-semibold">
                       Add Buyer Details:
                     </h4>
-                    <label className="block text-sm font-medium mt-2">
-                      First Name:
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="First name"
-                      value={buyerDetails.firstName}
-                      onChange={(e) =>
-                        setBuyerDetails({
-                          ...buyerDetails,
-                          firstName: e.target.value,
-                        })
-                      }
-                      className="w-full border border-gray-300 rounded-md p-2 mb-2"
-                    />
-                    <label className="block text-sm font-medium">
-                      Last Name:
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Last name"
-                      value={buyerDetails.lastName}
-                      onChange={(e) =>
-                        setBuyerDetails({
-                          ...buyerDetails,
-                          lastName: e.target.value,
-                        })
-                      }
-                      className="w-full border border-gray-300 rounded-md p-2 mb-2"
-                    />
-                    <label className="block text-sm font-medium">Email:</label>
-                    <input
-                      type="email"
-                      placeholder="Buyer email"
-                      value={buyerDetails.email}
-                      onChange={(e) =>
-                        setBuyerDetails({
-                          ...buyerDetails,
-                          email: e.target.value,
-                        })
-                      }
-                      className="w-full border border-gray-300 rounded-md p-2 mb-2"
-                    />
-                    <label className="block text-sm font-medium">Phone:</label>
-                    <input
-                      type="text"
-                      placeholder="Buyer phone"
-                      value={buyerDetails.phone}
-                      onChange={(e) =>
-                        setBuyerDetails({
-                          ...buyerDetails,
-                          phone: e.target.value,
-                        })
-                      }
-                      className="w-full border border-gray-300 rounded-md p-2 mb-2"
-                    />
-                    <label className="block text-sm font-medium">
-                      Company Name:
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="Company name"
-                      value={buyerDetails.companyName}
-                      onChange={(e) =>
-                        setBuyerDetails({
-                          ...buyerDetails,
-                          companyName: e.target.value,
-                        })
-                      }
-                      className="w-full border border-gray-300 rounded-md p-2 mb-4"
-                    />
-                    <button
-                      onClick={handleAddBuyer}
-                      className="bg-green-500 text-white px-4 py-2 rounded-md"
+                    <Formik
+                      initialValues={{
+                        first_name: "",
+                        last_name: "",
+                        email: "",
+                        phone_number: "",
+                        company_name: "",
+                      }}
+                      // validationSchema={validationSchema}
+                      onSubmit={onSubmit}
                     >
-                      Save Buyer and Add to List
-                    </button>
+                      {({handleSubmit}) => (
+                        <>
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium mt-2">
+                              First Name:
+                            </label>
+                            <Field
+                              type="text"
+                              name="first_name"
+                              placeholder="First name"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="first_name"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Last Name:
+                            </label>
+                            <Field
+                              type="text"
+                              name="last_name"
+                              placeholder="Last name"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="last_name"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Email:
+                            </label>
+                            <Field
+                              type="email"
+                              name="email"
+                              placeholder="Buyer email"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="email"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Phone:
+                            </label>
+                            <Field
+                              type="text"
+                              name="phone_number"
+                              placeholder="Buyer phone"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="phone_number"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <div className="mb-4">
+                            <label className="block text-sm font-medium">
+                              Company Name:
+                            </label>
+                            <Field
+                              type="text"
+                              name="company_name"
+                              placeholder="Company name"
+                              className="w-full border border-gray-300 rounded-md p-2 mb-1"
+                            />
+                            <ErrorMessage
+                              name="company_name"
+                              component="div"
+                              className="text-red-500 text-sm"
+                            />
+                          </div>
+
+                          <button
+                            // type="submit"
+                            onClick={handleSubmit}
+                            className="bg-green-500 text-white px-4 py-2 rounded-md"
+                          >
+                            Save Buyer and Add to List
+                          </button>
+      </>
+                      )}
+                    </Formik>
                   </div>
                 )}
                 {filteredBuyers.length > 0 && (
