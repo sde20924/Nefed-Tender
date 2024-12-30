@@ -28,7 +28,8 @@ const TenderDetail = () => {
           setEditableSheet(tenderData.data);
           setFormData(tenderData.data.sub_tenders);
           setTender(tenderData.data);
-          console.log("dnhjufnjdbnjd",tenderData)
+          console.log("dataghzx",tenderData.data)
+          console.log("dnhjufnjdbnv jd",formdata)
           calculateTimeLeft(tenderData.data.app_end_time);
 
           // Fetch applications from server to check if any application is submitted
@@ -167,7 +168,7 @@ const TenderDetail = () => {
       console.log("body-data",body);
       
   
-      const response = await callApiPost("formdata", body);
+      const response = await callApiPost("/formdata", body);
   
       if (response.success) {
         toast.success("Form data submitted successfully!");
