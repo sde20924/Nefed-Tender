@@ -5,11 +5,6 @@ import { useRouter } from "next/router";
 import { callApiGet, callApiPost, uploadDocApi } from "@/utils/FetchApi"; // Import API call functions
 import { ToastContainer, toast } from "react-toastify";
 
-<<<<<<< HEAD
-=======
-
-
->>>>>>> c218075492b5a4650c559e2011f9428d43991d34
 const TenderDetail = () => {
   const router = useRouter();
   const { id } = router.query; // Extract the tender ID from the route
