@@ -46,9 +46,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
   if (!emd_amt) missingFields.push("emd_amt");
   if (!emt_lvl_amt) missingFields.push("emt_lvl_amt");
   if (!currency) missingFields.push("currency");
-  if (!dest_port) missingFields.push("dest_port");
-  if (!bag_size) missingFields.push("bag_size");
-  if (!bag_type) missingFields.push("bag_type");
+  // if (!dest_port) missingFields.push("dest_port");
+  // if (!bag_size) missingFields.push("bag_size");
+  // if (!bag_type) missingFields.push("bag_type");
   if (!app_start_time) missingFields.push("app_start_time");
   if (!app_end_time) missingFields.push("app_end_time");
   if (!auct_start_time) missingFields.push("auct_start_time");

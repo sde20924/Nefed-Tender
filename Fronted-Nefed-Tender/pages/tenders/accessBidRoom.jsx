@@ -54,7 +54,7 @@ const AccessBidRoom = () => {
     try {
       const tenderData = await callApiGet(`tender/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
-      setFormData(tenderData.data.sub_tenders)
+      setFormData(tenderData.data.sub_tenders);
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -80,7 +80,6 @@ const AccessBidRoom = () => {
 
   useEffect(() => {
     if (auctionEnded && lBidUserId) {
-
       announceWinner();
     }
   }, [auctionEnded, lBidUserId]);
@@ -249,14 +248,14 @@ const AccessBidRoom = () => {
     const loggedInUserId = data?.user_id; // Get logged-in user's ID
 
     // Ensure there are bids before proceeding
-    if (bids.length === 0) {
-      return <p>No bids placed yet.</p>;
-    }
+    // if (bids.length === 0) {
+    //   return <p>No bids placed yet.</p>;
+    // }
 
-    // Find the lowest bid from all bids
-    const lowestBid = bids.reduce((lowest, bid) =>
-      lowest && lowest.bid_amount < bid.bid_amount ? lowest : bid
-    );
+    // // Find the lowest bid from all bids
+    // const lowestBid = bids.reduce((lowest, bid) =>
+    //   lowest && lowest.bid_amount < bid.bid_amount ? lowest : bid
+    // );
 
     // Check if the logged-in user has the lowest bid (L1)
     const isL1 = lBidUserId === loggedInUserId;
@@ -279,8 +278,8 @@ const AccessBidRoom = () => {
 
     // If the auction is live
     return (
-      <div className="border rounded-lg p-4 mb-4">
-        <h4 className="text-lg font-semibold mb-2 text-center">Position Box</h4>
+      <div className="">
+        {/* <h4 className="text-lg font-semibold mb-2 text-center">Position Box</h4>
         {isAuctionLive ? (
           <p
             className={`p-2 rounded-lg ${isL1 ? "bg-green-100 text-green-800 text-center" : "bg-white text-gray-800"}`}
@@ -291,33 +290,31 @@ const AccessBidRoom = () => {
           </p>
         ) : (
           <p>The auction has not started yet.</p>
-        )}
+        )} */}
       </div>
     );
   };
   const sendFormData = async () => {
-      try {
-        const body = {
-          headers: tender.headers,
-          formdata,
-          
-        };
-        console.log("body-datafgh",body);
-        
-    
-        const response = await callApiPost("/formdata", body);
-    
-        if (response.success) {
-          toast.success("Form data submitted successfully!");
-        } else {
-          toast.error("Failed to submit form data.");
-        }
-      } catch (error) {
-        console.error("Error submitting form data:", error.message);
-        toast.error("Error submitting form data.");
+    try {
+      const body = {
+        headers: tender.headers,
+        formdata,
+      };
+      console.log("body-datafgh", body);
+
+      const response = await callApiPost("/formdata", body);
+
+      if (response.success) {
+        toast.success("Form data submitted successfully!");
+      } else {
+        toast.error("Failed to submit form data.");
       }
-    };
-      const handleInputChangeTable = (subTenderId, rowIndex, cellIndex, value) => {
+    } catch (error) {
+      console.error("Error submitting form data:", error.message);
+      toast.error("Error submitting form data.");
+    }
+  };
+  const handleInputChangeTable = (subTenderId, rowIndex, cellIndex, value) => {
     setFormData((prevFormData) =>
       prevFormData.map((subTender) => {
         if (subTender.id === subTenderId) {
@@ -352,17 +349,18 @@ const AccessBidRoom = () => {
         title={"Bid Room"}
       />
 
-      <div className="flex container mx-auto p-4">
-        <div className="w-3/4 mx-8 bg-white">
+      <div className="flex mx-auto p-4 w-full">
+        <div className="w-full mx-8 bg-white">
           <div className="text-lg p-4">
             <h1>
-              <b>({tender.tender_id}) - Round 1</b>
+              <b> {tender.tender_title}</b>
             </h1>
           </div>
 
-          <div className="bg-red-100 border border-red-300 text-red-700 p-2 rounded-lg mb-4 flex flex-col justify-between items-center">
-            <div className="text-lg mb-4">
-              <h1>
+          <div className="bg-gradient-to-r from-green-200 to-green-50 border border-green-300 text-green-700 p-6 rounded-lg shadow-lg mb-6 flex flex-col justify-between items-center hover:shadow-xl transition-shadow duration-300">
+            {/* Auction Status Message */}
+            <div className="text-center mb-4">
+              <h1 className="text-2xl font-bold">
                 {isAuctionLive
                   ? "Auction is live!"
                   : auctionEnded
@@ -370,29 +368,35 @@ const AccessBidRoom = () => {
                     : "Auction is not started yet!"}
               </h1>
             </div>
-            <div>
-              <span className="flex items-center text-gray-500">
-                <i className="fas fa-clock mr-2"></i>
+
+            {/* Auction Timing Information */}
+            <div className="flex items-center text-gray-600 text-lg mb-4">
+              <i className="fas fa-clock mr-3 text-green-600"></i>
+              <span>
                 {isAuctionLive
-                  ? "Ending At :"
+                  ? "Ending At:"
                   : auctionEnded
                     ? "Auction Ended"
                     : "Starting At:"}
               </span>
             </div>
+
+            {/* Time Left */}
             <div>
-              <span className="font-bold text-lg">{timeLeft}</span>
+              <span className="font-bold text-3xl text-green-800">
+                {timeLeft}
+              </span>
             </div>
           </div>
 
           {renderPositionBox()}
 
           {isAuctionLive && (
-            <div className="mt-4 p-4 border rounded bg-gray-100">
-              <h5 className="text-lg font-bold mb-2">Auction Items</h5>
-              {renderAuctionItems()} {/* Render the auction items */}
+            <div className="">
+              {/* <h5 className="text-lg font-bold mb-2">Auction Items</h5>
+              {renderAuctionItems()} Render the auction items */}
               {/* Display the total bid amount */}
-              <div className="flex items-center mt-4">
+              {/* <div className="flex items-center mt-4">
                 <span className="text-gray-500 mr-2">₹</span>
                 <label
                   className="whitespace-nowrap text-sm font-medium text-gray-700"
@@ -407,177 +411,199 @@ const AccessBidRoom = () => {
                   className="flex-1 p-2 border border-gray-300 bg-gray-100 rounded"
                   placeholder="Bid Amount"
                 />
-              </div>
+              </div> */}
               {/* Place Bid Button */}
-              <button
+              {/* <button
                 onClick={handlePlaceBid} // Using the existing place bid handler
                 className="mt-4 bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-700 w-full"
               >
                 Place Bid
-              </button>
+              </button> */}
             </div>
           )}
-        </div>
 
-        <div className="w-2/4 bg-white shadow-md rounded p-6 max-w-xl mx-auto divide-y">
-          <div className="bg-white">
-            <h1 className="p-4 text-lg">
-              <b>{tender.tender_title}</b>
-            </h1>
+          <div className="w-full flex flex-wrap p-6 gap-2 sm:flex-row bg-gray-50 justify-between">
+            {/* Left Side Cards */}
+            <div className="flex flex-col w-full lg:w-[48%] gap-4">
+              <div className="bg-gradient-to-r from-blue-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+                <h5 className="text-xl font-bold mb-4 text-center text-blue-800">
+                  Application Schedule
+                </h5>
+                <div>
+                  <div className="flex justify-between mb-4">
+                    <span className="font-medium text-gray-700">
+                      Start Date/Time:
+                    </span>
+                    <span className="text-gray-800">
+                      {new Date(tender.app_start_time * 1000).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-gray-700">
+                      End Date/Time:
+                    </span>
+                    <span className="text-gray-800">
+                      {new Date(tender.app_end_time * 1000).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+                <h5 className="text-xl font-bold mb-4 text-center text-green-800">
+                  Auction Schedule
+                </h5>
+                <div>
+                  <div className="flex justify-between mb-4">
+                    <span className="font-medium text-gray-700">
+                      Start Date/Time:
+                    </span>
+                    <span className="text-gray-800">
+                      {new Date(tender.auct_start_time * 1000).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-gray-700">
+                      End Date/Time:
+                    </span>
+                    <span className="text-gray-800">
+                      {new Date(tender.auct_end_time * 1000).toLocaleString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Right Side Card */}
+            <div className="bg-white shadow-lg rounded-lg p-8 w-full lg:w-[50%] hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+              <h5 className="text-xl font-bold mb-6 text-center text-blue-800">
+                Tender Details
+              </h5>
+              <div>
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium text-gray-700">
+                    Minimum bid:
+                  </span>
+                  <span className="text-gray-800">{tender.start_price}</span>
+                </div>
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium text-gray-700">Currency:</span>
+                  <span className="text-gray-800">{tender.currency}</span>
+                </div>
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium text-gray-700">
+                    Destination Port:
+                  </span>
+                  <span className="text-gray-800">{tender.dest_port}</span>
+                </div>
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium text-gray-700">
+                    Timeframe For Extension:
+                  </span>
+                  <span className="text-gray-800">{tender.time_frame_ext}</span>
+                </div>
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium text-gray-700">
+                    Amount of Time Extension:
+                  </span>
+                  <span className="text-gray-800">{tender.amt_of_ext}</span>
+                </div>
+                <div className="flex justify-between mb-4">
+                  <span className="font-medium text-gray-700">
+                    Auto Auction Extension before end time:
+                  </span>
+                  <span className="text-gray-800">
+                    {tender.aut_auct_ext_bfr_end_time}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="font-medium text-gray-700">
+                    Minimum Decrement Bid value:
+                  </span>
+                  <span className="text-gray-800">
+                    ₹{tender.min_decr_bid_val.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          <h5 className="text-lg font-bold mb-2 text-center">
-            Application Schedule
-          </h5>
-          <div className="mb-2">
-            <div className="flex justify-between mb-2 divide-y">
-              <span>Start Date/Time:</span>
-              <span>
-                {new Date(tender.app_start_time * 1000).toLocaleString()}
-              </span>
+          {/* Table Data */}
+          <div className="space-y-8">
+            <div className="space-y-8">
+              {formdata.map((subTender) => (
+                <div
+                  key={subTender.id}
+                  className="border border-gray-300 border-t-0 p-6 rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow duration-300"
+                >
+                  <h2 className="text-xl font-bold mb-6 text-blue-700">
+                    {subTender.name}
+                  </h2>
+                  <div className="overflow-x-auto">
+                    <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                      <thead className="bg-blue-100 text-gray-700">
+                        <tr>
+                          {tender.headers.map((header, index) => (
+                            <th
+                              key={index}
+                              className="border border-gray-300 px-4 py-2 font-semibold text-blue-800"
+                            >
+                              {header.table_head}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {subTender.rows.map((row, rowIndex) => (
+                          <tr
+                            key={rowIndex}
+                            className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+                          >
+                            {row.map((cell, cellIndex) => (
+                              <td
+                                key={cellIndex}
+                                className="border border-gray-300 px-4 py-2 break-words max-w-[200px] lg:max-w-[450px] text-gray-800"
+                              >
+                                {cell.type === "edit" ? (
+                                  <input
+                                    type="text"
+                                    value={cell.data ?? ""}
+                                    onChange={(e) =>
+                                      handleInputChangeTable(
+                                        subTender.id,
+                                        rowIndex,
+                                        cellIndex,
+                                        e.target.value
+                                      )
+                                    }
+                                    className="rounded px-2 py-1 border border-gray-300 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                  />
+                                ) : (
+                                  cell.data
+                                )}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
             </div>
-            <div className="flex justify-between mb-2">
-              <span>End Date/Time:</span>
-              <span>
-                {new Date(tender.app_end_time * 1000).toLocaleString()}
-              </span>
-            </div>
-          </div>
-
-          <h5 className="text-lg font-bold mb-2 text-center">
-            Auction Schedule
-          </h5>
-          <div className="mb-2 divide-y">
-            <div className="flex justify-between mb-2">
-              <span>Start Date/Time:</span>
-              <span>
-                {new Date(tender.auct_start_time * 1000).toLocaleString()}
-              </span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>End Date/Time:</span>
-              <span>
-                {new Date(tender.auct_end_time * 1000).toLocaleString()}
-              </span>
-            </div>
-          </div>
-
-          <h5 className="text-lg font-bold mb-2 text-center">Tender Details</h5>
-          <div className="mb-2 divide-y">
-            <div className="flex justify-between mb-2">
-              <span>Minimum bid : </span>
-              <span>{tender.start_price}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Quantity:</span>
-              <span>{tender.qty}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Currency:</span>
-              <span>{tender.currency}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Destination Port:</span>
-              <span>{tender.dest_port}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Bag Size:</span>
-              <span>{tender.bag_size}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Bag Type:</span>
-              <span>{tender.bag_type}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Timeframe For Extension:</span>
-              <span>{tender.time_frame_ext}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Amount of Time Extension:</span>
-              <span>{tender.amt_of_ext}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Auto Auction Extension before end time:</span>
-              <span>{tender.aut_auct_ext_bfr_end_time}</span>
-            </div>
-            <div className="flex justify-between mb-2">
-              <span>Minimum Decrement Bid value:</span>
-              <span>₹{tender.min_decr_bid_val.toFixed(2)}</span>
+            <div className="text-right mt-6">
+              <button
+                onClick={sendFormData}
+                className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
+              >
+                Submit Form Data
+              </button>
             </div>
           </div>
         </div>
       </div>
 
       {/* Add Form Data */}
-      <div className="space-y-8">
-        <div className="space-y-8">
-          {formdata.map((subTender) => (
-            <div
-              key={subTender.id}
-              className="border border-gray-300 p-4 rounded"
-            >
-              <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
-              <div className="overflow-x-auto">
-                <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
-                  <thead className="bg-blue-100 text-gray-700">
-                    <tr>
-                      {tender.headers.map((header, index) => (
-                        <th
-                          key={index}
-                          className="border border-gray-300 px-4 py-2 font-bold"
-                        >
-                          {header.table_head}
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {subTender.rows.map((row, rowIndex) => (
-                      <tr
-                        key={rowIndex}
-                        className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
-                      >
-                        {row.map((cell, cellIndex) => (
-                          <td
-                            key={cellIndex}
-                            className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
-                          >
-                            {cell.type === "edit" ? (
-                              <input
-                                type="text"
-                                value={cell.data ?? ""}
-                                onChange={(e) =>
-                                  handleInputChangeTable(
-                                    subTender.id,
-                                    rowIndex,
-                                    cellIndex,
-                                    e.target.value
-                                  )
-                                }
-                                className="rounded px-2 py-1 border border-gray-300 w-full"
-                              />
-                            ) : (
-                              cell.data
-                            )}
-                          </td>
-                        ))}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          ))}
-        </div>
-        <div className="text-right mt-4">
-          <button
-            onClick={sendFormData}
-            className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
-          >
-            Submit Form Data
-          </button>
-        </div>
-      </div>
     </>
   );
 };
