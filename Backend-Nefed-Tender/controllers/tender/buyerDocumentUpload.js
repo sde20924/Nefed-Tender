@@ -4,7 +4,8 @@ const db = require('../../config/config'); // Database configuration
 const submitFileUrl = async (req, res) => {
     const { tender_id, file_url, status, tender_user_doc_id = null } = req.body;
     const { user_id } = req.user; // Assuming 'req.user' contains authenticated user details
-
+    //console.log("???????",tender_id,user_id,file_url,status,tender_user_doc_id)
+    console.log(req.body)
     try {
         await db.query("START TRANSACTION"); // Start transaction
 

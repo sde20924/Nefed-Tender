@@ -19,6 +19,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             WHERE mt.tender_id = ?
         `;
         const [tenderDetailsResult] = await db.query(tenderDetailsQuery, [tenderId]);
+        console.log("dbhbfhjbdf",tenderDetailsResult);
 
         if (tenderDetailsResult.length === 0) {
             return res.status(404).json({
@@ -90,7 +91,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         };
 
         // Parse attachments
-        tenderDetails.attachments = tenderDetailsResult
+        tenderDetails.tenderDocuments = tenderDetailsResult
             .filter(row => row.doc_key)
             .map(doc => ({
                 key: doc.doc_key,
