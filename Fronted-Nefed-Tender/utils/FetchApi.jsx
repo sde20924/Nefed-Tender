@@ -43,6 +43,7 @@ const callApi = (route, method, body) =>
   callApiBase({ route, method, body, baseUrl: BASE_URL_TENDER });
 const authApi = (route, method, body) =>
   callApiBase({ route, method, body, baseUrl: AUTH_URL });
+const authApiGet =(route) => callApiBase({ route,baseUrl: AUTH_URL });
 const callApiGet = (route) => callApiBase({ route });
 const callApiPost = (route, body) =>
   callApiBase({ route, method: "POST", body });
@@ -90,4 +91,5 @@ export {
   commodityCallApi,
   portGetApi,
   viewOfferingGetApi,
+  authApiGet
 };
