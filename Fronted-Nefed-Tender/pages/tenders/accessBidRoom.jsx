@@ -5,9 +5,6 @@ import React, { useState, useEffect } from "react";
 import { callApiGet, callApiPost } from "@/utils/FetchApi";
 import { ToastContainer, toast } from "react-toastify";
 
-
-
-
 const AccessBidRoom = () => {
   const router = useRouter();
   const { tenderId } = router.query; // Get the tenderId from the query parameters
@@ -22,7 +19,7 @@ const AccessBidRoom = () => {
   const [auctionItems, setAuctionItems] = useState([]); // State to store auction items
   const [itemBids, setItemBids] = useState({}); // Store user input for each item
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
-
+  const [formdata, setFormData] = useState();
   useEffect(() => {
     if (tenderId) {
       fetchTenderDetails();
@@ -34,9 +31,7 @@ const AccessBidRoom = () => {
   // Fetch auction items
   const fetchAuctionItems = async () => {
     try {
-      const response = await callApiGet(
-        `get-tender-auction-items/${tenderId}`
-      );
+      const response = await callApiGet(`get-tender-auction-items/${tenderId}`);
 
       // Check if auction_items array exists and is not empty
       if (
@@ -59,6 +54,7 @@ const AccessBidRoom = () => {
     try {
       const tenderData = await callApiGet(`tender/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
+      setFormData(tenderData.data.sub_tenders)
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -84,6 +80,7 @@ const AccessBidRoom = () => {
 
   useEffect(() => {
     if (auctionEnded && lBidUserId) {
+
       announceWinner();
     }
   }, [auctionEnded, lBidUserId]);
@@ -231,7 +228,7 @@ const AccessBidRoom = () => {
         `tender/announce-winner/${tenderId}`,
         formData
       );
- 
+
       if (response.success) {
         toast.success("Winner announced successfully!");
         fetchBids(); // Refresh the bid list to see updated status
@@ -298,6 +295,50 @@ const AccessBidRoom = () => {
       </div>
     );
   };
+  const sendFormData = async () => {
+      try {
+        const body = {
+          headers: tender.headers,
+          formdata,
+          
+        };
+        console.log("body-datafgh",body);
+        
+    
+        const response = await callApiPost("/formdata", body);
+    
+        if (response.success) {
+          toast.success("Form data submitted successfully!");
+        } else {
+          toast.error("Failed to submit form data.");
+        }
+      } catch (error) {
+        console.error("Error submitting form data:", error.message);
+        toast.error("Error submitting form data.");
+      }
+    };
+      const handleInputChangeTable = (subTenderId, rowIndex, cellIndex, value) => {
+    setFormData((prevFormData) =>
+      prevFormData.map((subTender) => {
+        if (subTender.id === subTenderId) {
+          const updatedRows = subTender.rows.map((row, rIndex) => {
+            if (rIndex === rowIndex) {
+              return row.map((cell, cIndex) => {
+                if (cIndex === cellIndex && cell.type === "edit") {
+                  return { ...cell, data: value }; // Update the cell data
+                }
+                return cell; // Return other cells unchanged
+              });
+            }
+            return row; // Return other rows unchanged
+          });
+
+          return { ...subTender, rows: updatedRows }; // Return updated sub-tender
+        }
+        return subTender; // Return other sub-tenders unchanged
+      })
+    );
+  };
 
   if (!tender) {
     return <p>Loading...</p>;
@@ -325,8 +366,8 @@ const AccessBidRoom = () => {
                 {isAuctionLive
                   ? "Auction is live!"
                   : auctionEnded
-                  ? "Auction is closed!"
-                  : "Auction is not started yet!"}
+                    ? "Auction is closed!"
+                    : "Auction is not started yet!"}
               </h1>
             </div>
             <div>
@@ -335,8 +376,8 @@ const AccessBidRoom = () => {
                 {isAuctionLive
                   ? "Ending At :"
                   : auctionEnded
-                  ? "Auction Ended"
-                  : "Starting At:"}
+                    ? "Auction Ended"
+                    : "Starting At:"}
               </span>
             </div>
             <div>
@@ -350,7 +391,6 @@ const AccessBidRoom = () => {
             <div className="mt-4 p-4 border rounded bg-gray-100">
               <h5 className="text-lg font-bold mb-2">Auction Items</h5>
               {renderAuctionItems()} {/* Render the auction items */}
-
               {/* Display the total bid amount */}
               <div className="flex items-center mt-4">
                 <span className="text-gray-500 mr-2">₹</span>
@@ -368,7 +408,6 @@ const AccessBidRoom = () => {
                   placeholder="Bid Amount"
                 />
               </div>
-
               {/* Place Bid Button */}
               <button
                 onClick={handlePlaceBid} // Using the existing place bid handler
@@ -469,7 +508,76 @@ const AccessBidRoom = () => {
         </div>
       </div>
 
-      
+      {/* Add Form Data */}
+      <div className="space-y-8">
+        <div className="space-y-8">
+          {formdata.map((subTender) => (
+            <div
+              key={subTender.id}
+              className="border border-gray-300 p-4 rounded"
+            >
+              <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
+              <div className="overflow-x-auto">
+                <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                  <thead className="bg-blue-100 text-gray-700">
+                    <tr>
+                      {tender.headers.map((header, index) => (
+                        <th
+                          key={index}
+                          className="border border-gray-300 px-4 py-2 font-bold"
+                        >
+                          {header.table_head}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subTender.rows.map((row, rowIndex) => (
+                      <tr
+                        key={rowIndex}
+                        className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+                      >
+                        {row.map((cell, cellIndex) => (
+                          <td
+                            key={cellIndex}
+                            className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
+                          >
+                            {cell.type === "edit" ? (
+                              <input
+                                type="text"
+                                value={cell.data ?? ""}
+                                onChange={(e) =>
+                                  handleInputChangeTable(
+                                    subTender.id,
+                                    rowIndex,
+                                    cellIndex,
+                                    e.target.value
+                                  )
+                                }
+                                className="rounded px-2 py-1 border border-gray-300 w-full"
+                              />
+                            ) : (
+                              cell.data
+                            )}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div className="text-right mt-4">
+          <button
+            onClick={sendFormData}
+            className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            Submit Form Data
+          </button>
+        </div>
+      </div>
     </>
   );
 };
