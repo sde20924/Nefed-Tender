@@ -4,7 +4,7 @@ import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
 import { authApiGet , authApi } from "@/utils/FetchApi";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) => {
+const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onSelectedBuyersChange}) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -34,7 +34,6 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) =
         const response = await authApiGet("ac");
         if (response && response.data) {
           setBuyersList(response.data);
-          console.log("resdata", response.data);
         } else {
           console.error("No data received from buyers API");
         }
@@ -42,15 +41,17 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) =
         console.error("Error fetching buyers:", error);
       }
     };
-
     fetchBuyers();
   }, []);
-   
+
+  useEffect(() => {
+    onSelectedBuyersChange(selectedBuyers);
+  }, [selectedBuyers, onSelectedBuyersChange]);
   const handleAccessChange = (type) => {
     setAccessType(type);
     if (type === "private") {
       setShowPopup(true);
-      setShowAddBuyerFields(false); // Reset add buyer form
+      setShowAddBuyerFields(false); 
     } else {
       setShowPopup(false);
     
@@ -64,37 +65,36 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) =
       setFilteredBuyers(buyersList);
     } else {
       // Filter buyers based on multiple fields
-      const matchingBuyers = buyersList.filter((buyer) => {
-        const searchTerm = input.toLowerCase();
-        return (
-          buyer.email.toLowerCase().includes(searchTerm) ||
-          buyer.first_name.toLowerCase().includes(searchTerm) ||
-          buyer.last_name.toLowerCase().includes(searchTerm) ||
-          buyer.company_name.toLowerCase().includes(searchTerm)
-        );
-      });
+      const searchTerm = input.toLowerCase();
+      const matchingBuyers = buyersList.filter((buyer) =>
+        ["email", "first_name", "last_name", "company_name"].some((field) =>
+          buyer[field]?.toLowerCase().includes(searchTerm)
+        )
+      );
       setFilteredBuyers(matchingBuyers);
     }
   };
+
+
   useEffect(() => {
     if (showPopup) {
       setFilteredBuyers(buyersList);
     }
   }, [showPopup, buyersList]);
 
-  const handleAddBuyer = () => {
-    const newBuyer = { ...buyerDetails };
-    setBuyersList([...buyersList, newBuyer]);
-    setFilteredBuyers([...filteredBuyers, newBuyer]);
-    setBuyerDetails({
-      first_name: "",
-      last_name: "",
-      email: "",
-      phone_number: "",
-      company_name: "",
-    });
-    setShowAddBuyerFields(false);
-  };
+  // const handleAddBuyer = () => {
+  //   const newBuyer = { ...buyerDetails };
+  //   setBuyersList([...buyersList, newBuyer]);
+  //   setFilteredBuyers([...filteredBuyers, newBuyer]);
+  //   setBuyerDetails({
+  //     first_name: "",
+  //     last_name: "",
+  //     email: "",
+  //     phone_number: "",
+  //     company_name: "",
+  //   });
+  //   setShowAddBuyerFields(false);
+  // };
 
 
   const validationSchema = Yup.object().shape({
@@ -137,10 +137,6 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) =
     });
   };
 
-  const handleSendTender = () => {
-    console.log("Tender sent to selected buyers:", selectedBuyers);
-    // API call to send tender to selected buyers
-  };
   const handleAccessTypeChange = (type) => {
     handleAccessChange(type);
     if (type === "private") {
@@ -395,14 +391,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) =
                     </Formik>
                   </div>
                 )}
-                {filteredBuyers.length > 0 && (
-                  <button
-                    onClick={handleSendTender}
-                    className="bg-blue-500 text-white px-4 py-2 rounded-md mt-4"
-                  >
-                    Send Tender
-                  </button>
-                )}
+              
               </div>
             </div>
           )}

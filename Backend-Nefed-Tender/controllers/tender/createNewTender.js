@@ -36,9 +36,10 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     accessType,
     tender_id,
     audi_key = null,
-    editable_sheet, // Includes headers and sub_tenders
+    editable_sheet,
+    selected_buyers=[],
   } = req.body;
-
+    console.log("+++++++++++++++++",selected_buyers)
   // Validation to ensure required fields are provided
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
@@ -118,11 +119,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auction_type,
         tender_id,
         audi_key,
-        accessType,
-      ]
+        accessType,    ]
     );
-    console.log("+++++++",accessType)
-    console.log("////////",newTender)
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
       const { key, label, extension, maxFileSize } = attachment;
@@ -192,6 +190,16 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
           }
         }
         
+      }
+    }
+    // If accessType is private, insert selected buyers into `Tender_access`
+    if (accessType === "private" && Array.isArray(selected_buyers) && selected_buyers.length > 0) {
+      // Loop through each buyer_id in the selected_buyers array
+      for (const buyer_id of selected_buyers) {
+        await db.query(
+          `INSERT INTO tender_access (buyer_id, tender_id) VALUES (?, ?)`,
+          [buyer_id, tender_id]
+        );
       }
     }
 

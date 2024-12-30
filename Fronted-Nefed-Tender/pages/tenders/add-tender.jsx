@@ -40,6 +40,7 @@ const AddTender = () => {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedBuyers, setSelectedBuyers] = useState([]);
 
   const handleDescriptionChange = (value) => {
     setDescription(value);
@@ -312,10 +313,11 @@ const AddTender = () => {
         headers, // Headers from EditableSheet
         sub_tenders: subTenders, // SubTender data with rows
       },
+      selected_buyers: selectedBuyers, 
     };
 
     console.log("form data here 1", formData);
-
+    console.log(selectedBuyers);
     try {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
@@ -327,6 +329,10 @@ const AddTender = () => {
     }
   };
 
+  const handleSelectedBuyersChange = (buyers) => {
+    const buyerIds = buyers.map((buyer) => buyer.user_id);
+    setSelectedBuyers(buyerIds); // Store only IDs in the state
+  };
   return (
     <>
       <HeaderTitle
@@ -390,6 +396,7 @@ const AddTender = () => {
                 setAccessType={setAccessType}
                 accessType={accessType}
                 auctionType={auctionType}
+                onSelectedBuyersChange={handleSelectedBuyersChange}
               />
             </div>
 
