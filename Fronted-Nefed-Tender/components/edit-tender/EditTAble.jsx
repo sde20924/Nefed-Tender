@@ -113,13 +113,17 @@ export default function EditTable({
       prev.map((subTender) => {
         if (subTender.id === subTenderId) {
           const updatedRows = [...subTender.rows];
-          updatedRows[rowIndex][cellIndex] = value || "";
+          updatedRows[rowIndex][cellIndex] = {
+            ...updatedRows[rowIndex][cellIndex],
+            data: value, // Update only the `data` field
+          };
           return { ...subTender, rows: updatedRows };
         }
         return subTender;
       })
     );
   };
+  
 
   const [showDeleteModal, setShowDeleteModal] = useState(false); // Modal visibility state
   const [rowToDelete, setRowToDelete] = useState(null); // Store the row information to be deleted
@@ -258,27 +262,35 @@ export default function EditTable({
 
   const handleDownload = () => {
     const worksheetData = [];
-
+  
+    // Add headers to the worksheet data
     worksheetData.push(headers.map((header) => header.table_head)); // Use table_head for headers
+  
+    // Add SubTender data
     subTenders.forEach((subTender) => {
-      const subTenderHeaderRow = new Array(headers.length).fill("");
-      subTenderHeaderRow[0] = subTender.id;
-      subTenderHeaderRow[1] = subTender.name;
-      worksheetData.push(subTenderHeaderRow);
-      worksheetData.push(...subTender.rows);
-
+      // Add SubTender name and ID as a separate row
+      worksheetData.push([`SubTender: ${subTender.name}`, `ID: ${subTender.id}`]);
+      
+      // Add rows for the SubTender
+      subTender.rows.forEach((row) => {
+        worksheetData.push(row.map((cell) => (cell.data !== undefined ? cell.data : cell))); // Extract `data` if it's an object
+      });
+  
+      // Add an empty row to separate SubTenders visually
       worksheetData.push([]);
     });
-
+  
+    // Create worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Build a new workbook and append the worksheet
+  
+    // Create workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-
-    // Download the file
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Editable Table");
+  
+    // Write the file
     XLSX.writeFile(workbook, "editable_subtender_table.xlsx");
   };
+  
 
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">

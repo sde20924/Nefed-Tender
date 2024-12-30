@@ -217,7 +217,9 @@ const EditTenderForm = () => {
       counter_offr_accept_timer: tenderData.counterOfferTimer, // Counter offer acceptance timer
       img_url: tenderData.image ? URL.createObjectURL(tenderData.image) : " ", // Image URL created from the uploaded file
       auction_type: "null", // Auction type, set to null if not applicable
-      audi_key: tenderData.audiKey, // Audio key, set to null if not applicable
+      audi_key: tenderData.audiKey,
+      headers: headers,
+      sub_tender:subTenders // Audio key, set to null if not applicable
     };
 
     console.log("form data here 1", formData);
