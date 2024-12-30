@@ -16,7 +16,6 @@ const TenderDetail = () => {
   const [isApplicationSaved, setIsApplicationSaved] = useState(false); // Track if the application is saved
   const [iseditableSheet, setEditableSheet] = useState(null);
   const [editedData, setEditedData] = useState({});
-  const [formdata, setFormData] = useState();
   // console.log("formData", formdata);
 
   useEffect(() => {
@@ -26,10 +25,7 @@ const TenderDetail = () => {
           // Fetch tender details by ID
           const tenderData = await callApiGet(`tender/${id}`);
           setEditableSheet(tenderData.data);
-          setFormData(tenderData.data.sub_tenders);
           setTender(tenderData.data);
-          console.log("dataghzx",tenderData.data)
-          console.log("dnhjufnjdbnv jd",formdata)
           calculateTimeLeft(tenderData.data.app_end_time);
 
           // Fetch applications from server to check if any application is submitted
@@ -49,7 +45,7 @@ const TenderDetail = () => {
             const uploadedFilesData = await callApiGet(
               `tender/${id}/files-status`
             );
-            console.log("-=-=-=-=-=uploadfile -=-=-=-=-=-=",uploadedFilesData)
+            console.log("-=-=-=-=-=uploadfile -=-=-=-=-=-=", uploadedFilesData);
             if (uploadedFilesData.success) {
               setUploadedFiles(uploadedFilesData.data); // Set the uploaded files from the server
             }
@@ -103,10 +99,10 @@ const TenderDetail = () => {
         if (response && response.uploaded_data) {
           const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
           const tenderDocId = tender_doc_id; // Get the tender_doc_id
-    
+
           const newUploadedFiles = [
             ...uploadedFiles,
-            { tender_doc_id: tenderDocId, doc_url: fileUrl},
+            { tender_doc_id: tenderDocId, doc_url: fileUrl },
           ];
           setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
 
@@ -138,7 +134,7 @@ const TenderDetail = () => {
     }
 
     try {
-      console.log(uploadedFiles)
+      console.log(uploadedFiles);
       const apiResponse = await callApiPost("submit-file-url", {
         file_url: uploadedFiles,
         tender_id: id,
@@ -158,29 +154,6 @@ const TenderDetail = () => {
     }
   };
 
-  const sendFormData = async () => {
-    try {
-      const body = {
-        headers: iseditableSheet.headers,
-        formdata,
-        
-      };
-      console.log("body-data",body);
-      
-  
-      const response = await callApiPost("/formdata", body);
-  
-      if (response.success) {
-        toast.success("Form data submitted successfully!");
-      } else {
-        toast.error("Failed to submit form data.");
-      }
-    } catch (error) {
-      console.error("Error submitting form data:", error.message);
-      toast.error("Error submitting form data.");
-    }
-  };
-
   // Handle Submit Application Button Click
   const handleSubmitApplication = async () => {
     if (isCountdownComplete) {
@@ -189,7 +162,7 @@ const TenderDetail = () => {
     }
 
     try {
-      console.log(uploadedFiles)
+      console.log(uploadedFiles);
       const apiResponse = await callApiPost("submit-file-url", {
         file_url: uploadedFiles,
         tender_id: id,
@@ -212,28 +185,6 @@ const TenderDetail = () => {
   };
 
   // state to store the table data
-  const handleInputChange = (subTenderId, rowIndex, cellIndex, value) => {
-    setFormData((prevFormData) =>
-      prevFormData.map((subTender) => {
-        if (subTender.id === subTenderId) {
-          const updatedRows = subTender.rows.map((row, rIndex) => {
-            if (rIndex === rowIndex) {
-              return row.map((cell, cIndex) => {
-                if (cIndex === cellIndex && cell.type === "edit") {
-                  return { ...cell, data: value }; // Update the cell data
-                }
-                return cell; // Return other cells unchanged
-              });
-            }
-            return row; // Return other rows unchanged
-          });
-
-          return { ...subTender, rows: updatedRows }; // Return updated sub-tender
-        }
-        return subTender; // Return other sub-tenders unchanged
-      })
-    );
-  };
 
   if (!tender) {
     return <p>Loading...</p>; // Show loading state while fetching data
@@ -452,7 +403,7 @@ const TenderDetail = () => {
       </div>
       <div className="space-y-8">
         <div className="space-y-8">
-          {formdata.map((subTender) => (
+          {iseditableSheet.sub_tenders.map((subTender) => (
             <div
               key={subTender.id}
               className="border border-gray-300 p-4 rounded"
@@ -483,23 +434,7 @@ const TenderDetail = () => {
                             key={cellIndex}
                             className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
                           >
-                            {cell.type === "edit" ? (
-                              <input
-                                type="text"
-                                value={cell.data ?? ""}
-                                onChange={(e) =>
-                                  handleInputChange(
-                                    subTender.id,
-                                    rowIndex,
-                                    cellIndex,
-                                    e.target.value
-                                  )
-                                }
-                                className="rounded px-2 py-1 border border-gray-300 w-full"
-                              />
-                            ) : (
-                              cell.data
-                            )}
+                            {cell.data}
                           </td>
                         ))}
                       </tr>
@@ -509,14 +444,6 @@ const TenderDetail = () => {
               </div>
             </div>
           ))}
-        </div>
-        <div className="text-right mt-4">
-          <button
-            onClick={sendFormData}
-            className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
-          >
-            Submit Form Data
-          </button>
         </div>
       </div>
 
