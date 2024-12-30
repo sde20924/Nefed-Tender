@@ -19,7 +19,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             WHERE mt.tender_id = ?
         `;
         const [tenderDetailsResult] = await db.query(tenderDetailsQuery, [tenderId]);
-        console.log("dbhbfhjbdf",tenderDetailsResult);
+
 
         if (tenderDetailsResult.length === 0) {
             return res.status(404).json({
@@ -58,7 +58,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
 
         // Parse tender details
-        const tenderDetails = {
+        let tenderDetails = {
             tender_title: tenderDetailsResult[0].tender_title,
             tender_slug: tenderDetailsResult[0].tender_slug,
             tender_desc: tenderDetailsResult[0].tender_desc,
@@ -89,16 +89,18 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             tender_id: tenderDetailsResult[0].tender_id,
             audi_key: tenderDetailsResult[0].audi_key,
         };
-
-        // Parse attachments
-        tenderDetails.tenderDocuments = tenderDetailsResult
-            .filter(row => row.doc_key)
-            .map(doc => ({
-                key: doc.doc_key,
-                extension: doc.doc_ext,
-                maxFileSize: doc.doc_size,
-                label: doc.doc_label,
-            }));
+     //      Parse attachments
+         tenderDetails = {
+            ...tenderDetails, // Base tender details from the first row
+            tenderDocuments: tenderDetailsResult.map(row => ({
+              doc_key: row.doc_key,
+              tender_doc_id: row.tender_doc_id,
+              doc_label: row.doc_label,
+              doc_ext: row.doc_ext,
+              doc_size: row.doc_size,
+            })).filter(doc => doc.doc_key) // Filter out any rows without documents
+          }
+       
 
         tenderDetails.headers = headers;
 
