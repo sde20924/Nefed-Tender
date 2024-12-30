@@ -29,7 +29,8 @@ const { getManagerList} = require('../../controllers/tender/getManagerList');
 const {getHomepageContent} = require("../../controllers/tender/getHomePageContent");
 const {updateHomepageContent} = require("../../controllers/tender/updateHomePageContent");
 
-const {getTenderAuctionItemsController} = require("../../controllers/tender/getTenderAuctionItemsController")
+const {getTenderAuctionItemsController} = require("../../controllers/tender/getTenderAuctionItemsController");
+const saveEditableRowsController = require("../../controllers/tender/SaveBuyerHeaderData");
 
 // Route to get all tenders 
 router.get('/tenders', getAllTendersController);
@@ -59,10 +60,10 @@ router.post('/bid/submit',verifyUser,submitBid);
 router.post('/update-tender/:id', verifyUser, updateTenderDetails);
 router.post('/clone-tender/:id', verifyUser, cloneTenderController);
 router.post('/tender/announce-winner/:tender_id',verifyUser, announceWinner);
+router.post('/tender/announce-winner/:tender_id',verifyUser, announceWinner);
 
-router.post('/update-home-page-content',verifyUser,updateHomepageContent);
+router.post('/formdata',verifyUser,saveEditableRowsController.saveBuyerHeaderRowData);
 
-router.delete('/delete-tender/:id', verifyUser, deleteTenderController);
-
+router.delete('/delete-tender/:id', verifyUser,);
 
 module.exports = router;
