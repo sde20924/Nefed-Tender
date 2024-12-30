@@ -5,7 +5,7 @@ const jwt = require('jsonwebtoken'); // JWT library for token handling
 // Controller to get tender applications by user ID from token
 const getTenderApplicationsByUser = async (req, res) => {
   const { user_id } = req.user; // Extract `user_id` from the token
-
+   console.log("++++++++++++",user_id)
   try {
     // Fetch data from `tender_application` table where `user_id` matches the token's user ID
     // Join with `manage_tender` table to get `tender_title` based on `tender_id`
