@@ -7,9 +7,9 @@ const FullDetails = ({
   currency, setCurrency,
   startingPrice, setStartingPrice,
   // quantity, setQuantity,
-  destinationPort, setDestinationPort,
-  bagSize, setBagSize,
-  bagType, setBagType,
+  // destinationPort, setDestinationPort,
+  // bagSize, setBagSize,
+  // bagType, setBagType,
   // measurmentUnit, setMeasurmentUnit,
   applicationStart, handleApplicationStartChange,
   applicationEnd, handleApplicationEndChange,
@@ -98,7 +98,7 @@ const FullDetails = ({
       </div> */}
 
       {/* Destination Port */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label
           className="block text-gray-700 text-sm font-bold mb-2"
           htmlFor="destinationPort"
@@ -114,10 +114,10 @@ const FullDetails = ({
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           required
         />
-      </div>
+      </div> */}
 
       {/* Bag Size */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label
           className="block text-gray-700 text-sm font-bold mb-2"
           htmlFor="bagSize"
@@ -133,10 +133,10 @@ const FullDetails = ({
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           required
         />
-      </div>
+      </div> */}
 
       {/* Bag Type */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label
           className="block text-gray-700 text-sm font-bold mb-2"
           htmlFor="bagType"
@@ -152,7 +152,7 @@ const FullDetails = ({
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           required
         />
-      </div>
+      </div> */}
 
       {/* Measurement Unit */}
       {/* <div className="mb-4">
