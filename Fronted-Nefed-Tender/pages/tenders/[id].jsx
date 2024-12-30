@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import { callApiGet, callApiPost, uploadDocApi } from "@/utils/FetchApi"; // Import API call functions
 import { ToastContainer, toast } from "react-toastify";
 
-
 const TenderDetail = () => {
   const router = useRouter();
   const { id } = router.query; // Extract the tender ID from the route
@@ -17,13 +16,17 @@ const TenderDetail = () => {
   const [isApplicationSaved, setIsApplicationSaved] = useState(false); // Track if the application is saved
   const [iseditableSheet, setEditableSheet] = useState(null);
   const [editedData, setEditedData] = useState({});
+  const [formdata, setFormData] = useState();
+  // console.log("formData", formdata);
+
   useEffect(() => {
     if (id) {
       const fetchTenderDetails = async () => {
         try {
           // Fetch tender details by ID
           const tenderData = await callApiGet(`tender/${id}`);
-          setEditableSheet(tenderData.data)
+          setEditableSheet(tenderData.data);
+          setFormData(tenderData.data.sub_tenders);
           setTender(tenderData.data);
           calculateTimeLeft(tenderData.data.app_end_time);
 
@@ -152,6 +155,29 @@ const TenderDetail = () => {
     }
   };
 
+  const sendFormData = async () => {
+    try {
+      const body = {
+        headers: iseditableSheet.headers,
+        formdata,
+        
+      };
+      console.log("body-data",body);
+      
+  
+      const response = await callApiPost("/formdata", body);
+  
+      if (response.success) {
+        toast.success("Form data submitted successfully!");
+      } else {
+        toast.error("Failed to submit form data.");
+      }
+    } catch (error) {
+      console.error("Error submitting form data:", error.message);
+      toast.error("Error submitting form data.");
+    }
+  };
+
   // Handle Submit Application Button Click
   const handleSubmitApplication = async () => {
     if (isCountdownComplete) {
@@ -181,20 +207,29 @@ const TenderDetail = () => {
     }
   };
 
-  // state to store the table data 
+  // state to store the table data
   const handleInputChange = (subTenderId, rowIndex, cellIndex, value) => {
-    setEditedData((prev) => ({
-      ...prev,
-      [subTenderId]: {
-        ...(prev[subTenderId] || {}),
-        [rowIndex]: {
-          ...(prev[subTenderId]?.[rowIndex] || {}),
-          [cellIndex]: value,
-        },
-      },
-    }));
-  };
+    setFormData((prevFormData) =>
+      prevFormData.map((subTender) => {
+        if (subTender.id === subTenderId) {
+          const updatedRows = subTender.rows.map((row, rIndex) => {
+            if (rIndex === rowIndex) {
+              return row.map((cell, cIndex) => {
+                if (cIndex === cellIndex && cell.type === "edit") {
+                  return { ...cell, data: value }; // Update the cell data
+                }
+                return cell; // Return other cells unchanged
+              });
+            }
+            return row; // Return other rows unchanged
+          });
 
+          return { ...subTender, rows: updatedRows }; // Return updated sub-tender
+        }
+        return subTender; // Return other sub-tenders unchanged
+      })
+    );
+  };
 
   if (!tender) {
     return <p>Loading...</p>; // Show loading state while fetching data
@@ -212,7 +247,7 @@ const TenderDetail = () => {
         <h1 className="p-4 text-lg">
           <b>{tender.tender_title}</b>
         </h1>
-      </div>  
+      </div>
 
       <div className="flex md:flex-row flex-col container mx-auto p-4 ">
         <div className="l:w-2/4 w-full bg-white shadow-md rounded p-6 max-w-xl mx-auto divide-y ">
@@ -412,71 +447,76 @@ const TenderDetail = () => {
         {/*  */}
       </div>
       <div className="space-y-8">
-      {iseditableSheet.sub_tenders.map((subTender) => (
-        <div
-          key={subTender.id}
-          className="border border-gray-300 p-4 rounded"
-        >
-          <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
-          <div className="overflow-x-auto">
-            <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
-              <thead className="bg-blue-100 text-gray-700">
-                <tr>
-                  {iseditableSheet.headers.map((header, index) => (
-                    <th
-                      key={index}
-                      className="border border-gray-300 px-4 py-2 font-bold"
-                    >
-                      {header.table_head}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {subTender.rows.map((row, rowIndex) => (
-                  <tr
-                    key={rowIndex}
-                    className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
-                  >
-                    {row.map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
+        <div className="space-y-8">
+          {formdata.map((subTender) => (
+            <div
+              key={subTender.id}
+              className="border border-gray-300 p-4 rounded"
+            >
+              <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
+              <div className="overflow-x-auto">
+                <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                  <thead className="bg-blue-100 text-gray-700">
+                    <tr>
+                      {iseditableSheet.headers.map((header, index) => (
+                        <th
+                          key={index}
+                          className="border border-gray-300 px-4 py-2 font-bold"
+                        >
+                          {header.table_head}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {subTender.rows.map((row, rowIndex) => (
+                      <tr
+                        key={rowIndex}
+                        className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
                       >
-                        {cell.type === "edit" ? (
-                          <input
-                            type="text"
-                            value={
-                              editedData[subTender.id]?.[rowIndex]?.[cellIndex] ??
-                              cell.data ??
-                              ""
-                            }
-                            onChange={(e) =>
-                              handleInputChange(
-                                subTender.id,
-                                rowIndex,
-                                cellIndex,
-                                e.target.value
-                              )
-                            }
-                            className="  rounded px-2 py-1"
-                          />
-                        ) : (
-                          cell.data
-                        )}
-                      </td>
+                        {row.map((cell, cellIndex) => (
+                          <td
+                            key={cellIndex}
+                            className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
+                          >
+                            {cell.type === "edit" ? (
+                              <input
+                                type="text"
+                                value={cell.data ?? ""}
+                                onChange={(e) =>
+                                  handleInputChange(
+                                    subTender.id,
+                                    rowIndex,
+                                    cellIndex,
+                                    e.target.value
+                                  )
+                                }
+                                className="rounded px-2 py-1 border border-gray-300 w-full"
+                              />
+                            ) : (
+                              cell.data
+                            )}
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </div>
-      ))}
-    </div>
+        <div className="text-right mt-4">
+          <button
+            onClick={sendFormData}
+            className="bg-blue-500 text-white font-bold py-2 px-4 rounded-lg"
+          >
+            Submit Form Data
+          </button>
+        </div>
+      </div>
 
       {/* Toast Container */}
-      
     </>
   );
 };
