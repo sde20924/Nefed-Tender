@@ -4,8 +4,7 @@ import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
 import { authApiGet , authApi } from "@/utils/FetchApi";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
-  const [accessType, setAccessType] = useState("public");
+const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType}) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -16,6 +15,14 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
     phone_number: "",
     company_name: "",
   });
+
+  const handleAuctionTypeChange = (e) => {
+      setAuctionType(e.target.value);
+    };
+  // const handleAccessChange = (type) => {
+  //     setAccessType(type);
+  //   };
+  
   const [buyersList, setBuyersList] = useState([]);
   const [filteredBuyers, setFilteredBuyers] = useState([]);
   const [selectedBuyers, setSelectedBuyers] = useState([]);
@@ -46,15 +53,9 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
       setShowAddBuyerFields(false); // Reset add buyer form
     } else {
       setShowPopup(false);
-      handlePublicAccess();
+    
     }
   };
-
-  const handlePublicAccess = () => {
-    console.log("Data sent to all buyers.");
-    // Call your API or function to send data to all buyers
-  };
-
   const handleSearchBuyer = (input) => {
     setBuyerEmail(input);
 
@@ -75,9 +76,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
       setFilteredBuyers(matchingBuyers);
     }
   };
-
-  // Show all buyers when popup is opened
-  React.useEffect(() => {
+  useEffect(() => {
     if (showPopup) {
       setFilteredBuyers(buyersList);
     }
@@ -96,9 +95,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
     });
     setShowAddBuyerFields(false);
   };
-  // console.log("buyer",buyersList);
-  // console.log("buyer-selected",selectedBuyers);
-  // console.log("buyer-filtered",filteredBuyers);
+
 
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),
@@ -143,6 +140,14 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
   const handleSendTender = () => {
     console.log("Tender sent to selected buyers:", selectedBuyers);
     // API call to send tender to selected buyers
+  };
+  const handleAccessTypeChange = (type) => {
+    handleAccessChange(type);
+    if (type === "private") {
+      setShowPopup(true);
+    } else {
+      setShowPopup(false);
+    }
   };
 
   return (
@@ -385,7 +390,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
                           >
                             Save Buyer and Add to List
                           </button>
-      </>
+                     </>
                       )}
                     </Formik>
                   </div>

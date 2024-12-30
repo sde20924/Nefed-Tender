@@ -33,6 +33,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     counter_offr_accept_timer,
     img_url,
     auction_type,
+    accessType,
     tender_id,
     audi_key = null,
     editable_sheet, // Includes headers and sub_tenders
@@ -84,8 +85,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        tender_id, audi_key,user_access
+      ) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user_id,
         tender_title,
@@ -117,9 +118,11 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auction_type,
         tender_id,
         audi_key,
+        accessType,
       ]
     );
-
+    console.log("+++++++",accessType)
+    console.log("////////",newTender)
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
       const { key, label, extension, maxFileSize } = attachment;
@@ -147,8 +150,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
         // Check if the subtender exists, insert if not
         let [subTenderResult] = await db.query(
-          `SELECT subtender_id FROM subtender WHERE subtender_name = ?`,
-          [name]
+          `SELECT subtender_id FROM subtender WHERE subtender_name = ? AND tender_id = ?`,
+          [name, tender_id]
         );
 
         let subtenderId;

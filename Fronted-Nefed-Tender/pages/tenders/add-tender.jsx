@@ -121,13 +121,8 @@ const AddTender = () => {
     setAttachments(newAttachments);
   };
 
-  // Auction Items
-  const [auctionFields, setAuctionFields] = useState([
-    { name: "", quantity: "" },
-  ]);
-
   const [auctionType, setAuctionType] = useState("reverse");
-  const [accessType,setAccessType]=useState("public");
+  const [accessType, setAccessType] = useState("public");
 
   const handleAuctionInputChange = (index, field, value) => {
     const updatedFields = [...auctionFields];
@@ -135,21 +130,6 @@ const AddTender = () => {
     setAuctionFields(updatedFields);
   };
 
-  const handleAddAuction = () => {
-    setAuctionFields([...auctionFields, { name: "", quantity: "" }]);
-  };
-
-  const handleRemoveAuction = (index) => {
-    const updatedFields = auctionFields.filter((_, i) => i !== index);
-    setAuctionFields(updatedFields);
-  };
-
-  const handleAuctionTypeChange = (e) => {
-    setAuctionType(e.target.value);
-  };
-  const accessTypeChange = (e) => {
-    setAccessType(e.target.value);
-  };
 
   // Custom Form Builder
   const [formFields, setFormFields] = useState([]);
@@ -262,14 +242,14 @@ const AddTender = () => {
   const [applicationStart, setApplicationStart] = useState(null);
   const [applicationEnd, setApplicationEnd] = useState(null);
   const [headers, setHeaders] = useState([
-    "S.No",                   
+    "S.No",
     "Item",
     "Item Description",
     "UOM",
     "Total Qty",
     "Rate",
   ]);
-  const [subTenders, setSubTenders] = useState([]); 
+  const [subTenders, setSubTenders] = useState([]);
 
   const parseDate = (date) => (date ? new Date(date) : null);
   const handleApplicationStartChange = (date) => {
@@ -323,7 +303,8 @@ const AddTender = () => {
       qty_split_criteria: qtySplittingCriteria, // Quantity splitting criteria
       counter_offr_accept_timer: counterOfferTimer, // Counter offer acceptance timer
       img_url: image ? URL.createObjectURL(image) : " ", // Image URL created from the uploaded file
-      auction_type: auctionType, // Set to null if not applicable
+      auction_type: auctionType,
+      accessType:accessType, // Set to null if not applicable
       tender_id: tender_id, // Generate a random tender ID based on the current timestamp if not provided
       audi_key: null, // Set to null if not applicable
       // auct_field: auctionFields,
@@ -405,11 +386,10 @@ const AddTender = () => {
 
               {/* Auction Items */}
               <AuctionItems
-                handleRemoveAuction={handleRemoveAuction}
-                handleAuctionInputChange={handleAuctionInputChange}
+                setAuctionType={setAuctionType}
+                setAccessType={setAccessType}
+                accessType={accessType}
                 auctionType={auctionType}
-                accessTypeChange ={accessType}
-                handleAuctionTypeChange={handleAuctionTypeChange}
               />
             </div>
 
@@ -468,27 +448,25 @@ const AddTender = () => {
             </div>
           </div>
           {/* Submit Button */}
-           {/* Sticky Submit Button */}
-           <div className="fixed bottom-8 right-4 p-4">
+          {/* Sticky Submit Button */}
+          <div className="fixed bottom-8 right-4 p-4">
             <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
               Create
             </button>
-            </div>
+          </div>
 
-          <EditableSheet 
-          headers={headers}
-          setHeaders={setHeaders}
-          subTenders={subTenders}
-          setSubTenders={setSubTenders}/>
+          <EditableSheet
+            headers={headers}
+            setHeaders={setHeaders}
+            subTenders={subTenders}
+            setSubTenders={setSubTenders}
+          />
         </form>
         {/* Sticky Submit Button */}
-        
       </div>
-
-      
     </>
   );
 };
