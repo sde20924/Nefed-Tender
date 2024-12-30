@@ -38,7 +38,7 @@ const AuctionItems = ({ auctionType, handleAuctionTypeChange }) => {
 
     fetchBuyers();
   }, []);
-
+   
   const handleAccessChange = (type) => {
     setAccessType(type);
     if (type === "private") {

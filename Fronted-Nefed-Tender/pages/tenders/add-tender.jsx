@@ -126,7 +126,8 @@ const AddTender = () => {
     { name: "", quantity: "" },
   ]);
 
-  const [auctionType, setAuctionType] = useState("");
+  const [auctionType, setAuctionType] = useState("reverse");
+  const [accessType,setAccessType]=useState("public");
 
   const handleAuctionInputChange = (index, field, value) => {
     const updatedFields = [...auctionFields];
@@ -145,6 +146,9 @@ const AddTender = () => {
 
   const handleAuctionTypeChange = (e) => {
     setAuctionType(e.target.value);
+  };
+  const accessTypeChange = (e) => {
+    setAccessType(e.target.value);
   };
 
   // Custom Form Builder
@@ -404,6 +408,7 @@ const AddTender = () => {
                 handleRemoveAuction={handleRemoveAuction}
                 handleAuctionInputChange={handleAuctionInputChange}
                 auctionType={auctionType}
+                accessTypeChange ={accessType}
                 handleAuctionTypeChange={handleAuctionTypeChange}
               />
             </div>
