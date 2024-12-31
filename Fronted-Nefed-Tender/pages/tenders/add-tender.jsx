@@ -9,7 +9,6 @@ import { useDropzone } from "react-dropzone";
 import { DragDropContext } from "react-beautiful-dnd";
 import { callApiPost } from "@/utils/FetchApi";
 import { toast } from "react-toastify";
-
 import EditableSheet from "@/components/add-tander/EditableSheet";
 import TendersDetails from "@/components/add-tander/TenderDetails";
 import ImageUpload from "@/components/add-tander/ImageUpload";
@@ -40,6 +39,7 @@ const AddTender = () => {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
+  const [selectedBuyers, setSelectedBuyers] = useState([]);
 
   const handleDescriptionChange = (value) => {
     setDescription(value);
@@ -312,10 +312,11 @@ const AddTender = () => {
         headers, // Headers from EditableSheet
         sub_tenders: subTenders, // SubTender data with rows
       },
+      selected_buyers: selectedBuyers, 
     };
 
     console.log("form data here 1", formData);
-
+    console.log(selectedBuyers);
     try {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
@@ -327,6 +328,10 @@ const AddTender = () => {
     }
   };
 
+  const handleSelectedBuyersChange = (buyers) => {
+    const buyerIds = buyers.map((buyer) => buyer.user_id);
+    setSelectedBuyers(buyerIds); // Store only IDs in the state
+  };
   return (
     <>
       <HeaderTitle
@@ -390,6 +395,7 @@ const AddTender = () => {
                 setAccessType={setAccessType}
                 accessType={accessType}
                 auctionType={auctionType}
+                onSelectedBuyersChange={handleSelectedBuyersChange}
               />
             </div>
 

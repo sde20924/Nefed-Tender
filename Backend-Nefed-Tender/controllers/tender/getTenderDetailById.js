@@ -20,42 +20,12 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         `;
         const [tenderDetailsResult] = await db.query(tenderDetailsQuery, [tenderId]);
 
-
         if (tenderDetailsResult.length === 0) {
             return res.status(404).json({
                 msg: 'Tender not found',
                 success: false,
             });
         }
-
-        const headersQuery = `
-            SELECT 
-                header_id, 
-                table_head, 
-                \`order\`
-            FROM tender_header
-            WHERE tender_id = ?
-            ORDER BY \`order\`
-        `;
-        const [headers] = await db.query(headersQuery, [tenderId]);
-
-        // Fetch subtenders and all possible rows, including empty ones
-        const headersWithSubTendersQuery = `
-            SELECT 
-                s.subtender_id,
-                s.subtender_name,
-                r.row_data_id,
-                r.header_id,
-                r.row_data,
-                r.type,
-                r.order,
-                r.row_number
-            FROM subtender s
-            LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
-            WHERE s.tender_id = ?
-            ORDER BY s.subtender_id, r.row_number, r.order
-        `;
-        const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
 
         // Parse tender details
         let tenderDetails = {
@@ -88,23 +58,54 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             auction_type: tenderDetailsResult[0].auction_type,
             tender_id: tenderDetailsResult[0].tender_id,
             audi_key: tenderDetailsResult[0].audi_key,
+            accessType: tenderDetailsResult[0].user_access || 'public', // Include access type
         };
-     //      Parse attachments
-         tenderDetails = {
-            ...tenderDetails, // Base tender details from the first row
-            tenderDocuments: tenderDetailsResult.map(row => ({
-              doc_key: row.doc_key,
-              tender_doc_id: row.tender_doc_id,
-              doc_label: row.doc_label,
-              doc_ext: row.doc_ext,
-              doc_size: row.doc_size,
-            })).filter(doc => doc.doc_key) // Filter out any rows without documents
-          }
-       
+
+        // Parse attachments
+        const attachments = tenderDetailsResult
+            .map(row => ({
+                doc_id: row.tender_doc_id,
+                key: row.doc_key,
+                label: row.doc_label,
+                extension: row.doc_ext,
+                size: row.doc_size,
+            }))
+            .filter(doc => doc.key); // Filter out rows without a key
+
+        tenderDetails.attachments = attachments;
+
+        // Fetch headers
+        const headersQuery = `
+            SELECT 
+                header_id, 
+                table_head, 
+                \`order\`
+            FROM tender_header
+            WHERE tender_id = ?
+            ORDER BY \`order\`
+        `;
+        const [headers] = await db.query(headersQuery, [tenderId]);
 
         tenderDetails.headers = headers;
 
-        // Parse subtenders and group rows by row_number
+        // Fetch subtenders and group rows by row_number
+        const headersWithSubTendersQuery = `
+            SELECT 
+                s.subtender_id,
+                s.subtender_name,
+                r.row_data_id,
+                r.header_id,
+                r.row_data,
+                r.type,
+                r.order,
+                r.row_number
+            FROM subtender s
+            LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
+            WHERE s.tender_id = ?
+            ORDER BY s.subtender_id, r.row_number, r.order
+        `;
+        const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
+
         const subTendersArray = [];
         const subTenderMap = new Map();
 
@@ -135,6 +136,17 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
 
         tenderDetails.sub_tenders = subTendersArray;
 
+        // Fetch selected buyers for private tenders
+        if (tenderDetails.accessType === 'private') {
+            const selectedBuyersQuery = `
+                SELECT buyer_id
+                FROM tender_access
+                WHERE tender_id = ?
+            `;
+            const [selectedBuyers] = await db.query(selectedBuyersQuery, [tenderId]);
+            tenderDetails.selected_buyers = selectedBuyers.map(buyer => buyer.buyer_id);
+            console.log("+++++++++++",selectedBuyers)
+        }
         // Return the result
         res.status(200).json({
             msg: 'Tender details fetched successfully',
