@@ -3,7 +3,6 @@ import * as XLSX from "xlsx";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
-
 export default function EditableSheet({
   headers,
   setHeaders,
@@ -11,6 +10,8 @@ export default function EditableSheet({
   setSubTenders,
 }) {
   // Add a new subtender
+  console.log("headerrrr", headers);
+
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
 
@@ -64,7 +65,7 @@ export default function EditableSheet({
 
   // Add a new column to the table
   // Show Modal when adding a column
-  const [newColumnName,setNewColumnName] = useState("")
+  const [newColumnName, setNewColumnName] = useState("");
   const handleAddColumn = () => {
     setShowModal(true); // Open modal
   };
@@ -742,7 +743,6 @@ export default function EditableSheet({
       )}
 
       {/* ToastContainer for notifications */}
-      
     </div>
   );
 }

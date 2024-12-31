@@ -18,6 +18,7 @@ import Attachments from "@/components/add-tander/Attachments";
 import AuctionItems from "@/components/add-tander/AuctionItems";
 import CustomFormBuilder from "@/components/add-tander/CustomForm";
 import FullDetails from "@/components/add-tander/FullDetails";
+import TenderCategories from "@/components/add-tander/TenderCategories";
 
 // Importing newly created components
 
@@ -40,6 +41,45 @@ const AddTender = () => {
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [selectedBuyers, setSelectedBuyers] = useState([]);
+    // Quick Options
+    const [isFeatured, setIsFeatured] = useState(false);
+    const [isPublished, setIsPublished] = useState(false);
+     // EMD Details
+  const [emdAmount, setEmdAmount] = useState("");
+  const [emdLevelAmount, setEmdLevelAmount] = useState("");
+  const [auctionType, setAuctionType] = useState("reverse");
+  const [accessType, setAccessType] = useState("public");
+    // Tender Details Form
+    const [currency, setCurrency] = useState("INR(₹)");
+    const [startingPrice, setStartingPrice] = useState("");
+    // const [quantity, setQuantity] = useState("");
+    const [destinationPort, setDestinationPort] = useState("");
+    const [bagSize, setBagSize] = useState("");
+    const [bagType, setBagType] = useState("");
+    // const [measurmentUnit, setMeasurmentUnit] = useState("");
+    const [auctionStart, setAuctionStart] = useState(null);
+    const [auctionEnd, setAuctionEnd] = useState(null);
+    const [extensionMinutes, setExtensionMinutes] = useState("");
+    const [extendedAt, setExtendedAt] = useState(null);
+    const [timeExtension, setTimeExtension] = useState("");
+    const [extensionBeforeEndtime, setExtensionBeforeEndtime] = useState("");
+    const [minDecrementValue, setMinDecrementValue] = useState("");
+    const [timerExtendedValue, setTimerExtendedValue] = useState("");
+    const [qtySplittingCriteria, setQtySplittingCriteria] = useState("");
+    const [counterOfferTimer, setCounterOfferTimer] = useState("");
+    const [applicationStart, setApplicationStart] = useState(null);
+    const [applicationEnd, setApplicationEnd] = useState(null);
+    const [headers, setHeaders] = useState([
+      "S.No",
+      "Item",
+      "Item Description",
+      "UOM",
+      "Total Qty",
+      "Rate",
+    ]);
+    const [subTenders, setSubTenders] = useState([]);
+    const [categories, setCategories] = useState([]);
+    const [selectedCategory, setSelectedCategory] = useState("");
 
   const handleDescriptionChange = (value) => {
     setDescription(value);
@@ -83,21 +123,13 @@ const AddTender = () => {
     maxFiles: 1,
   });
 
-  // Quick Options
-  const [isFeatured, setIsFeatured] = useState(false);
-  const [isPublished, setIsPublished] = useState(false);
-
   const handleFeaturedChange = () => {
     setIsFeatured(!isFeatured);
   };
 
   const handlePublishChange = () => {
     setIsPublished(!isPublished);
-  };
-
-  // EMD Details
-  const [emdAmount, setEmdAmount] = useState("");
-  const [emdLevelAmount, setEmdLevelAmount] = useState("");
+  }; 
 
   // Attachments
   const [attachments, setAttachments] = useState([
@@ -121,15 +153,11 @@ const AddTender = () => {
     setAttachments(newAttachments);
   };
 
-  const [auctionType, setAuctionType] = useState("reverse");
-  const [accessType, setAccessType] = useState("public");
-
   const handleAuctionInputChange = (index, field, value) => {
     const updatedFields = [...auctionFields];
     updatedFields[index][field] = value;
     setAuctionFields(updatedFields);
   };
-
 
   // Custom Form Builder
   const [formFields, setFormFields] = useState([]);
@@ -221,36 +249,32 @@ const AddTender = () => {
     }
   };
 
-  // Tender Details Form
-  const [currency, setCurrency] = useState("INR(₹)");
-  const [startingPrice, setStartingPrice] = useState("");
-  // const [quantity, setQuantity] = useState("");
-  const [destinationPort, setDestinationPort] = useState("");
-  const [bagSize, setBagSize] = useState("");
-  const [bagType, setBagType] = useState("");
-  // const [measurmentUnit, setMeasurmentUnit] = useState("");
-  const [auctionStart, setAuctionStart] = useState(null);
-  const [auctionEnd, setAuctionEnd] = useState(null);
-  const [extensionMinutes, setExtensionMinutes] = useState("");
-  const [extendedAt, setExtendedAt] = useState(null);
-  const [timeExtension, setTimeExtension] = useState("");
-  const [extensionBeforeEndtime, setExtensionBeforeEndtime] = useState("");
-  const [minDecrementValue, setMinDecrementValue] = useState("");
-  const [timerExtendedValue, setTimerExtendedValue] = useState("");
-  const [qtySplittingCriteria, setQtySplittingCriteria] = useState("");
-  const [counterOfferTimer, setCounterOfferTimer] = useState("");
-  const [applicationStart, setApplicationStart] = useState(null);
-  const [applicationEnd, setApplicationEnd] = useState(null);
-  const [headers, setHeaders] = useState([
-    "S.No",
-    "Item",
-    "Item Description",
-    "UOM",
-    "Total Qty",
-    "Rate",
-  ]);
-  const [subTenders, setSubTenders] = useState([]);
 
+  useEffect(() => {
+    // Update headers when selectedCategory changes
+    if (selectedCategory) {
+      const selectedData = categories.find(
+        (category) => category.demo_tender_sheet_id === selectedCategory
+      );
+      console.log("Selected Category Data:", selectedData);
+  
+      if (selectedData) {
+        const headerNames = selectedData.headers.map((header) => header.header_display_name); // Extract only header_display_name
+        setHeaders(headerNames); // Update headers with header_display_name only
+        console.log("Headers Updated:", headerNames);
+      } else {
+        setHeaders([]); // Clear headers if no match found
+        console.log("No matching category found for selected ID:", selectedCategory);
+      }
+    } else {
+      setHeaders([]); // Clear headers if no category is selected
+      console.log("No category selected.");
+    }
+  }, [selectedCategory, categories, setHeaders]);
+  
+
+  console.log("categories-kjsdkjsf", headers);
+  
   const parseDate = (date) => (date ? new Date(date) : null);
   const handleApplicationStartChange = (date) => {
     setApplicationStart(date);
@@ -304,7 +328,7 @@ const AddTender = () => {
       counter_offr_accept_timer: counterOfferTimer, // Counter offer acceptance timer
       img_url: image ? URL.createObjectURL(image) : " ", // Image URL created from the uploaded file
       auction_type: auctionType,
-      accessType:accessType, // Set to null if not applicable
+      accessType: accessType, // Set to null if not applicable
       tender_id: tender_id, // Generate a random tender ID based on the current timestamp if not provided
       audi_key: null, // Set to null if not applicable
       // auct_field: auctionFields,
@@ -312,7 +336,7 @@ const AddTender = () => {
         headers, // Headers from EditableSheet
         sub_tenders: subTenders, // SubTender data with rows
       },
-      selected_buyers: selectedBuyers, 
+      selected_buyers: selectedBuyers,
     };
 
     console.log("form data here 1", formData);
@@ -395,7 +419,7 @@ const AddTender = () => {
                 setAccessType={setAccessType}
                 accessType={accessType}
                 auctionType={auctionType}
-                onSelectedBuyersChange={handleSelectedBuyersChange}
+                onSelectedBuyersChange={() => handleSelectedBuyersChange}
               />
             </div>
 
@@ -409,7 +433,13 @@ const AddTender = () => {
               renderField={renderField}
               initialFields={initialFields}
             /> */}
-
+              {/* Tender Categories */}
+              <TenderCategories
+                categories={categories}
+                setCategories={setCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+              />
               {/* Tender Details Form */}
               <FullDetails
                 currency={currency}
