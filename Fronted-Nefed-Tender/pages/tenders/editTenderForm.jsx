@@ -1,13 +1,10 @@
 // components/edit-tender/EditTenderForm.jsx
-
 import React, { useCallback, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import "react-quill/dist/quill.snow.css";
-
 import "react-datepicker/dist/react-datepicker.css";
-
 import UserDashboard from "@/layouts/UserDashboard";
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import { callApiGet, callApiPost } from "@/utils/FetchApi";
@@ -18,8 +15,7 @@ import EMDDetails from "@/components/edit-tender/EMDDetails";
 import Attachments from "@/components/edit-tender/Attachments";
 import FullDetails from "@/components/edit-tender/FullDetails";
 import EditTAble from "@/components/edit-tender/EditTAble";
-
-// import CustomFormBuilder from "@/components/edit-tender/CustomForm"; // Commented out as per previous instructions
+import AuctionItems from "@/components/edit-tender/AuctionItems";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const DatePicker = dynamic(() => import("react-datepicker"), { ssr: false });
@@ -37,6 +33,7 @@ const initialFields = [
 const EditTenderForm = () => {
   const [headers, setHeaders] = useState([]);
   const [subTenders, setSubTenders] = useState([]);
+  const [data, setData] = useState();
   const router = useRouter();
   const { id } = router.query;
 
@@ -78,6 +75,11 @@ const EditTenderForm = () => {
   // ---------- DRAG & DROP FORM BUILDER STATE ----------
   const [formFields, setFormFields] = useState([]);
 
+  // ---------- AUCTION STATE ----------
+  const [auctionType, setAuctionType] = useState("reverse");
+  const [accessType, setAccessType] = useState("public");
+  const [selectedBuyers, setSelectedBuyers] = useState([]);
+
   // ---------- DRAG & DROP HANDLER FOR FORM BUILDER ----------
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -96,7 +98,7 @@ const EditTenderForm = () => {
     const draggedField = initialFields[source.index];
     setFormFields([...formFields, draggedField]);
   };
-
+   
   // ---------- FETCH TENDER DATA ON LOAD ----------
   useEffect(() => {
     if (id) {
@@ -125,7 +127,7 @@ const EditTenderForm = () => {
                   {
                     key: "",
                     extension: "",
-                    maxFileSize: "",
+                    size: "",
                     label: "",
                     file: null,
                   },
@@ -160,7 +162,16 @@ const EditTenderForm = () => {
             timerExtendedValue: data.timer_ext_val?.toString() || "",
             qtySplittingCriteria: data.qty_split_criteria?.trim() || "",
             counterOfferTimer: data.counter_offr_accept_timer?.toString() || "",
+            // Add auction-related data
+            auction_type: data.auction_type || "reverse",
+            accessType: data.accessType || "public",
+            selected_buyers: data.selected_buyers || [],
           }));
+
+          // Set auction states
+          setAuctionType(data.auction_type || "reverse");
+          setAccessType(data.accessType || "public");
+          setSelectedBuyers(data.selected_buyers || []);
 
           console.log("attachments data here :", tenderData.attachments);
         } catch (error) {
@@ -172,7 +183,10 @@ const EditTenderForm = () => {
       fetchTenderDetails();
     }
   }, [id]);
-
+  const handleSelectedBuyersChange = (buyers) => {
+    const buyerIds = buyers.map((buyer) => buyer.user_id);
+    setSelectedBuyers(buyerIds); // Store only IDs in the state
+  };
   // ---------- SUBMIT HANDLER ----------
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -216,20 +230,21 @@ const EditTenderForm = () => {
       qty_split_criteria: tenderData.qtySplittingCriteria, // Quantity splitting criteria
       counter_offr_accept_timer: tenderData.counterOfferTimer, // Counter offer acceptance timer
       img_url: tenderData.image ? URL.createObjectURL(tenderData.image) : " ", // Image URL created from the uploaded file
-      auction_type: "null", // Auction type, set to null if not applicable
+      auction_type: auctionType, // Updated to use auctionType state
+      accessType: accessType, // Access Type (public/private)
+      selected_buyers: selectedBuyers, // Array of selected buyer IDs or objects
       audi_key: tenderData.audiKey,
       headers: headers,
-      sub_tender:subTenders // Audio key, set to null if not applicable
+      sub_tender: subTenders, // Audio key, set to null if not applicable
     };
 
     console.log("form data here 1", formData);
-
+    console.log(accessType);
     try {
       const response = await callApiPost(`update-tender/${id}`, formData);
-      console.log("responses: ", response);
-      setData(response.data);
-      toast.success(response.msg);
+      toast.success("Tender Updated");
       router.push("/tenders");
+      setData(response.data);
     } catch (error) {
       console.error("Error updating form:", error);
       toast.error("Failed to update tender.");
@@ -289,22 +304,25 @@ const EditTenderForm = () => {
                   }))
                 }
               />
+
+              {/* Auction Items */}
+              <AuctionItems
+                auctionType={auctionType}
+                setAuctionType={setAuctionType}
+                accessType={accessType}
+                setAccessType={setAccessType}
+                initialSelectedBuyersIds={tenderData.selected_buyers}
+                onSelectedBuyersChange={(selectedBuyers) =>
+                  setTenderData((prev) => ({
+                    ...prev,
+                    selected_buyers: selectedBuyers,
+                  }))
+                }
+              />
             </div>
 
             {/* ----- RIGHT COLUMN ----- */}
             <div>
-              {/*
-                Commented out the Form Builder:
-              */}
-              {/* 
-              <CustomFormBuilder
-                formFields={formFields}
-                setFormFields={setFormFields}
-                initialFields={initialFields}
-                onDragEnd={onDragEnd}
-              />
-              */}
-
               {/* Full Details */}
               <FullDetails
                 tenderData={tenderData}

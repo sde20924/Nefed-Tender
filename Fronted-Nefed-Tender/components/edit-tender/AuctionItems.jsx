@@ -1,10 +1,10 @@
-// components/AddTender/AuctionItems.js
+
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
-import { authApi } from "@/utils/FetchApi";
+import {  authApi } from "@/utils/FetchApi";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onSelectedBuyersChange}) => {
+const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onSelectedBuyersChange,initialSelectedBuyersIds}) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -32,7 +32,6 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
     const fetchBuyers = async () => {
       try {
         const response = await authApi("ac");
-
         if (response && response.data) {
           setBuyersList(response.data);
         } else {
@@ -43,7 +42,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
       }
     };
     fetchBuyers();
-  }, [accessType]);
+  }, []);
 
   useEffect(() => {
     onSelectedBuyersChange(selectedBuyers);
@@ -81,7 +80,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
     if (showPopup) {
       setFilteredBuyers(buyersList);
     }
-  }, [showPopup, buyersList]);   
+  }, [showPopup, buyersList]);
 
   // const handleAddBuyer = () => {
   //   const newBuyer = { ...buyerDetails };
@@ -116,7 +115,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
   
       // API call
       const response = await authApi("zwqaeq-vqt-ctrqw", "POST", values);
-       
+  
       // Handle response
       if (response.success) {
         console.log("Buyer added successfully:", response.data);
@@ -129,6 +128,11 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
       console.error("Error while adding buyer:", error);
     }
   };
+  // useEffect(()=>{
+  //  setSelectedBuyers(initialSelectedBuyersIds)
+  //  console.log("+++++++",initialSelectedBuyersIds)
+  // },[accessType,initialSelectedBuyersIds])
+  
   const toggleSelectBuyer = (buyer) => {
     setSelectedBuyers((prev) => {
       if (prev.some((b) => b.email === buyer.email)) {
@@ -251,7 +255,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                         >
                           <input
                             type="checkbox"
-                            checked={selectedBuyers.some(
+                            checked={selectedBuyers?.some(
                               (b) => b.email === buyer.email
                             )}
                             onChange={() => toggleSelectBuyer(buyer)}

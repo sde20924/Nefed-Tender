@@ -9,7 +9,6 @@ import { useDropzone } from "react-dropzone";
 import { DragDropContext } from "react-beautiful-dnd";
 import { callApiPost } from "@/utils/FetchApi";
 import { toast } from "react-toastify";
-
 import EditableSheet from "@/components/add-tander/EditableSheet";
 import TendersDetails from "@/components/add-tander/TenderDetails";
 import ImageUpload from "@/components/add-tander/ImageUpload";

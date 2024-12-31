@@ -302,7 +302,7 @@ const AccessBidRoom = () => {
       };
       console.log("body-datafgh", body);
 
-      const response = await callApiPost("/formdata", body);
+      const response = await callApiPost("formdata", body);
 
       if (response.success) {
         toast.success("Form data submitted successfully!");

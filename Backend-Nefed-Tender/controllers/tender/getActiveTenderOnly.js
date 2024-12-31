@@ -3,10 +3,25 @@ const db = require('../../config/config'); // Database connection
 const getActiveTenders = async (req, res) => {
   try {
     const currentTime = Math.floor(Date.now() / 1000); // Get current time in seconds (Epoch time)
+    const { user_id } = req.user; 
+    // Query to get active tenders, including public and private tenders accessible by the user
+    const query = `
+      SELECT * 
+      FROM manage_tender mt
+      WHERE mt.app_end_time > ?
+        AND (
+          mt.user_access = 'public' OR 
+          (mt.user_access = 'private' AND EXISTS (
+            SELECT 1 
+            FROM tender_access ta 
+            WHERE ta.tender_id = mt.tender_id 
+              AND ta.buyer_id = ?
+          ))
+        )
+      ORDER BY mt.app_end_time ASC
+    `;
 
-    // Query to get only tenders where app_end_time is in the future
-    const query = 'SELECT * FROM manage_tender WHERE app_end_time > ? ORDER BY app_end_time ASC';
-    const [result] = await db.query(query, [currentTime]);
+    const [result] = await db.query(query, [currentTime, user_id ]);
 
     if (result.length === 0) {
       return res.status(404).json({ success: false, message: "No active tenders found." });

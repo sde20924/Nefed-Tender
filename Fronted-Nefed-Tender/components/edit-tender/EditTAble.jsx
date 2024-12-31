@@ -9,8 +9,7 @@ export default function EditTable({
   subTenders,
   setSubTenders,
 }) {
-  console.log("headers", headers);
-  console.log("sub", subTenders);
+  
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
