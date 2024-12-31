@@ -32,9 +32,11 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
     counter_offr_accept_timer,
     img_url,
     auction_type,
+    accessType,
+    selected_buyers = [],
     audi_key = null,
     headers,
-    sub_tender, // Changed from sub_tenders to sub_tender
+    sub_tender,
   } = req.body;
 
   try {
@@ -49,16 +51,17 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
 
     // Update `manage_tender` table
     const updateTenderQuery = `
-            UPDATE manage_tender
-            SET 
-                tender_title = ?, tender_slug = ?, tender_desc = ?, tender_cat = ?, tender_opt = ?, 
-                emd_amt = ?, emt_lvl_amt = ?, custom_form = ?, currency = ?, start_price = ?, 
-                dest_port = ?, bag_size = ?, bag_type = ?, app_start_time = ?, app_end_time = ?, 
-                auct_start_time = ?, auct_end_time = ?, time_frame_ext = ?, extended_at = ?, 
-                amt_of_ext = ?, aut_auct_ext_bfr_end_time = ?, min_decr_bid_val = ?, timer_ext_val = ?, 
-                qty_split_criteria = ?, counter_offr_accept_timer = ?, img_url = ?, auction_type = ?, audi_key = ?
-            WHERE tender_id = ?
-        `;
+      UPDATE manage_tender
+      SET 
+        tender_title = ?, tender_slug = ?, tender_desc = ?, tender_cat = ?, tender_opt = ?, 
+        emd_amt = ?, emt_lvl_amt = ?, custom_form = ?, currency = ?, start_price = ?, 
+        dest_port = ?, bag_size = ?, bag_type = ?, app_start_time = ?, app_end_time = ?, 
+        auct_start_time = ?, auct_end_time = ?, time_frame_ext = ?, extended_at = ?, 
+        amt_of_ext = ?, aut_auct_ext_bfr_end_time = ?, min_decr_bid_val = ?, timer_ext_val = ?, 
+        qty_split_criteria = ?, counter_offr_accept_timer = ?, img_url = ?, auction_type = ?, user_access
+ = ?, audi_key = ?
+      WHERE tender_id = ?
+    `;
     const tenderValues = [
       tender_title,
       tender_slug,
@@ -87,17 +90,18 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
       counter_offr_accept_timer,
       img_url,
       auction_type,
+      accessType,
       audi_key,
-      tender_id, // WHERE clause
+      tender_id,
     ];
     await db.query(updateTenderQuery, tenderValues);
 
-    // Delete existing attachments and re-insert updated ones
+    // Update attachments in `tender_required_doc`
     await db.query(`DELETE FROM tender_required_doc WHERE tender_id = ?`, [
       tender_id,
     ]);
     for (const attachment of parsedAttachments) {
-      const { key, label, extension, size } = attachment; // Ensure this matches the frontend
+      const { key, label, extension, size } = attachment;
       await db.query(
         `INSERT INTO tender_required_doc (tender_id, doc_key, doc_label, doc_ext, doc_size)
          VALUES (?, ?, ?, ?, ?)`,
@@ -105,20 +109,20 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
       );
     }
 
-    // Update `headers` in `tender_header`
+    // Update headers in `tender_header`
     await db.query(`DELETE FROM tender_header WHERE tender_id = ?`, [
       tender_id,
     ]);
     for (const { header_id, table_head, order } of headers) {
-      await db.query(
-        `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
-        [tender_id, table_head, order]
-      );
-    }
+        await db.query(
+          `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
+          [tender_id, table_head, order]
+        );
+      }
 
-    // Update `sub_tender` in `subtender` and related rows in `seller_header_row_data`
+    // Update sub_tender and related rows in `seller_header_row_data`
     await db.query(`DELETE FROM subtender WHERE tender_id = ?`, [tender_id]);
-    for (const { id, name, rows } of sub_tender) {
+    for (const {id, name, rows } of sub_tender) {
       const [newSubTender] = await db.query(
         `INSERT INTO subtender (tender_id, subtender_name) VALUES (?, ?)`,
         [tender_id, name]
@@ -132,7 +136,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
 
           await db.query(
             `INSERT INTO seller_header_row_data (header_id, row_data, subtender_id, seller_id, \`order\`, type, row_number)
-                         VALUES (?, ?, ?, ?, ?, ?, ?)`,
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
               header_id,
               data || "",
@@ -146,6 +150,18 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
         }
       }
     }
+    // Update `tender_access` for private tenders
+    if (accessType === "private") {
+      await db.query(`DELETE FROM tender_access WHERE tender_id = ?`, [
+        tender_id,
+      ]);
+      for (const buyer_id of selected_buyers) {
+        await db.query(
+          `INSERT INTO tender_access (buyer_id, tender_id) VALUES (?, ?)`,
+          [buyer_id, tender_id]
+        );
+      }
+    }
 
     // Commit the transaction
     await db.query("COMMIT");
@@ -157,13 +173,11 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
   } catch (error) {
     await db.query("ROLLBACK");
     console.error("Error updating tender:", error.message);
-    res
-      .status(500)
-      .json({
-        success: false,
-        msg: "Failed to update tender",
-        error: error.message,
-      });
+    res.status(500).json({
+      success: false,
+      msg: "Failed to update tender",
+      error: error.message,
+    });
   }
 });
 

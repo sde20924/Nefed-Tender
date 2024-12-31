@@ -167,7 +167,6 @@ const EditTenderForm = () => {
             accessType: data.accessType || "public",
             selected_buyers: data.selected_buyers || [],
           }));
-
           // Set auction states
           setAuctionType(data.auction_type || "reverse");
           setAccessType(data.accessType || "public");
@@ -185,7 +184,8 @@ const EditTenderForm = () => {
   }, [id]);
   const handleSelectedBuyersChange = (buyers) => {
     const buyerIds = buyers.map((buyer) => buyer.user_id);
-    setSelectedBuyers(buyerIds); // Store only IDs in the state
+    setSelectedBuyers(buyerIds); 
+    console.log(selectedBuyers)// Store only IDs in the state
   };
   // ---------- SUBMIT HANDLER ----------
   const handleSubmit = async (e) => {
@@ -240,6 +240,7 @@ const EditTenderForm = () => {
 
     console.log("form data here 1", formData);
     console.log(accessType);
+    console.log("++++++++++++",selectedBuyers)
     try {
       const response = await callApiPost(`update-tender/${id}`, formData);
       toast.success("Tender Updated");
@@ -311,13 +312,8 @@ const EditTenderForm = () => {
                 setAuctionType={setAuctionType}
                 accessType={accessType}
                 setAccessType={setAccessType}
+                onSelectedBuyersChange={() => handleSelectedBuyersChange}
                 initialSelectedBuyersIds={tenderData.selected_buyers}
-                onSelectedBuyersChange={(selectedBuyers) =>
-                  setTenderData((prev) => ({
-                    ...prev,
-                    selected_buyers: selectedBuyers,
-                  }))
-                }
               />
             </div>
 

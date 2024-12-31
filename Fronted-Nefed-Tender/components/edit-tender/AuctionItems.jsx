@@ -1,10 +1,16 @@
-
 import React, { useEffect, useState } from "react";
 import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
-import {  authApi } from "@/utils/FetchApi";
+import { authApi } from "@/utils/FetchApi";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
-const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onSelectedBuyersChange,initialSelectedBuyersIds}) => {
+const AuctionItems = ({
+  setAuctionType,
+  setAccessType,
+  accessType,
+  auctionType,
+  onSelectedBuyersChange,
+  initialSelectedBuyersIds,
+}) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
   const [buyerEmail, setBuyerEmail] = useState("");
@@ -17,12 +23,12 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
   });
 
   const handleAuctionTypeChange = (e) => {
-      setAuctionType(e.target.value);
-    };
+    setAuctionType(e.target.value);
+  };
   // const handleAccessChange = (type) => {
   //     setAccessType(type);
   //   };
-  
+
   const [buyersList, setBuyersList] = useState([]);
   const [filteredBuyers, setFilteredBuyers] = useState([]);
   const [selectedBuyers, setSelectedBuyers] = useState([]);
@@ -42,19 +48,19 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
       }
     };
     fetchBuyers();
-  }, []);
+  }, [accessType]);
 
   useEffect(() => {
     onSelectedBuyersChange(selectedBuyers);
   }, [selectedBuyers, onSelectedBuyersChange]);
+
   const handleAccessChange = (type) => {
     setAccessType(type);
     if (type === "private") {
       setShowPopup(true);
-      setShowAddBuyerFields(false); 
+      setShowAddBuyerFields(false);
     } else {
       setShowPopup(false);
-    
     }
   };
   const handleSearchBuyer = (input) => {
@@ -75,10 +81,10 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
     }
   };
 
-
   useEffect(() => {
     if (showPopup) {
       setFilteredBuyers(buyersList);
+      console.log("-=-=-==-=buyersList");
     }
   }, [showPopup, buyersList]);
 
@@ -96,14 +102,13 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
   //   setShowAddBuyerFields(false);
   // };
 
-
   const validationSchema = Yup.object().shape({
     first_name: Yup.string().required("First name is required"),
     last_name: Yup.string().required("Last name is required"),
     email: Yup.string()
       .email("Invalid email address")
       .required("Email is required"),
-      phone_number: Yup.string()
+    phone_number: Yup.string()
       .matches(/^\d+$/, "Phone number must contain only numbers")
       .required("Phone number is required"),
     company_name: Yup.string().required("Company name is required"),
@@ -112,10 +117,10 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
   const onSubmit = async (values, { resetForm }) => {
     try {
       console.log("Submitting Values:", values);
-  
+
       // API call
       const response = await authApi("zwqaeq-vqt-ctrqw", "POST", values);
-  
+
       // Handle response
       if (response.success) {
         console.log("Buyer added successfully:", response.data);
@@ -128,11 +133,10 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
       console.error("Error while adding buyer:", error);
     }
   };
-  // useEffect(()=>{
-  //  setSelectedBuyers(initialSelectedBuyersIds)
-  //  console.log("+++++++",initialSelectedBuyersIds)
-  // },[accessType,initialSelectedBuyersIds])
-  
+  useEffect(() => {
+    setSelectedBuyers(initialSelectedBuyersIds);
+  }, [accessType, initialSelectedBuyersIds]);
+
   const toggleSelectBuyer = (buyer) => {
     setSelectedBuyers((prev) => {
       if (prev.some((b) => b.email === buyer.email)) {
@@ -140,6 +144,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
       }
       return [...prev, buyer];
     });
+    console.log("Toggled buyer:", buyer);
   };
 
   const handleAccessTypeChange = (type) => {
@@ -149,6 +154,10 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
     } else {
       setShowPopup(false);
     }
+  };
+  const handleAddButtonClick = () => {
+    onSelectedBuyersChange(selectedBuyers);
+    setShowPopup(false); // Close the popup after adding buyers
   };
 
   return (
@@ -246,6 +255,9 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                     onChange={(e) => handleSearchBuyer(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 mb-2"
                   />
+                 
+
+                 
                   <ul className="bg-gray-100 border border-gray-300 rounded-md max-h-60 overflow-y-auto overflow-x-hidden mb-4">
                     {filteredBuyers.length > 0 ? (
                       filteredBuyers.map((buyer, index) => (
@@ -256,7 +268,9 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                           <input
                             type="checkbox"
                             checked={selectedBuyers?.some(
-                              (b) => b.email === buyer.email
+                              (b) =>
+                                b === buyer.user_id || // For case where selectedBuyers contains user_id only
+                                b.email === buyer.email // For case where selectedBuyers contains full buyer objects
                             )}
                             onChange={() => toggleSelectBuyer(buyer)}
                             className="mr-2"
@@ -264,6 +278,8 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                           {buyer.first_name} {buyer.last_name} ({buyer.email}) -{" "}
                           {buyer.company_name}
                         </li>
+
+                
                       ))
                     ) : (
                       <li className="px-4 py-2 text-gray-500">
@@ -271,6 +287,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                       </li>
                     )}
                   </ul>
+                  <button onClick={handleAddButtonClick}>Add Selected Buyers</button>
                   {filteredBuyers.length === 0 && (
                     <button
                       onClick={() => setShowAddBuyerFields(true)}
@@ -297,7 +314,7 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                       // validationSchema={validationSchema}
                       onSubmit={onSubmit}
                     >
-                      {({handleSubmit}) => (
+                      {({ handleSubmit }) => (
                         <>
                           <div className="mb-4">
                             <label className="block text-sm font-medium mt-2">
@@ -391,12 +408,11 @@ const AuctionItems = ({ setAuctionType, setAccessType,accessType,auctionType,onS
                           >
                             Save Buyer and Add to List
                           </button>
-                     </>
+                        </>
                       )}
                     </Formik>
                   </div>
                 )}
-              
               </div>
             </div>
           )}
