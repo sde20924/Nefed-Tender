@@ -8,6 +8,7 @@ import { FaTimes } from "react-icons/fa";
 
 const AccessBidRoom = () => {
   const router = useRouter();
+  const tender_id=params
   const { tenderId } = router.query; // Get the tenderId from the query parameters
   const [tender, setTender] = useState(null);
   const [timeLeft, setTimeLeft] = useState(""); // Countdown timer
@@ -20,7 +21,7 @@ const AccessBidRoom = () => {
   const [auctionItems, setAuctionItems] = useState([]); // State to store auction items
   const [itemBids, setItemBids] = useState({}); // Store user input for each item
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
-  const [formdata, setFormData] = useState();
+  const [formdata, setFormData] = useState([]);
   useEffect(() => {
     if (tenderId) {
       fetchTenderDetails();
@@ -84,6 +85,7 @@ const AccessBidRoom = () => {
       announceWinner();
     }
   }, [auctionEnded, lBidUserId]);
+  
 
   // Function to check auction status and calculate countdown
   const checkAuctionStatus = (startTime, endTime) => {
@@ -131,115 +133,115 @@ const AccessBidRoom = () => {
   };
 
   // Handle input change for each auction item
-  const handleInputChange = (index, value) => {
-    const newBids = { ...itemBids, [index]: value }; // Update the user input for each item
-    setItemBids(newBids);
+  // const handleInputChange = (index, value) => {
+  //   const newBids = { ...itemBids, [index]: value }; // Update the user input for each item
+  //   setItemBids(newBids);
 
-    // Calculate the total bid amount (quantity * user input)
-    let sum = 0;
-    Object.keys(newBids).forEach((key) => {
-      const bidValue = parseFloat(newBids[key]) || 0;
-      const itemQuantity = parseFloat(auctionItems[key]?.auct_qty) || 0;
-      sum += bidValue * itemQuantity; // Multiply user input by item quantity
-    });
-    setTotalBidAmount(sum); // Update the total bid amount
-  };
+  //   // Calculate the total bid amount (quantity * user input)
+  //   let sum = 0;
+  //   Object.keys(newBids).forEach((key) => {
+  //     const bidValue = parseFloat(newBids[key]) || 0;
+  //     const itemQuantity = parseFloat(auctionItems[key]?.auct_qty) || 0;
+  //     sum += bidValue * itemQuantity; // Multiply user input by item quantity
+  //   });
+  //   setTotalBidAmount(sum); // Update the total bid amount
+  // };
 
   // Render auction items with input fields
-  const renderAuctionItems = () => {
-    return auctionItems.map((item, index) => (
-      <div
-        key={index}
-        className="grid grid-cols-3 gap-4 items-center mb-4 p-4 border rounded-lg bg-gray-100"
-      >
-        {/* First column: Item name */}
-        <div className="text-gray-700 font-semibold">
-          {item.auct_item.trim()}
-        </div>
+  // const renderAuctionItems = () => {
+  //   return auctionItems.map((item, index) => (
+  //     <div
+  //       key={index}
+  //       className="grid grid-cols-3 gap-4 items-center mb-4 p-4 border rounded-lg bg-gray-100"
+  //     >
+  //       {/* First column: Item name */}
+  //       <div className="text-gray-700 font-semibold">
+  //         {item.auct_item.trim()}
+  //       </div>
 
-        {/* Second column: Quantity of item */}
-        <div className="text-gray-700">{item.auct_qty}</div>
+  //       {/* Second column: Quantity of item */}
+  //       <div className="text-gray-700">{item.auct_qty}</div>
 
-        {/* Third column: Input field for entering a number */}
-        <div>
-          <input
-            type="number"
-            placeholder="Enter your bid"
-            className="p-2 border border-gray-300 rounded w-full"
-            value={itemBids[index] || ""}
-            onChange={(e) => handleInputChange(index, e.target.value)}
-          />
-        </div>
-      </div>
-    ));
-  };
+  //       {/* Third column: Input field for entering a number */}
+  //       <div>
+  //         <input
+  //           type="number"
+  //           placeholder="Enter your bid"
+  //           className="p-2 border border-gray-300 rounded w-full"
+  //           value={itemBids[index] || ""}
+  //           onChange={(e) => handleInputChange(index, e.target.value)}
+  //         />
+  //       </div>
+  //     </div>
+  //   ));
+  // };
 
   // Handle bid submission
-  const handlePlaceBid = () => {
-    // Ensure bid amount is provided
-    if (totalBidAmount <= 0) {
-      toast.error("Please enter valid bid amounts.");
-      return;
-    }
+  // const handlePlaceBid = () => {
+  //   // Ensure bid amount is provided
+  //   if (totalBidAmount <= 0) {
+  //     toast.error("Please enter valid bid amounts.");
+  //     return;
+  //   }
 
-    // Submit the bid
-    submitBid(); // Call the function to submit the bid
-  };
+  //   // Submit the bid
+  //   submitBid(); // Call the function to submit the bid
+  // };
 
   // Function to submit the bid to the server
-  const submitBid = async () => {
-    try {
-      const response = await callApiPost("bid/submit", {
-        tender_id: tenderId, // Pass the tender ID
-        bid_amount: totalBidAmount, // Pass the total bid amount
-      });
+  // const submitBid = async () => {
+  //   try {
+  //     const response = await callApiPost("bid/submit", {
+  //       tender_id: tenderId, // Pass the tender ID
+  //       bid_amount: totalBidAmount, // Pass the total bid amount
+  //     });
 
-      if (response.success) {
-        toast.success(`Bid of ₹${totalBidAmount} placed successfully.`);
-        fetchBids(); // Refresh the bid list after placing a bid
-      } else {
-        toast.error("Failed to place bid. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error submitting bid:", error.message);
-      toast.error("Error submitting bid. Please try again.");
-    }
-  };
+  //     if (response.success) {
+  //       toast.success(`Bid of ₹${totalBidAmount} placed successfully.`);
+  //       fetchBids(); // Refresh the bid list after placing a bid
+  //     } else {
+  //       toast.error("Failed to place bid. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error submitting bid:", error.message);
+  //     toast.error("Error submitting bid. Please try again.");
+  //   }
+  // };
 
   //winner announce than update the table
-  const announceWinner = async () => {
-    try {
-      // Ensure lBidUserId and tender are defined
-      if (!lBidUserId || !tender) {
-        console.error("No lowest bid user ID or tender data available.");
-        return;
-      }
+  // const announceWinner = async () => {
+  //   try {
+  //     // Ensure lBidUserId and tender are defined
+  //     if (!lBidUserId || !tender) {
+  //       console.error("No lowest bid user ID or tender data available.");
+  //       return;
+  //     }
 
-      // Create the formData object with necessary details
-      const formData = {
-        winner_user_id: lBidUserId,
-        qty_secured: tender.qty_split_criteria,
-        round: 1,
-        status: "sold",
-      };
+  //     // Create the formData object with necessary details
+  //     const formData = {
+  //       winner_user_id: lBidUserId,
+  //       qty_secured: tender.qty_split_criteria,
+  //       round: 1,
+  //       status: "sold",
+  //     };
 
-      // Call the API using callApiPost function
-      const response = await callApiPost(
-        `tender/announce-winner/${tenderId}`,
-        formData
-      );
+  //     // Call the API using callApiPost function
+  //     const response = await callApiPost(
+  //       `tender/announce-winner/${tenderId}`,
+  //       formData
+  //     );
 
-      if (response.success) {
-        toast.success("Winner announced successfully!");
-        fetchBids(); // Refresh the bid list to see updated status
-      } else {
-        toast.error("Failed to announce winner. Please try again.");
-      }
-    } catch (error) {
-      console.error("Error announcing winner:", error.message);
-      toast.error("Error announcing winner. Please try again.");
-    }
-  };
+  //     if (response.success) {
+  //       toast.success("Winner announced successfully!");
+  //       fetchBids(); // Refresh the bid list to see updated status
+  //     } else {
+  //       toast.error("Failed to announce winner. Please try again.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error announcing winner:", error.message);
+  //     toast.error("Error announcing winner. Please try again.");
+  //   }
+  // };
 
   // Render the position box showing the lowest bid or L1 status
   const renderPositionBox = () => {
@@ -300,6 +302,7 @@ const AccessBidRoom = () => {
       const body = {
         headers: tender.headers,
         formdata,
+        bid_amount:totalBidAmount
       };
       console.log("body-datafgh", body);
 
@@ -321,12 +324,38 @@ const AccessBidRoom = () => {
         if (subTender.id === subTenderId) {
           const updatedRows = subTender.rows.map((row, rIndex) => {
             if (rIndex === rowIndex) {
-              return row.map((cell, cIndex) => {
+              // Update the cell data
+              const updatedRow = row.map((cell, cIndex) => {
                 if (cIndex === cellIndex && cell.type === "edit") {
-                  return { ...cell, data: value }; // Update the cell data
+                  return { ...cell, data: value };
                 }
-                return cell; // Return other cells unchanged
+                return cell;
               });
+
+              // Calculate Total Cost if headers include Total Quantity and Rate
+              const headers = tender.headers;
+              const quantityIndex = headers.findIndex(
+                (header) => header.table_head === "Total Quantity"
+              );
+              const rateIndex = headers.findIndex(
+                (header) => header.table_head === "Rate"
+              );
+              const totalCostIndex = headers.findIndex(
+                (header) => header.table_head === "Total Cost"
+              );
+
+              if (quantityIndex !== -1 && rateIndex !== -1 && totalCostIndex !== -1) {
+                const quantity = parseFloat(updatedRow[quantityIndex]?.data) || 0;
+                const rate = parseFloat(updatedRow[rateIndex]?.data) || 0;
+                const totalCost = quantity * rate;
+
+                updatedRow[totalCostIndex] = {
+                  ...updatedRow[totalCostIndex],
+                  data: totalCost.toFixed(2), // Update Total Cost
+                };
+              }
+
+              return updatedRow;
             }
             return row; // Return other rows unchanged
           });
@@ -338,6 +367,33 @@ const AccessBidRoom = () => {
     );
   };
 
+  const calculateTotalAmount = (rows, headers) => {
+    const totalCostIndex = headers.findIndex(
+      (header) => header.table_head === "Total Cost"
+    );
+
+    if (totalCostIndex === -1) return 0; // If Total Cost column doesn't exist
+
+    return rows.reduce((sum, row) => {
+      const totalCost = parseFloat(row[totalCostIndex]?.data) || 0;
+      return sum + totalCost;
+    }, 0);
+  };
+
+  const updateTotalBidAmount = () => {
+    const total = formdata.reduce((sum, subTender) => {
+      const subTenderTotal = calculateTotalAmount(
+        subTender.rows,
+        tender.headers
+      );
+      return sum + subTenderTotal;
+    }, 0);
+    setTotalBidAmount(total); // Update the total bid amount
+  };
+  
+  useEffect(() => {
+    updateTotalBidAmount();
+  }, [formdata]);
   const [showPopup, setShowPopup] = useState(true);
 
   useEffect(() => {
@@ -555,9 +611,14 @@ const AccessBidRoom = () => {
           </div>
 
           {/* Table Data */}
-          <div className="space-y-8 ">
-            <div className="space-y-8">
-              {formdata.map((subTender) => (
+          <div className="space-y-8">
+            {formdata.map((subTender) => {
+              const totalAmount = calculateTotalAmount(
+                subTender.rows,
+                tender.headers
+              );
+      
+              return (
                 <div
                   key={subTender.id}
                   className="border-b border-gray-300 p-4 shadow-md rounded-lg bg-white hover:shadow-lg transition-shadow duration-300"
@@ -611,19 +672,39 @@ const AccessBidRoom = () => {
                             ))}
                           </tr>
                         ))}
+                        {/* Total Amount Row */}
+                        <tr className="bg-blue-100 text-gray-700 font-bold">
+                          <td
+                            colSpan={tender.headers.length - 1}
+                            className="border border-gray-300 px-4 py-2 text-right"
+                          >
+                            Subtender Total Amount
+                          </td>
+                          <td className="border border-gray-300 px-4 py-2 text-right">
+                            {totalAmount.toFixed(2)}
+                          </td>
+                        </tr>
                       </tbody>
                     </table>
                   </div>
                 </div>
-              ))}
-              <div className="text-right mt-6">
-                <button
-                  onClick={sendFormData}
-                  className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
-                >
-                  Submit Form Data
-                </button>
+              );
+            })}
+            <div className="flex flex-row justify-between">
+              <div className="bg-blue-600 text-white font-bold py-3 px-2 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300">
+                Total Bid Amount : ₹{totalBidAmount.toFixed(2)}
+                <span>
+
+                </span>
               </div>
+            <div className="text-right mt-6">
+              <button
+                onClick={sendFormData}
+                className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
+              >
+                Submit Bid
+              </button>
+            </div>
             </div>
           </div>
         </div>
