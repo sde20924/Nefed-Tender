@@ -31,6 +31,7 @@ const {updateHomepageContent} = require("../../controllers/tender/updateHomePage
 
 const {getTenderAuctionItemsController} = require("../../controllers/tender/getTenderAuctionItemsController");
 const saveEditableRowsController = require("../../controllers/tender/SaveBuyerHeaderData");
+const { getAllDemoExcelSheetsController } = require("../../controllers/tender/getAllDemoExcelSheetsController ");
 
 // Route to get all tenders 
 router.get('/tenders', getAllTendersController);
@@ -49,6 +50,7 @@ router.get('/get-buyer-list',verifyUser,getBuyerList);
 router.get('/get-manager-list',verifyUser,getManagerList);
 
 router.get('/get-home-page-content', getHomepageContent);
+router.get("/demo-excel-sheets", getAllDemoExcelSheetsController);
 
 router.get('/get-tender-auction-items/:tender_id',verifyUser,getTenderAuctionItemsController);
 
