@@ -1,6 +1,6 @@
-const db = require('../../config/config');
-const asyncErrorHandler = require('../../utils/asyncErrorHandler');
-const generateUserToken = require('../../utils/generateToken');
+import db from '../../config/config.js';
+import asyncErrorHandler from '../../utils/asyncErrorHandler.js';
+import generateUserToken from '../../utils/generateToken.js';
 
 const switchUser = asyncErrorHandler(async (req, res) => {
     const { user_id, login_as } = req.params;
@@ -10,7 +10,7 @@ const switchUser = asyncErrorHandler(async (req, res) => {
     }
 
     // Verify the user exists in the specified role table
-    const userQuery = `SELECT * FROM ${login_as} WHERE user_id = ?`;
+    const userQuery = `SELECT * FROM ${login_as} WHERE user_id = $1`;
     const [userResult] = await db.query(userQuery, [user_id]);
 
     if (userResult.length === 0) {
@@ -20,7 +20,7 @@ const switchUser = asyncErrorHandler(async (req, res) => {
     // Verify the manager has permission to switch to this user
     const managerCheckQuery = `
         SELECT * FROM user_manager_assignments
-        WHERE user_id = ? AND manage_as = ?
+        WHERE user_id = $1 AND manage_as = $2
     `;
     const [managerCheckResult] = await db.query(managerCheckQuery, [req.user.user_id, login_as]);
 
@@ -53,4 +53,4 @@ const switchUser = asyncErrorHandler(async (req, res) => {
     });
 });
 
-module.exports = switchUser;
+export default switchUser;

@@ -1,18 +1,14 @@
-const nodemailer = require('nodemailer');
-
-
-
+import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
-  service: 'Gmail', 
+  service: 'Gmail',
   auth: {
-    user: 'developer2@viexports.com', 
-    pass: 'ckrcjdlijzfycffz', 
+    user: 'developer2@viexports.com',
+    pass: 'ckrcjdlijzfycffz',
   },
 });
 
 const sentCustomEmail = async (mailOptions) => {
-
   try {
     await transporter.sendMail(mailOptions);
     console.log('Custom Email sent successfully');
@@ -22,4 +18,4 @@ const sentCustomEmail = async (mailOptions) => {
   }
 };
 
-module.exports = sentCustomEmail;
+export default sentCustomEmail;

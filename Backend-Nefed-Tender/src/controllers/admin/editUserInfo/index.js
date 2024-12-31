@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const editUserInfo = asyncErrorHandler(async (req, res) => {
   const { user_id, login_as } = req.params;
@@ -94,4 +94,4 @@ const editUserInfo = asyncErrorHandler(async (req, res) => {
   return res.status(200).send(response);
 });
 
-module.exports = editUserInfo;
+export default editUserInfo;

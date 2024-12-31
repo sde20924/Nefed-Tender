@@ -1,16 +1,16 @@
-const db = require("../../config/config");
-const asyncErrorHandler = require("../../utils/asyncErrorHandler");
+import db from "../../config/config.js";
+import asyncErrorHandler from "../../utils/asyncErrorHandler.js";
 
 const getAllVerifiedSellersController = asyncErrorHandler(async (req, res) => {
     const query = `SELECT * FROM seller WHERE status = 'approved' AND is_blocked != true ORDER BY created_on DESC`;
-    const { rows: buyers } = await db.query(query);
-    console.log("data: ", buyers);
-    const verifiedBuyers = buyers;
+    const { rows: sellers } = await db.query(query);
+    console.log("data: ", sellers);
+    const verifiedSellers = sellers;
     return res.status(200).send({
-        data: verifiedBuyers,
+        data: verifiedSellers,
         msg: "Verified Sellers fetched successfully",
         success: true
     });
 });
 
-module.exports = getAllVerifiedSellersController;
+export default getAllVerifiedSellersController;

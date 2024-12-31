@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const blockOrDeleteUser = asyncErrorHandler(async (req, res) => {
     const { user_id, type, operation } = req.body;
@@ -50,4 +50,4 @@ const blockOrDeleteUser = asyncErrorHandler(async (req, res) => {
     return res.status(200).json({ msg: `${operation.charAt(0).toUpperCase() + operation.slice(1)} operation successful for ${type}`, success: true });
 });
 
-module.exports = blockOrDeleteUser;
+export default blockOrDeleteUser;

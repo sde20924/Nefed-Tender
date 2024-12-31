@@ -1,4 +1,4 @@
-const axios = require('axios');
+import axios from 'axios';
 
 const getUserInfo = async (req, res) => {
     const { user_id, login_as } = req.user;
@@ -44,4 +44,4 @@ const getUserInfo = async (req, res) => {
     }
 };
 
-module.exports = getUserInfo;
+export default getUserInfo;

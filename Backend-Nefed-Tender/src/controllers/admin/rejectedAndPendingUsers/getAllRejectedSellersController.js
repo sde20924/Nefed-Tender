@@ -1,11 +1,12 @@
-const db = require("../../../config/config");
-const asyncErrorHandler = require("../../../utils/asyncErrorHandler");
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const getAllRejectedSellersController = asyncErrorHandler(async (req, res) => {
     const query = `SELECT * FROM seller WHERE status = 'rejected' AND is_blocked != true ORDER BY created_on DESC`;
-    const { rows: buyers } = await db.query(query);
-    console.log("data: ", buyers);
-    const rejectedSellers = buyers;
+    const { rows: sellers } = await db.query(query);
+    console.log("data: ", sellers);
+    const rejectedSellers = sellers;
+
     return res.status(200).json({
         data: rejectedSellers,
         msg: "Rejected Sellers fetched successfully",
@@ -13,4 +14,4 @@ const getAllRejectedSellersController = asyncErrorHandler(async (req, res) => {
     });
 });
 
-module.exports = getAllRejectedSellersController;
+export default getAllRejectedSellersController;

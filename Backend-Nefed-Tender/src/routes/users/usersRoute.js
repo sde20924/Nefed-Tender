@@ -1,27 +1,25 @@
-const express = require("express");
+import express from 'express';
+import verifyUser from '../../middlewares/verifyUser.js';
+import getUserInfoController from '../../controllers/users/userInfoController.js';
+import editUserInfoController from '../../controllers/users/editUserInfoController.js';
+import isAdmin from '../../middlewares/isAdmin.js';
+import getAllManagers from '../../controllers/misc/getAllManager.js';
+import getManagerDetails from '../../controllers/misc/getManagerDetails.js';
+import listOfRequiredDocs from '../../controllers/admin/listOfRequiredDocs/index.js';
+import uploadDocController from '../../controllers/users/uploadDocController.js';
+import validateAndUploadMiddleware from '../../middlewares/validateAndUploadMiddleware.js';
+import addExistingManagerAsManager from '../../controllers/manager/addExistingManagerAsManager.js';
+
 const router = express.Router();
-const verifyUser = require("../../middleware/verifyUser");
-const  getUserInfoController  = require("../../controllers/users/userInfoController");
-const editUserInfoController = require("../../controllers/users/editUserInfoController");
-const isAdmin = require("../../middleware/isAdmin");
-const getAllManagers = require("../../controllers/misc/getAllManager");
-const getManagerDetails = require("../../controllers/misc/getManagerDetails");
-const listOfRequiredDocs = require("../../controllers/admin/listOfRequiredDocs");
-const uploadDocController = require("../../controllers/users/uploadDocController");
-const validateAndUploadMiddleware = require("../../middleware/validateAndUploadMiddleware");
-const addExistingManagerAsManager = require("../../controllers/manager/addExistingManagerAsManager");
 
+router.get('/get-user-info', verifyUser || isAdmin, getUserInfoController);
+router.post('/edit-user-info', verifyUser || isAdmin, editUserInfoController);
 
-router.get("/get-user-info",verifyUser || isAdmin ,getUserInfoController);
-router.post("/edit-user-info",verifyUser || isAdmin,editUserInfoController);
+router.post('/upload-user-doc-new', verifyUser || isAdmin, validateAndUploadMiddleware, uploadDocController);
 
-router.post("/upload-user-doc-new", verifyUser || isAdmin, validateAndUploadMiddleware, uploadDocController)
+router.get('/get-all-managers', verifyUser, getAllManagers);
+router.get('/get-manager/:manager_id', verifyUser, getManagerDetails);
+router.post('/add-as-manager', verifyUser, addExistingManagerAsManager);
+router.get('/get-list-of-required-docs', verifyUser || isAdmin, listOfRequiredDocs);
 
-
-router.get("/get-all-managers", verifyUser ,getAllManagers);
-router.get("/get-manager/:manager_id", verifyUser , getManagerDetails);
-router.post("/add-as-manager", verifyUser , addExistingManagerAsManager);
-router.get("/get-list-of-required-docs", verifyUser || isAdmin, listOfRequiredDocs )
-
-
-module.exports = router;
+export default router;

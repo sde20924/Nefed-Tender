@@ -1,5 +1,5 @@
-const db = require('../../config/config');
-const asyncErrorHandler = require('../../utils/asyncErrorHandler');
+import db from '../../config/config.js';
+import asyncErrorHandler from '../../utils/asyncErrorHandler.js';
 
 const addExistingManagerAsManager = asyncErrorHandler(async (req, res) => {
   const { user_id, manager_id, assigned_by, manage_as } = req.body;
@@ -48,4 +48,4 @@ const addExistingManagerAsManager = asyncErrorHandler(async (req, res) => {
   });
 });
 
-module.exports = addExistingManagerAsManager;
+export default addExistingManagerAsManager;

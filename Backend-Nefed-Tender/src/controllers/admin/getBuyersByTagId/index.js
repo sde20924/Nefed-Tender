@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const getBuyerByTagId = asyncErrorHandler(async (req, res) => {
   const { tag_id } = req.params;
@@ -22,4 +22,4 @@ const getBuyerByTagId = asyncErrorHandler(async (req, res) => {
   });
 });
 
-module.exports = getBuyerByTagId;
+export default getBuyerByTagId;

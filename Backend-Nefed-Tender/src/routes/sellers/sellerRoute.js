@@ -1,13 +1,14 @@
-const express = require("express");
+import express from 'express';
+import verifyUser from '../../middlewares/verifyUser.js';
+import getAllVerifiedSellersController from "../../controllers/misc/getAllVerifiedSellersController.js";
+import getAllPendingSellersController from "../../controllers/admin/rejectedAndPendingUsers/getAllPendingSellersController.js";
+import getAllRejectedSellersController from "../../controllers/admin/rejectedAndPendingUsers/getAllRejectedSellersController.js";
+import isAdmin from "../../middlewares/isAdmin.js";
+
 const router = express.Router();
-const verifyUser = require('../../middleware/verifyUser')
-const getAllVerifiedSellersController = require("../../controllers/misc/getAllVerifiedSellersController");
-const getAllPendingSellersController = require("../../controllers/admin/rejectedAndPendingUsers/getAllPendingSellersController");
-const getAllRejectedSellersController = require("../../controllers/admin/rejectedAndPendingUsers/getAllRejectedSellersController");
-const isAdmin = require("../../middleware/isAdmin");
 
 router.get("/get-all-verified-sellers", verifyUser, getAllVerifiedSellersController);
 router.get("/get-all-pending-sellers", isAdmin, getAllPendingSellersController);
 router.get("/get-all-rejected-sellers", isAdmin, getAllRejectedSellersController);
 
-module.exports = router
+export default router;

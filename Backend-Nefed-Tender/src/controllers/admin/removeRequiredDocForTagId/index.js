@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const removeRequiredDocForTagId = asyncErrorHandler(async (req, res) => {
   const { tag_id, doc_id } = req.params;
@@ -20,5 +20,4 @@ const removeRequiredDocForTagId = asyncErrorHandler(async (req, res) => {
   res.status(200).json({ msg: 'Required document removed successfully', success: true, document: rows[0] });
 });
 
-
-module.exports = removeRequiredDocForTagId;
+export default removeRequiredDocForTagId;

@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const updateRatingAndStatus = asyncErrorHandler(async (req, res) => {
   const { rating, type, user_id, status, remarks } = req.body;
@@ -48,4 +48,4 @@ const updateRatingAndStatus = asyncErrorHandler(async (req, res) => {
   return res.status(200).json({ msg: `${type} rating and status updated successfully`, success: true });
 });
 
-module.exports = updateRatingAndStatus;
+export default updateRatingAndStatus;

@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require("../../../utils/asyncErrorHandler");
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const createRequiredDocument = asyncErrorHandler(async (req, res) => {
     const { tag_id, name, doc_ext, max_size } = req.body;
@@ -19,4 +19,4 @@ const createRequiredDocument = asyncErrorHandler(async (req, res) => {
     res.status(201).json({ document: rows[0], msg: 'Document requirement created successfully', success: true });
 });
 
-module.exports = createRequiredDocument;
+export default createRequiredDocument;

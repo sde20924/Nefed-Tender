@@ -1,6 +1,6 @@
-const axios = require("axios");
-const { userVerifyApi } = require("../utils/external/api");
-const asyncErrorHandler = require("../utils/asyncErrorHandler");
+import axios from 'axios';
+import { userVerifyApi } from '../utils/external/api.js';
+import asyncErrorHandler from '../utils/asyncErrorHandler.js';
 
 const verifyUser = asyncErrorHandler(async (req, res, next) => {
   const token = req.headers["authorization"];
@@ -8,6 +8,7 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
   if (!token) {
     return res.status(401).json({ message: "Authorization token is missing" });
   }
+
   try {
     const response = await axios.get(`${userVerifyApi}xqwysr-taqw`, {
       headers: {
@@ -24,7 +25,7 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
       req.user = {
         ...userData,
         token,
-        isAdmin: userData.login_as == "admin" ? true : false,
+        isAdmin: userData.login_as === "admin",
       };
 
       next();
@@ -37,4 +38,4 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
   }
 });
 
-module.exports = verifyUser;
+export default verifyUser;

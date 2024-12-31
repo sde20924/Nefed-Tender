@@ -40,7 +40,7 @@
     "@google-cloud/datastore": "^9.0.0",
     "axios": "^1.7.9",
     "bcrypt": "^5.1.0",
-    "cloudinary": "^1.41.3",
+    "cloudinary": "^1.41.3"
   },
   "devDependencies": {
     "jest": "^29.7.0",

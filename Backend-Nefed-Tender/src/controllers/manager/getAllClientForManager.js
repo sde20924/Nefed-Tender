@@ -1,5 +1,5 @@
-const db = require('../../config/config');
-const asyncErrorHandler = require('../../utils/asyncErrorHandler');
+import db from '../../config/config.js';
+import asyncErrorHandler from '../../utils/asyncErrorHandler.js';
 
 const getAllClientForManager = asyncErrorHandler(async (req, res) => {
   const { user_id } = req.user;
@@ -10,19 +10,19 @@ const getAllClientForManager = asyncErrorHandler(async (req, res) => {
       SELECT uma.*, b.first_name, b.last_name, b.email, 'buyer' AS type
       FROM user_manager_assignments uma
       JOIN buyer b ON uma.assigned_by = b.user_id
-      WHERE uma.user_id = ? AND uma.manage_as = 'buyer'
+      WHERE uma.user_id = $1 AND uma.manage_as = 'buyer'
     `,
     seller: `
       SELECT uma.*, s.first_name, s.last_name, s.email, 'seller' AS type
       FROM user_manager_assignments uma
       JOIN seller s ON uma.assigned_by = s.user_id
-      WHERE uma.user_id = ? AND uma.manage_as = 'seller'
+      WHERE uma.user_id = $1 AND uma.manage_as = 'seller'
     `,
     admin: `
       SELECT uma.*, a.first_name, a.last_name, a.email, 'admin' AS type
       FROM user_manager_assignments uma
       JOIN admin a ON uma.assigned_by = a.user_id
-      WHERE uma.user_id = ? AND uma.manage_as = 'admin'
+      WHERE uma.user_id = $1 AND uma.manage_as = 'admin'
     `
   };
 
@@ -58,4 +58,4 @@ const getAllClientForManager = asyncErrorHandler(async (req, res) => {
   });
 });
 
-module.exports = getAllClientForManager;
+export default getAllClientForManager;

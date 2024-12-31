@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const updateTagForUser = asyncErrorHandler(async (req, res) => {
     const { tag_id, user_ids, type } = req.body;
@@ -47,4 +47,4 @@ const updateTagForUser = asyncErrorHandler(async (req, res) => {
     res.status(200).json({ updatedUsers, msg: `${type} tags updated successfully`, success: true });
 });
 
-module.exports = updateTagForUser;
+export default updateTagForUser;

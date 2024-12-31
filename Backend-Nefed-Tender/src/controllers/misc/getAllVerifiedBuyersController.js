@@ -1,5 +1,5 @@
-const db = require("../../config/config");
-const asyncErrorHandler = require("../../utils/asyncErrorHandler");
+import db from "../../config/config.js";
+import asyncErrorHandler from "../../utils/asyncErrorHandler.js";
 
 const getAllVerifiedBuyersController = asyncErrorHandler(async (req, res) => {
     const query = `SELECT * FROM buyer WHERE status = 'approved' AND is_blocked != true ORDER BY created_on DESC`;
@@ -13,4 +13,4 @@ const getAllVerifiedBuyersController = asyncErrorHandler(async (req, res) => {
     });
 });
 
-module.exports = getAllVerifiedBuyersController;
+export default getAllVerifiedBuyersController;

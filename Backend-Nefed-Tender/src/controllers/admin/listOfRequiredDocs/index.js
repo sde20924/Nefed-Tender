@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const listOfRequiredDocs = asyncErrorHandler(async (req, res) => {
   let { tag_id } = req.params;
@@ -47,4 +47,4 @@ const listOfRequiredDocs = asyncErrorHandler(async (req, res) => {
   }
 });
 
-module.exports = listOfRequiredDocs;
+export default listOfRequiredDocs;

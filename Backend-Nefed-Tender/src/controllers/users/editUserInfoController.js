@@ -1,5 +1,5 @@
-const axios = require('axios');
-const asyncErrorHandler = require('../../utils/asyncErrorHandler');
+import axios from 'axios';
+import asyncErrorHandler from '../../utils/asyncErrorHandler.js';
 
 const editUserInfoController = asyncErrorHandler(async (req, res) => {
   const { user_id, login_as } = req.user;
@@ -60,4 +60,4 @@ const editUserInfoController = asyncErrorHandler(async (req, res) => {
   }
 });
 
-module.exports = editUserInfoController;
+export default editUserInfoController;

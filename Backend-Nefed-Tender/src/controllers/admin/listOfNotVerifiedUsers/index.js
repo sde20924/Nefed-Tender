@@ -1,8 +1,8 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const listOfPendingUsers = asyncErrorHandler(async (req, res) => {
-  
+
     // Query to fetch buyers with status as 'not_verified'
     const buyerQuery = `
       SELECT *, 'buyer' AS type
@@ -28,6 +28,6 @@ const listOfPendingUsers = asyncErrorHandler(async (req, res) => {
       not_verified_users,
       msg: "Pending users list fetched successfully"
     });
-  } )
+});
 
-  module.exports = listOfPendingUsers ;
+export default listOfPendingUsers;

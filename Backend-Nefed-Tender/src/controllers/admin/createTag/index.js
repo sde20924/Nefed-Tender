@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const createTag = asyncErrorHandler(async (req, res) => {
     const { name, description, for_table } = req.body;
@@ -24,4 +24,4 @@ const createTag = asyncErrorHandler(async (req, res) => {
     res.status(201).json({ tag: rows[0], msg: 'Tag created successfully', success: true });
 });
 
-module.exports = createTag;
+export default createTag;

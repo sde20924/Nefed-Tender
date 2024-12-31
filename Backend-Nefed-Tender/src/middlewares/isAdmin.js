@@ -1,5 +1,5 @@
-const jwt = require('jsonwebtoken');
-const db = require('../config/config');
+import jwt from 'jsonwebtoken';
+import db from '../config/config.js';
 
 const isAdmin = async (req, res, next) => {
   const token = req.headers['authorization'];
@@ -29,4 +29,4 @@ const isAdmin = async (req, res, next) => {
   }
 };
 
-module.exports = isAdmin;
+export default isAdmin;

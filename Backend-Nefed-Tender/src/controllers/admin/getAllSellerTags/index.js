@@ -1,5 +1,5 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const getAllSellerTags = asyncErrorHandler(async (req, res) => {
     const query = `
@@ -12,4 +12,4 @@ const getAllSellerTags = asyncErrorHandler(async (req, res) => {
     res.status(200).json({ sellerTags: rows, success: true });
 });
 
-module.exports = getAllSellerTags;
+export default getAllSellerTags;

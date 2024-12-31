@@ -1,5 +1,5 @@
 import { Sequelize } from 'sequelize';
-import config from '../config/config.js';  // Ensure the path is correct
+import config from '../config/config2.js';  // Ensure the path is correct
 import logger from '../config/logger.js';
 import ManageTender from './manage_tender.model.js';
 

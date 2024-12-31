@@ -1,14 +1,14 @@
-const db = require('../../config/config');
-const asyncErrorHandler = require('../../utils/asyncErrorHandler');
+import db from '../../config/config.js';
+import asyncErrorHandler from '../../utils/asyncErrorHandler.js';
 
 const getManagerDetails = asyncErrorHandler(async (req, res) => {
     const manager_id = req.params.manager_id;
-    const {user_id} = req.user
+    const { user_id } = req.user;
 
     const query = `
     SELECT *
     FROM manager
-    WHERE manager_id = ? AND created_by = ?
+    WHERE manager_id = $1 AND created_by = $2
     `;
 
     try {
@@ -27,4 +27,4 @@ const getManagerDetails = asyncErrorHandler(async (req, res) => {
     }
 });
 
-module.exports = getManagerDetails;
+export default getManagerDetails;

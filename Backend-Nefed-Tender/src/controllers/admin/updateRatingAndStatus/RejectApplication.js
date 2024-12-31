@@ -1,7 +1,7 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
-const rejectApplication= asyncErrorHandler(async (req, res) => {
+const rejectApplication = asyncErrorHandler(async (req, res) => {
   const { type, user_id } = req.body;
 
   // Validate input
@@ -48,4 +48,4 @@ const rejectApplication= asyncErrorHandler(async (req, res) => {
   return res.status(200).json({ msg: `${type} application rejected successfully`, success: true });
 });
 
-module.exports = rejectApplication;
+export default rejectApplication;

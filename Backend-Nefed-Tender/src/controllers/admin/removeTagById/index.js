@@ -1,9 +1,8 @@
-const db = require('../../../config/config');
-const asyncErrorHandler = require('../../../utils/asyncErrorHandler');
-const sendEmail = require('../../../utils/sentCustomEmail'); 
+import db from '../../../config/config.js';
+import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
+import sendEmail from '../../../utils/sentCustomEmail.js';
 
-const removeTagById
- = asyncErrorHandler(async (req, res) => {
+const removeTagById = asyncErrorHandler(async (req, res) => {
   const { tag_id } = req.params;
 
   // Start a transaction
@@ -70,5 +69,4 @@ const removeTagById
   }
 });
 
-module.exports = removeTagById
-;
+export default removeTagById;

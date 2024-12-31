@@ -1,5 +1,5 @@
-const db = require('../../config/config');
-const asyncErrorHandler = require('../../utils/asyncErrorHandler');
+import db from '../../config/config.js';
+import asyncErrorHandler from '../../utils/asyncErrorHandler.js';
 
 const getAllManagers = asyncErrorHandler(async (req, res) => {
     const { user_id } = req.user;
@@ -7,7 +7,7 @@ const getAllManagers = asyncErrorHandler(async (req, res) => {
     const assignmentsQuery = `
         SELECT manager_id
         FROM user_manager_assignments
-        WHERE assigned_by = ?
+        WHERE assigned_by = $1
     `;
 
     try {
@@ -24,7 +24,7 @@ const getAllManagers = asyncErrorHandler(async (req, res) => {
         const managersQuery = `
             SELECT manager_id, first_name, last_name, email, user_id, created_by, phone_number
             FROM manager
-            WHERE manager_id IN (?) AND is_blocked = false
+            WHERE manager_id IN ($1) AND is_blocked = false
             ORDER BY first_name ASC
         `;
 
@@ -41,4 +41,4 @@ const getAllManagers = asyncErrorHandler(async (req, res) => {
     }
 });
 
-module.exports = getAllManagers;
+export default getAllManagers;

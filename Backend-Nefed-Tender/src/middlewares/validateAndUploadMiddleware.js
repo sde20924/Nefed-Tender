@@ -1,9 +1,9 @@
-const multer = require('multer');
-const { v4: uuidv4 } = require('uuid');
-const path = require('path');
-const cloudinary = require('../config/cloudinaryConfig');
-const db = require('../config/config');
-const asyncErrorHandler = require('../utils/asyncErrorHandler');
+import multer from 'multer';
+import { v4 as uuidv4 } from 'uuid';
+import path from 'path';
+import cloudinary from '../config/cloudinaryConfig.js';
+import db from '../config/config.js';
+import asyncErrorHandler from '../utils/asyncErrorHandler.js';
 
 // Multer setup for file storage in memory
 const storage = multer.memoryStorage();
@@ -18,7 +18,7 @@ const validateAndUploadMiddleware = asyncErrorHandler(async (req, res, next) => 
     FROM tags t
     JOIN required_documents d ON t.id = d.tag_id
     WHERE t.id = (
-      SELECT tag_id FROM ${login_as} WHERE user_id = ?
+      SELECT tag_id FROM ${login_as} WHERE user_id = $1
     )
   `;
   const { rows: requiredDocuments } = await db.query(tagQuery, [user_id]);
@@ -131,4 +131,4 @@ const validateAndUploadMiddleware = asyncErrorHandler(async (req, res, next) => 
   });
 });
 
-module.exports = validateAndUploadMiddleware;
+export default validateAndUploadMiddleware;
