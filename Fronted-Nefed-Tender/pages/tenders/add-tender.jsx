@@ -499,6 +499,7 @@ const AddTender = () => {
             setHeaders={setHeaders}
             subTenders={subTenders}
             setSubTenders={setSubTenders}
+            selectedCategory ={selectedCategory}
           />
         </form>
         {/* Sticky Submit Button */}

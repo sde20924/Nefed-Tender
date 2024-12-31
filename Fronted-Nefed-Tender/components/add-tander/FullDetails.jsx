@@ -1,28 +1,42 @@
 // components/AddTender/TenderDetailsForm.js
-import React from 'react';
+import React from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 
 const FullDetails = ({
-  currency, setCurrency,
-  startingPrice, setStartingPrice,
+  currency,
+  setCurrency,
+  startingPrice,
+  setStartingPrice,
   // quantity, setQuantity,
   // destinationPort, setDestinationPort,
   // bagSize, setBagSize,
   // bagType, setBagType,
   // measurmentUnit, setMeasurmentUnit,
-  applicationStart, handleApplicationStartChange,
-  applicationEnd, handleApplicationEndChange,
-  auctionStart, setAuctionStart,
-  auctionEnd, setAuctionEnd,
-  extensionMinutes, setExtensionMinutes,
-  extendedAt, setExtendedAt,
-  timeExtension, setTimeExtension,
-  extensionBeforeEndtime, setExtensionBeforeEndtime,
-  minDecrementValue, setMinDecrementValue,
-  timerExtendedValue, setTimerExtendedValue,
-  qtySplittingCriteria, setQtySplittingCriteria,
-  counterOfferTimer, setCounterOfferTimer
+  applicationStart,
+  handleApplicationStartChange,
+  applicationEnd,
+  handleApplicationEndChange,
+  auctionStart,
+  setAuctionStart,
+  auctionEnd,
+  setAuctionEnd,
+  extensionMinutes,
+  setExtensionMinutes,
+  extendedAt,
+  setExtendedAt,
+  timeExtension,
+  setTimeExtension,
+  extensionBeforeEndtime,
+  setExtensionBeforeEndtime,
+  minDecrementValue,
+  setMinDecrementValue,
+  timerExtendedValue,
+  setTimerExtendedValue,
+  qtySplittingCriteria,
+  setQtySplittingCriteria,
+  counterOfferTimer,
+  setCounterOfferTimer,
 }) => {
   return (
     <div className="max-w-2xl mx-auto mt-10 bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -222,8 +236,8 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          Set proper date and time (AM/PM) - From this date and time
-          auction actually starts. Allow applicants to start bidding.
+          Set proper date and time (AM/PM) - From this date and time auction
+          actually starts. Allow applicants to start bidding.
         </p>
         <div className="w-full">
           <DatePicker
@@ -246,10 +260,9 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          Set proper date and time (AM/PM) - From this date and time
-          auction actually stops. Restricts applicants from bidding.
-          (Based on the condition, our system auto increments the
-          deadline)
+          Set proper date and time (AM/PM) - From this date and time auction
+          actually stops. Restricts applicants from bidding. (Based on the
+          condition, our system auto increments the deadline)
         </p>
         <div className="w-full">
           <DatePicker
@@ -272,9 +285,8 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This time extends on auction_end_date and time
-          automatically when a bid happens in the last
-          auto_extension_minutes
+          This time extends on auction_end_date and time automatically when a
+          bid happens in the last auto_extension_minutes
         </p>
         <input
           type="number"
@@ -297,8 +309,7 @@ const FullDetails = ({
           Extended At
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This time extends on extended at and time automatically
-          extended
+          This time extends on extended at and time automatically extended
         </p>
         <div className="w-full">
           <DatePicker
@@ -320,8 +331,8 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This value is (time in min) used in extending when a bid
-          occurs in the last movement
+          This value is (time in min) used in extending when a bid occurs in the
+          last movement
         </p>
         <input
           type="number"
@@ -345,15 +356,13 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This value defines the number of times the timer can be
-          extended when the last movement bid happens.
+          This value defines the number of times the timer can be extended when
+          the last movement bid happens.
         </p>
         <input
           type="number"
           value={extensionBeforeEndtime}
-          onChange={(e) =>
-            setExtensionBeforeEndtime(e.target.value)
-          }
+          onChange={(e) => setExtensionBeforeEndtime(e.target.value)}
           placeholder="Enter Auto Auction Extension Before Endtime"
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           onFocus={(e) =>
@@ -372,8 +381,7 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This value defines the amount of decrement in each bid
-          request.
+          This value defines the amount of decrement in each bid request.
         </p>
         <input
           type="number"
@@ -397,8 +405,8 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This value defines how many times the timer is extended
-          (if you are starting again, keep this value 0).
+          This value defines how many times the timer is extended (if you are
+          starting again, keep this value 0).
         </p>
         <input
           type="number"
@@ -416,7 +424,7 @@ const FullDetails = ({
       </div>
 
       {/* Qty Splitting Criteria */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           Qty Splitting Criteria
           <span className="text-red-500">*</span>
@@ -439,7 +447,7 @@ const FullDetails = ({
           }
           required
         />
-      </div>
+      </div> */}
 
       {/* Counter Offer Acceptance Timer */}
       <div className="mb-4">
@@ -448,8 +456,7 @@ const FullDetails = ({
           <span className="text-red-500">*</span>
         </label>
         <p className="text-sm text-gray-500 mb-2">
-          This value defines the amount of decrement in each bid
-          request.
+          This value defines the amount of decrement in each bid request.
         </p>
         <input
           type="number"

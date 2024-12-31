@@ -287,7 +287,7 @@ const FullDetails = ({ tenderData, setTenderData }) => {
       </div>
 
       {/* Qty Splitting Criteria */}
-      <div className="mb-4">
+      {/* <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
           Qty Splitting Criteria <span className="text-red-500">*</span>
         </label>
@@ -304,7 +304,7 @@ const FullDetails = ({ tenderData, setTenderData }) => {
           className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
           required
         />
-      </div>
+      </div> */}
 
       {/* Counter Offer Timer */}
       <div className="mb-4">
