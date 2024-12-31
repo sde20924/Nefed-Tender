@@ -4,6 +4,7 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { callApiGet, callApiPost } from "@/utils/FetchApi";
 import { ToastContainer, toast } from "react-toastify";
+import { FaTimes } from "react-icons/fa";
 
 const AccessBidRoom = () => {
   const router = useRouter();
@@ -337,6 +338,18 @@ const AccessBidRoom = () => {
     );
   };
 
+  const [showPopup, setShowPopup] = useState(true);
+
+  useEffect(() => {
+    if (isAuctionLive) {
+      setShowPopup(true);
+    }
+  }, [isAuctionLive]);
+
+  const closePopup = () => {
+    setShowPopup(false);
+  };
+
   if (!tender) {
     return <p>Loading...</p>;
   }
@@ -353,41 +366,54 @@ const AccessBidRoom = () => {
         <div className="w-full mx-8 bg-white">
           <div className="text-lg p-4">
             <h1>
-              <b> {tender.tender_title}</b>
+              <b>{tender.tender_title}</b>
             </h1>
           </div>
 
-          <div className="bg-gradient-to-r from-green-200 to-green-50 border border-green-300 text-green-700 p-6 rounded-lg shadow-lg mb-6 flex flex-col justify-between items-center hover:shadow-xl transition-shadow duration-300">
-            {/* Auction Status Message */}
-            <div className="text-center mb-4">
-              <h1 className="text-2xl font-bold">
-                {isAuctionLive
-                  ? "Auction is live!"
-                  : auctionEnded
-                    ? "Auction is closed!"
-                    : "Auction is not started yet!"}
-              </h1>
-            </div>
+          {/* Auction Live Pop-up */}
+          {showPopup && (
+            <div className="fixed top-[120px] sm:top-20  right-4 z-50 w-60 md:w-80 p-2 bg-gradient-to-r from-green-200 via-green-100 to-green-50 border border-green-300 text-green-400 rounded-lg shadow-xl animate-slide-in">
+              {/* Close Button */}
+              <button
+                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 focus:outline-none"
+                onClick={closePopup}
+                aria-label="Close Popup"
+              >
+                <FaTimes className="w-5 h-5" />
+              </button>
 
-            {/* Auction Timing Information */}
-            <div className="flex items-center text-gray-600 text-lg mb-4">
-              <i className="fas fa-clock mr-3 text-green-600"></i>
-              <span>
-                {isAuctionLive
-                  ? "Ending At:"
-                  : auctionEnded
-                    ? "Auction Ended"
-                    : "Starting At:"}
-              </span>
-            </div>
+              {/* Pop-up Content */}
+              <div className="text-center mb-4 animate-pulse">
+                <h1 className="sm:text-2xl text-xl font-bold">
+                  Auction is Live!
+                </h1>
+              </div>
 
-            {/* Time Left */}
-            <div>
-              <span className="font-bold text-3xl text-green-800">
-                {timeLeft}
-              </span>
+              <div className="text-center">
+                <span className="font-bold sm:text-md text-sm text-green-400">
+                  Time Left: {timeLeft}
+                </span>
+              </div>
             </div>
-          </div>
+          )}
+
+          {/* Tailwind CSS Animations */}
+          <style jsx>{`
+            @keyframes slide-in {
+              0% {
+                transform: translateX(100%);
+                opacity: 0;
+              }
+              100% {
+                transform: translateX(0);
+                opacity: 1;
+              }
+            }
+
+            .animate-slide-in {
+              animation: slide-in 0.5s ease-out;
+            }
+          `}</style>
 
           {renderPositionBox()}
 
@@ -529,12 +555,12 @@ const AccessBidRoom = () => {
           </div>
 
           {/* Table Data */}
-          <div className="space-y-8">
+          <div className="space-y-8 ">
             <div className="space-y-8">
               {formdata.map((subTender) => (
                 <div
                   key={subTender.id}
-                  className="border border-gray-300 border-t-0 p-6 rounded-lg shadow-md bg-white hover:shadow-lg transition-shadow duration-300"
+                  className="border-b border-gray-300 p-4 shadow-md rounded-lg bg-white hover:shadow-lg transition-shadow duration-300"
                 >
                   <h2 className="text-xl font-bold mb-6 text-blue-700">
                     {subTender.name}
@@ -590,14 +616,14 @@ const AccessBidRoom = () => {
                   </div>
                 </div>
               ))}
-            </div>
-            <div className="text-right mt-6">
-              <button
-                onClick={sendFormData}
-                className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
-              >
-                Submit Form Data
-              </button>
+              <div className="text-right mt-6">
+                <button
+                  onClick={sendFormData}
+                  className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
+                >
+                  Submit Form Data
+                </button>
+              </div>
             </div>
           </div>
         </div>
