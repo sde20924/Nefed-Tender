@@ -340,7 +340,7 @@ const AddTender = () => {
     };
 
     console.log("form data here 1", formData);
-    console.log(selectedBuyers);
+    console.log("bsdbdhbd]]]]]]",selectedBuyers);
     try {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
