@@ -8,6 +8,7 @@ export default function EditableSheet({
   setHeaders,
   subTenders,
   setSubTenders,
+  selectedCategory
 }) {
   // Add a new subtender
   console.log("headerrrr", headers);
@@ -17,6 +18,11 @@ export default function EditableSheet({
 
   // Function to open the modal
   const openAddSubTenderModal = () => {
+    if(selectedCategory === "" || selectedCategory === null){
+      toast.success("Select the categories first")
+      return;
+    }
+
     setIsModalOpen(true); // Show modal
   };
   const [showModal, setShowModal] = useState(false);
@@ -730,6 +736,7 @@ export default function EditableSheet({
               <div className="mt-4">
                 <button
                   type="button"
+                  // disabled ={selectedCategory!== "" && selectedCategory !== null ? false : true}
                   onClick={openAddSubTenderModal}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg"
                 >
