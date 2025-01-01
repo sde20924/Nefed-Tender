@@ -21,6 +21,7 @@ const AccessBidRoom = () => {
   const [itemBids, setItemBids] = useState({}); // Store user input for each item
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
+  const [bidDetails ,setBidDetails] = useState();
   useEffect(() => {
     if (tenderId) {
       fetchTenderDetails();
@@ -28,6 +29,25 @@ const AccessBidRoom = () => {
       fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
+  useEffect(()=>{
+
+    const BidsDetails = async () => {
+      try{
+        const responce = await callApiGet(`get-bid-details?tender_id=${tenderId}`);
+        if(responce.success){
+          setBidDetails(responce)
+        }
+      }
+      catch (error){
+        console.error(" Error Bids Details:",error.message);
+        
+      }
+    }
+    BidsDetails();
+  },[])
+
+  console.log("hsdsdf",bidDetails);
+  
 
   // Fetch auction items
   const fetchAuctionItems = async () => {
