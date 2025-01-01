@@ -32,6 +32,7 @@ const {updateHomepageContent} = require("../../controllers/tender/updateHomePage
 const {getTenderAuctionItemsController} = require("../../controllers/tender/getTenderAuctionItemsController");
 const saveEditableRowsController = require("../../controllers/tender/SaveBuyerHeaderData");
 const { getAllDemoExcelSheetsController } = require("../../controllers/tender/getAllDemoExcelSheetsController ");
+const { getBidDetails } = require("../../controllers/tender/getBidDetails");
 
 // Route to get all tenders 
 router.get('/tenders', getAllTendersController);
@@ -50,7 +51,8 @@ router.get('/get-buyer-list',verifyUser,getBuyerList);
 router.get('/get-manager-list',verifyUser,getManagerList);
 
 router.get('/get-home-page-content', getHomepageContent);
-router.get("/demo-excel-sheets", getAllDemoExcelSheetsController);
+router.get("/demo-excel-sheets",verifyUser, getAllDemoExcelSheetsController);
+router.get("/get-bid-details",verifyUser, getBidDetails);
 
 router.get('/get-tender-auction-items/:tender_id',verifyUser,getTenderAuctionItemsController);
 
@@ -64,7 +66,7 @@ router.post('/clone-tender/:id', verifyUser, cloneTenderController);
 router.post('/tender/announce-winner/:tender_id',verifyUser, announceWinner);
 router.post('/tender/announce-winner/:tender_id',verifyUser, announceWinner);
 
-router.post('/formdata',verifyUser,saveEditableRowsController.saveBuyerHeaderRowData);
+router.post('/buyer-bid',verifyUser,saveEditableRowsController.saveBuyerHeaderRowData);
 
 router.delete('/delete-tender/:id', verifyUser,);
 
