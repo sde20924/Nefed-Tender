@@ -1,55 +1,85 @@
 const db = require("../../config/config");
 
 const getBidDetails = async (req, res) => {
-  const user_id = req.user.user_id; // User ID from authentication middleware
-  const { tender_id } = req.query; // Tender ID from query parameters
+  const user_id = req.user.user_id; // Extract the user ID from the middleware
+  const { tender_id } = req.query; // Get the tender ID from query params
 
   if (!tender_id) {
     return res.status(400).json({
-      msg: "Required field 'tender_id' is missing.",
+      msg: "Tender ID is required.",
       success: false,
     });
   }
 
   try {
-    // Fetch bid details from tender_bid_room
-    const [bidDetails] = await db.query(
-      `SELECT bid_id, tender_id, user_id, bid_amount, status, created_at 
-       FROM tender_bid_room 
-       WHERE tender_id = ? AND user_id = ?`,
-      [tender_id, user_id]
+    // Fetch all bids for the given tender ID, ordered by bid amount ASC (lowest to highest)
+    const [allBids] = await db.query(
+      `SELECT * FROM tender_bid_room WHERE tender_id = ? ORDER BY bid_amount ASC`,
+      [tender_id]
     );
 
-    if (!bidDetails.length) {
+    if (allBids.length === 0) {
       return res.status(404).json({
-        msg: "No bid details found for the given tender ID and user ID.",
+        msg: "No bids found for this tender.",
         success: false,
       });
     }
 
-    // Fetch row data from buyer_header_row_data
-    const [rowData] = await db.query(
-      `SELECT header_id, row_data, subtender_id, buyer_id, \`order\`, row_number 
-       FROM buyer_header_row_data 
-       WHERE subtender_id IN (
-         SELECT id FROM sub_tenders WHERE tender_id = ?
-       ) AND buyer_id = ?`,
-      [tender_id, user_id]
-    );
+    // Filter the current user's bids
+    const userBids = allBids.filter((bid) => bid.user_id === user_id);
 
+    if (userBids.length === 0) {
+      return res.status(404).json({
+        msg: "No bids found for this buyer on the given tender.",
+        success: false,
+      });
+    }
+
+    // Get the user's latest bid (most recent by created_at)
+    const latestUserBid = userBids.sort(
+      (a, b) => new Date(b.created_at) - new Date(a.created_at)
+    )[0];
+
+    const latestUserBidAmount = latestUserBid.bid_amount;
+
+    // Check where the user's latest bid stands compared to others
+    const rank = allBids
+      .filter((bid) => bid.user_id !== user_id) // Exclude user's bids
+      .reduce((currentRank, otherBid) => {
+        if (otherBid.bid_amount < latestUserBidAmount) {
+          currentRank++;
+        }
+        return currentRank;
+      }, 1); // Start rank from 1
+
+    // Determine the status based on rank
+    let status;
+    if (rank === 1) {
+      status = "L1";
+    } else if (rank === 2) {
+      status = "L2";
+    } else if (rank === 3) {
+      status = "L3";
+    } else if (rank === 4) {
+      status = "L4";
+    } else {
+      status = `Not in top 3`;
+    }
+
+    // Respond with the bid details and status
     res.status(200).json({
-      msg: "Bid details and row data fetched successfully.",
+      msg: "Bid comparison fetched successfully.",
       success: true,
       data: {
-        bidDetails: bidDetails[0], // Return the first bid detail (assuming one bid per user per tender)
-        rowData,
+        tender_id,
+        latestUserBid,
+        status,
       },
     });
   } catch (error) {
-    console.error("Error fetching bid details and row data:", error.message);
-
+    console.error("Error fetching bid comparison:", error.message);
     res.status(500).json({
-      msg: "Error fetching bid details and row data.",
+      msg: "Error fetching bid comparison.",
       success: false,
       error: error.message,
     });
