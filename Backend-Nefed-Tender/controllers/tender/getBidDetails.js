@@ -53,17 +53,17 @@ const getBidDetails = async (req, res) => {
       }, 1); // Start rank from 1
 
     // Determine the status based on rank
-    let status;
+    let position;
     if (rank === 1) {
-      status = "L1";
+      position = "L1";
     } else if (rank === 2) {
-      status = "L2";
+      position = "L2";
     } else if (rank === 3) {
-      status = "L3";
+      position = "L3";
     } else if (rank === 4) {
-      status = "L4";
+      position = "L4";
     } else {
-      status = `Not in top 3`;
+      position = `Not in top 4`;
     }
 
     // Respond with the bid details and status
@@ -73,7 +73,7 @@ const getBidDetails = async (req, res) => {
       data: {
         tender_id,
         latestUserBid,
-        status,
+        position,
       },
     });
   } catch (error) {

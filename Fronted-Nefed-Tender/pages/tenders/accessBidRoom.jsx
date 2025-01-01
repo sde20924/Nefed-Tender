@@ -21,6 +21,7 @@ const AccessBidRoom = () => {
   const [itemBids, setItemBids] = useState({}); // Store user input for each item
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
+  const [bidDetails, setBidDetails] = useState();
   useEffect(() => {
     if (tenderId) {
       fetchTenderDetails();
@@ -28,6 +29,23 @@ const AccessBidRoom = () => {
       fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
+  useEffect(() => {
+    const BidsDetails = async () => {
+      try {
+        const responce = await callApiGet(
+          `get-bid-details?tender_id=${tenderId}`
+        );
+        if (responce.success) {
+          setBidDetails(responce);
+        }
+      } catch (error) {
+        console.error(" Error Bids Details:", error.message);
+      }
+    };
+    BidsDetails();
+  }, [tenderId]);
+
+  // console.log("hsdsdf", bidDetails);
 
   // Fetch auction items
   const fetchAuctionItems = async () => {
@@ -84,7 +102,6 @@ const AccessBidRoom = () => {
       announceWinner();
     }
   }, [auctionEnded, lBidUserId]);
-  
 
   // Function to check auction status and calculate countdown
   const checkAuctionStatus = (startTime, endTime) => {
@@ -301,7 +318,7 @@ const AccessBidRoom = () => {
       const body = {
         headers: tender.headers,
         formdata,
-        bid_amount:totalBidAmount,
+        bid_amount: totalBidAmount,
         tender_id: tenderId,
       };
       console.log("body-datafgh", body);
@@ -344,8 +361,13 @@ const AccessBidRoom = () => {
                 (header) => header.table_head === "Total Cost"
               );
 
-              if (quantityIndex !== -1 && rateIndex !== -1 && totalCostIndex !== -1) {
-                const quantity = parseFloat(updatedRow[quantityIndex]?.data) || 0;
+              if (
+                quantityIndex !== -1 &&
+                rateIndex !== -1 &&
+                totalCostIndex !== -1
+              ) {
+                const quantity =
+                  parseFloat(updatedRow[quantityIndex]?.data) || 0;
                 const rate = parseFloat(updatedRow[rateIndex]?.data) || 0;
                 const totalCost = quantity * rate;
 
@@ -390,11 +412,12 @@ const AccessBidRoom = () => {
     }, 0);
     setTotalBidAmount(total); // Update the total bid amount
   };
-  
+
   useEffect(() => {
     updateTotalBidAmount();
   }, [formdata]);
-  const [showPopup, setShowPopup] = useState(true);
+
+  const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
     if (isAuctionLive) {
@@ -508,7 +531,7 @@ const AccessBidRoom = () => {
             {/* Left Side Cards */}
             <div className="flex flex-col w-full lg:w-[48%] gap-4">
               <div className="bg-gradient-to-r from-blue-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
-                <h5 className="text-xl font-bold mb-4 text-center text-blue-800">
+                <h5 className="text-xl font-bold mb-3 text-center text-blue-800">
                   Application Schedule
                 </h5>
                 <div>
@@ -529,10 +552,7 @@ const AccessBidRoom = () => {
                     </span>
                   </div>
                 </div>
-              </div>
-
-              <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
-                <h5 className="text-xl font-bold mb-4 text-center text-green-800">
+                <h5 className="text-xl font-bold mb-3 text-center text-blue-800">
                   Auction Schedule
                 </h5>
                 <div>
@@ -553,6 +573,20 @@ const AccessBidRoom = () => {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+                <h5 className="text-xl font-bold mb-3 text-center text-green-800">
+                  Current Bid Details
+                </h5>
+                {bidDetails ? (
+                  <div className="flex justify-between items-center">
+                    <p className="text-gray-600 font-medium">{`Bid Amount: $${bidDetails.data.latestUserBid.bid_amount}`}</p>
+                    <p className="text-gray-600 font-medium">{`Position: ${bidDetails.data.position}`}</p>
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-400">Loading...</p>
+                )}
               </div>
             </div>
 
@@ -617,7 +651,7 @@ const AccessBidRoom = () => {
                 subTender.rows,
                 tender.headers
               );
-      
+
               return (
                 <div
                   key={subTender.id}
@@ -691,20 +725,18 @@ const AccessBidRoom = () => {
               );
             })}
             <div className="flex flex-row justify-between">
-              <div className="bg-blue-600 text-white font-bold py-3 px-2 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300">
+              <div className="bg-blue-600 text-white font-bold py-5 px-6 m-1 rounded-lg shadow-md hover:bg-blue-700  transition-all duration-300">
                 Total Bid Amount : ₹{totalBidAmount.toFixed(2)}
-                <span>
-
-                </span>
+                <span></span>
               </div>
-            <div className="text-right mt-6">
-              <button
-                onClick={sendFormData}
-                className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
-              >
-                Submit Bid
-              </button>
-            </div>
+              <div className="text-right mt-6">
+                <button
+                  onClick={sendFormData}
+                  className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
+                >
+                  Submit Bid
+                </button>
+              </div>
             </div>
           </div>
         </div>
