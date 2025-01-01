@@ -41,45 +41,65 @@ const AddTender = () => {
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [selectedBuyers, setSelectedBuyers] = useState([]);
-    // Quick Options
-    const [isFeatured, setIsFeatured] = useState(false);
-    const [isPublished, setIsPublished] = useState(false);
-     // EMD Details
+  // Quick Options
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isPublished, setIsPublished] = useState(false);
+  // EMD Details
   const [emdAmount, setEmdAmount] = useState("");
   const [emdLevelAmount, setEmdLevelAmount] = useState("");
   const [auctionType, setAuctionType] = useState("reverse");
   const [accessType, setAccessType] = useState("public");
-    // Tender Details Form
-    const [currency, setCurrency] = useState("INR(₹)");
-    const [startingPrice, setStartingPrice] = useState("");
-    // const [quantity, setQuantity] = useState("");
-    const [destinationPort, setDestinationPort] = useState("");
-    const [bagSize, setBagSize] = useState("");
-    const [bagType, setBagType] = useState("");
-    // const [measurmentUnit, setMeasurmentUnit] = useState("");
-    const [auctionStart, setAuctionStart] = useState(null);
-    const [auctionEnd, setAuctionEnd] = useState(null);
-    const [extensionMinutes, setExtensionMinutes] = useState("");
-    const [extendedAt, setExtendedAt] = useState(null);
-    const [timeExtension, setTimeExtension] = useState("");
-    const [extensionBeforeEndtime, setExtensionBeforeEndtime] = useState("");
-    const [minDecrementValue, setMinDecrementValue] = useState("");
-    const [timerExtendedValue, setTimerExtendedValue] = useState("");
-    const [qtySplittingCriteria, setQtySplittingCriteria] = useState("");
-    const [counterOfferTimer, setCounterOfferTimer] = useState("");
-    const [applicationStart, setApplicationStart] = useState(null);
-    const [applicationEnd, setApplicationEnd] = useState(null);
-    const [headers, setHeaders] = useState([
-      "S.No",
-      "Item",
-      "Item Description",
-      "UOM",
-      "Total Qty",
-      "Rate",
-    ]);
-    const [subTenders, setSubTenders] = useState([]);
-    const [categories, setCategories] = useState([]);
-    const [selectedCategory, setSelectedCategory] = useState("");
+  // Tender Details Form
+  const [currency, setCurrency] = useState("INR(₹)");
+  const [startingPrice, setStartingPrice] = useState(100000);
+  // const [quantity, setQuantity] = useState("");
+  const [destinationPort, setDestinationPort] = useState("");
+  const [bagSize, setBagSize] = useState("");
+  const [bagType, setBagType] = useState("");
+  // const [measurmentUnit, setMeasurmentUnit] = useState("");
+  const [auctionStart, setAuctionStart] = useState(() => {
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 2); // Add 1 day to today's date
+    return nextDay;
+  });
+  const [auctionEnd, setAuctionEnd] = useState(() => {
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 5); // Add 1 day to today's date
+    return nextDay;
+  });
+  const [extensionMinutes, setExtensionMinutes] = useState(2);
+  const [extendedAt, setExtendedAt] = useState(() => {
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 5); // Add 1 day to today's date
+    return nextDay;
+  }  );
+  const [timeExtension, setTimeExtension] = useState(2);
+  const [extensionBeforeEndtime, setExtensionBeforeEndtime] = useState(2);
+  const [minDecrementValue, setMinDecrementValue] = useState(2);
+  const [timerExtendedValue, setTimerExtendedValue] = useState(2);
+  const [qtySplittingCriteria, setQtySplittingCriteria] = useState("");
+  const [counterOfferTimer, setCounterOfferTimer] = useState(2);
+  const [applicationStart, setApplicationStart] = useState(new Date());
+  const [applicationEnd, setApplicationEnd] = useState(() => {
+    const today = new Date();
+    const nextDay = new Date(today);
+    nextDay.setDate(today.getDate() + 1); // Add 1 day to today's date
+    return nextDay;
+  });
+  const [headers, setHeaders] = useState([
+    "S.No",
+    "Item",
+    "Item Description",
+    "UOM",
+    "Total Qty",
+    "Rate",
+  ]);
+  const [subTenders, setSubTenders] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   const handleDescriptionChange = (value) => {
     setDescription(value);
@@ -129,7 +149,7 @@ const AddTender = () => {
 
   const handlePublishChange = () => {
     setIsPublished(!isPublished);
-  }; 
+  };
 
   // Attachments
   const [attachments, setAttachments] = useState([
@@ -249,7 +269,6 @@ const AddTender = () => {
     }
   };
 
-
   useEffect(() => {
     // Update headers when selectedCategory changes
     if (selectedCategory) {
@@ -257,24 +276,28 @@ const AddTender = () => {
         (category) => category.demo_tender_sheet_id === selectedCategory
       );
       console.log("Selected Category Data:", selectedData);
-  
+
       if (selectedData) {
-        const headerNames = selectedData.headers.map((header) => header.header_display_name); // Extract only header_display_name
+        const headerNames = selectedData.headers.map(
+          (header) => header.header_display_name
+        ); // Extract only header_display_name
         setHeaders(headerNames); // Update headers with header_display_name only
         console.log("Headers Updated:", headerNames);
       } else {
         setHeaders([]); // Clear headers if no match found
-        console.log("No matching category found for selected ID:", selectedCategory);
+        console.log(
+          "No matching category found for selected ID:",
+          selectedCategory
+        );
       }
     } else {
       setHeaders([]); // Clear headers if no category is selected
       console.log("No category selected.");
     }
   }, [selectedCategory, categories, setHeaders]);
-  
 
   console.log("categories-kjsdkjsf", headers);
-  
+
   const parseDate = (date) => (date ? new Date(date) : null);
   const handleApplicationStartChange = (date) => {
     setApplicationStart(date);
@@ -340,7 +363,7 @@ const AddTender = () => {
     };
 
     console.log("form data here 1", formData);
-    console.log("bsdbdhbd]]]]]]",selectedBuyers);
+    console.log("bsdbdhbd]]]]]]", selectedBuyers);
     try {
       const response = await callApiPost("create_new_tender", formData);
       console.log("responses: ", response);
@@ -499,7 +522,7 @@ const AddTender = () => {
             setHeaders={setHeaders}
             subTenders={subTenders}
             setSubTenders={setSubTenders}
-            selectedCategory ={selectedCategory}
+            selectedCategory={selectedCategory}
           />
         </form>
         {/* Sticky Submit Button */}
