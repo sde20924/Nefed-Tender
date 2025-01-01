@@ -1,12 +1,12 @@
 const db = require("../../config/config");
 
 const saveBuyerHeaderRowData = async (req, res) => {
-  const user_id = req.user.user_id; // Assuming authentication middleware sets req.user
-  const { formdata, headers } = req.body;
+  const user_id = req.user.user_id; // User ID from authentication middleware
+  const { formdata, headers, bid_amount, tender_id } = req.body;
 
-  if (!formdata || !headers) {
+  if (!formdata || !headers || !bid_amount || !tender_id) {
     return res.status(400).json({
-      msg: "Required fields 'formdata' and 'headers' are missing.",
+      msg: "Required fields 'formdata', 'headers', 'bid_amount', and 'tender_id' are missing.",
       success: false,
     });
   }
@@ -14,6 +14,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
   try {
     await db.query("START TRANSACTION");
 
+    // Save editable rows in buyer_header_row_data
     for (const subTender of formdata) {
       const { id: subtender_id, rows } = subTender;
 
@@ -24,7 +25,11 @@ const saveBuyerHeaderRowData = async (req, res) => {
           const cell = row[cellIndex];
 
           // Only process cells with type "edit" and non-null, non-empty data
-          if (cell.type === "edit" && cell.data !== null && cell.data.trim() !== "") {
+          if (
+            cell.type === "edit" &&
+            cell.data !== null &&
+            cell.data.trim() !== ""
+          ) {
             const header_id = headers[cellIndex]?.header_id;
 
             if (!header_id) {
@@ -32,18 +37,18 @@ const saveBuyerHeaderRowData = async (req, res) => {
               continue;
             }
 
-            // Insert data into the database
+            // Insert data into the buyer_header_row_data table
             await db.query(
               `INSERT INTO buyer_header_row_data 
               (header_id, row_data, subtender_id, buyer_id, \`order\`, row_number)
               VALUES (?, ?, ?, ?, ?, ?)`,
               [
-                header_id,        // Header ID
-                cell.data,        // Editable cell data
-                subtender_id,     // Sub-tender ID
-                user_id,          // Buyer ID
-                cellIndex + 1,    // Column order
-                rowIndex + 1,     // Row number
+                header_id, // Header ID
+                cell.data, // Editable cell data
+                subtender_id, // Sub-tender ID
+                user_id, // Buyer ID
+                cellIndex + 1, // Column order
+                rowIndex + 1, // Row number
               ]
             );
           }
@@ -51,18 +56,31 @@ const saveBuyerHeaderRowData = async (req, res) => {
       }
     }
 
+    // Save bid details in tender_bid_room table
+    const status = "active"; // Default status
+    await db.query(
+      `INSERT INTO tender_bid_room (tender_id, user_id, bid_amount, status) 
+      VALUES (?, ?, ?, ?)`,
+      [
+        tender_id, // Tender ID
+        user_id, // User ID (buyer)
+        bid_amount, // Bid amount
+        status, // Status (default 'active')
+      ]
+    );
+
     await db.query("COMMIT");
 
     res.status(201).json({
-      msg: "Editable rows saved successfully.",
+      msg: "Editable rows and bid details saved successfully.",
       success: true,
     });
   } catch (error) {
     await db.query("ROLLBACK");
-    console.error("Error saving editable rows:", error.message);
+    console.error("Error saving editable rows and bid details:", error.message);
 
     res.status(500).json({
-      msg: "Error saving editable rows.",
+      msg: "Error saving editable rows and bid details.",
       success: false,
       error: error.message,
     });

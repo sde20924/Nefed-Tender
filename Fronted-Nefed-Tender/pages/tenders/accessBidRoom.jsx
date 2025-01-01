@@ -8,7 +8,6 @@ import { FaTimes } from "react-icons/fa";
 
 const AccessBidRoom = () => {
   const router = useRouter();
-  const tender_id=params
   const { tenderId } = router.query; // Get the tenderId from the query parameters
   const [tender, setTender] = useState(null);
   const [timeLeft, setTimeLeft] = useState(""); // Countdown timer
@@ -302,11 +301,12 @@ const AccessBidRoom = () => {
       const body = {
         headers: tender.headers,
         formdata,
-        bid_amount:totalBidAmount
+        bid_amount:totalBidAmount,
+        tender_id: tenderId,
       };
       console.log("body-datafgh", body);
 
-      const response = await callApiPost("formdata", body);
+      const response = await callApiPost("buyer-bid", body);
 
       if (response.success) {
         toast.success("Form data submitted successfully!");
