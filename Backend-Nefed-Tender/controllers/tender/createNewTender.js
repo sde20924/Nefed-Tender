@@ -1,5 +1,6 @@
 const db = require("../../config/config");
 const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Async error handler middleware
+const { emitEvent } = require("../../socket/event/emit");
 
 // Controller to create a new tender
 const createNewTenderController = asyncErrorHandler(async (req, res) => {
@@ -37,9 +38,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     tender_id,
     audi_key = null,
     editable_sheet,
-    selected_buyers=[],
+    selected_buyers = [],
   } = req.body;
-    console.log("+++++++++++++++++",selected_buyers)
+  console.log("+++++++++++++++++", selected_buyers);
   // Validation to ensure required fields are provided
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
@@ -55,11 +56,13 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
   if (!auct_end_time) missingFields.push("auct_end_time");
   if (!time_frame_ext) missingFields.push("time_frame_ext");
   if (!amt_of_ext) missingFields.push("amt_of_ext");
-  if (!aut_auct_ext_bfr_end_time) missingFields.push("aut_auct_ext_bfr_end_time");
+  if (!aut_auct_ext_bfr_end_time)
+    missingFields.push("aut_auct_ext_bfr_end_time");
   if (!min_decr_bid_val) missingFields.push("min_decr_bid_val");
   if (!timer_ext_val) missingFields.push("timer_ext_val");
   // if (!qty_split_criteria) missingFields.push("qty_split_criteria");
-  if (!counter_offr_accept_timer) missingFields.push("counter_offr_accept_timer");
+  if (!counter_offr_accept_timer)
+    missingFields.push("counter_offr_accept_timer");
 
   if (missingFields.length > 0) {
     return res.status(400).send({
@@ -119,7 +122,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auction_type,
         tender_id,
         audi_key,
-        accessType,    ]
+        accessType,
+      ]
     );
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
@@ -156,7 +160,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         if (subTenderResult.length === 0) {
           const [newSubTender] = await db.query(
             `INSERT INTO subtender (subtender_name,tender_id) VALUES (?,?)`,
-            [name,tender_id]
+            [name, tender_id]
           );
           subtenderId = newSubTender.insertId;
         } else {
@@ -164,7 +168,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         }
 
         // Insert rows into `seller_header_row_data` table
-        for (const [rowIndex, row] of rows.entries()) { 
+        for (const [rowIndex, row] of rows.entries()) {
           for (let j = 0; j < row.length; j++) {
             const cellData = row[j];
             await db.query(
@@ -178,22 +182,25 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
                 row_number
               ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
-                headerId, 
-                cellData, 
-                subtenderId, 
+                headerId,
+                cellData,
+                subtenderId,
                 user_id,
-                j + 1, 
-                cellData === "" || cellData === null ? "edit" : "view", 
-                rowIndex + 1 
+                j + 1,
+                cellData === "" || cellData === null ? "edit" : "view",
+                rowIndex + 1,
               ]
             );
           }
         }
-        
       }
     }
     // If accessType is private, insert selected buyers into `Tender_access`
-    if (accessType === "private" && Array.isArray(selected_buyers) && selected_buyers.length > 0) {
+    if (
+      accessType === "private" &&
+      Array.isArray(selected_buyers) &&
+      selected_buyers.length > 0
+    ) {
       // Loop through each buyer_id in the selected_buyers array
       for (const buyer_id of selected_buyers) {
         await db.query(
@@ -202,15 +209,37 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         );
       }
     }
+    if (accessType === "private") {
+      emitEvent(
+        "New-Tender/Private",
+        {
+          message: "New Tender Created",
+        },
+        "buyer"
+      );
+    } else {
+      emitEvent(
+        "New-Tender/Public",
+        {
+          message: "New Tender Created",
+          seller_id: req.user.user_id,
+        },
+        "buyer"
+      );
+    }
 
     // Commit the transaction
     await db.query("COMMIT");
 
-    res.status(201).send({ msg: "Tender created successfully", tender_id: tender_id });
+    res
+      .status(201)
+      .send({ msg: "Tender created successfully", tender_id: tender_id });
   } catch (error) {
     await db.query("ROLLBACK");
     console.error("Error creating tender:", error.message);
-    res.status(500).send({ msg: "Error creating tender", error: error.message });
+    res
+      .status(500)
+      .send({ msg: "Error creating tender", error: error.message });
   }
 });
 
