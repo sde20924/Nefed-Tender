@@ -117,10 +117,10 @@ const AuctionBids = () => {
                           #{bid.user_id}
                         </td>
                         <td className="border-t px-6 py-3">
-                          {`${bid.first_name} ${bid.last_name}`}
+                          {`${bid.user_details.first_name} ${bid.user_details.last_name}`}
                         </td>
                         <td className="border-t px-6 py-3">
-                          {bid.company_name}
+                          {bid.user_details.company_name}
                         </td>
                         <td className="border-t px-6 py-3 text-right">
                           $
