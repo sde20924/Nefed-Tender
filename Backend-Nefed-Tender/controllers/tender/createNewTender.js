@@ -58,7 +58,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
   if (!aut_auct_ext_bfr_end_time) missingFields.push("aut_auct_ext_bfr_end_time");
   if (!min_decr_bid_val) missingFields.push("min_decr_bid_val");
   if (!timer_ext_val) missingFields.push("timer_ext_val");
-  if (!qty_split_criteria) missingFields.push("qty_split_criteria");
+  // if (!qty_split_criteria) missingFields.push("qty_split_criteria");
   if (!counter_offr_accept_timer) missingFields.push("counter_offr_accept_timer");
 
   if (missingFields.length > 0) {

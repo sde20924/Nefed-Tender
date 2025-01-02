@@ -724,12 +724,14 @@ const AccessBidRoom = () => {
                 </div>
               );
             })}
-            <div className="flex flex-row justify-between">
-              <div className="bg-blue-600 text-white font-bold py-5 px-6 m-1 rounded-lg shadow-md hover:bg-blue-700  transition-all duration-300">
-                Total Bid Amount : ₹{totalBidAmount.toFixed(2)}
-                <span></span>
+            <div className="relative flex flex-wrap  p-6 ">
+              {/* Total Bid Amount */}
+              <div className="bg-blue-600 text-white font-bold p-3 rounded-lg shadow-md hover:bg-blue-700 h-[50px] flex items-center transition-all duration-300 absolute left-2 top-2 transform -translate-y-1/2">
+                Total Bid Amount: ₹{totalBidAmount.toFixed(2)}
               </div>
-              <div className="text-right mt-6">
+
+              {/* Submit Bid Button */}
+              <div className="absolute right-2 top-2 transform -translate-y-1/2">
                 <button
                   onClick={sendFormData}
                   className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
