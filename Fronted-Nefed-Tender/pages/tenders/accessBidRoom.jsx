@@ -441,6 +441,53 @@ const AccessBidRoom = () => {
         title={"Bid Room"}
       />
 
+      <div className="fixed top-[80px] right-2 z-25 space-y-3">
+        {showPopup && (
+          <div className="w-64 p-3 bg-white border border-gray-300 rounded-lg shadow-md">
+            {/* Card Content */}
+            <div className="flex flex-col items-start">
+              <h1 className="text-base font-bold text-gray-800">
+                Auction is Live!
+              </h1>
+            </div>
+          </div>
+        )}
+
+        {bidDetails?.data?.position && (
+          <div className="w-64 p-3 bg-white border border-gray-300 rounded-lg shadow-md">
+            {/* Card Content */}
+            <div className="flex flex-col items-start">
+              {bidDetails.data.position === "L1" ? (
+                <h1 className="text-base font-bold text-green-700">
+                  🎉 Position: L1
+                </h1>
+              ) : (
+                <div>
+                  <h1 className="text-base font-bold text-yellow-600">
+                    Aim for L1!
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    Reduce your bid to reach L1
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {showPopup && (
+          <div className="w-64 p-3 bg-white border border-gray-300 rounded-lg shadow-md">
+            {/* Card Content */}
+            <div className="flex flex-col items-start">
+              <p className="text-sm text-gray-600">
+                Time Left:{" "}
+                <span className="text-green-600 font-bold">{timeLeft}</span>
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex mx-auto p-4 w-full">
         <div className="w-full mx-8 bg-white">
           <div className="text-lg p-4">
@@ -450,49 +497,8 @@ const AccessBidRoom = () => {
           </div>
 
           {/* Auction Live Pop-up */}
-          {showPopup && (
-            <div className="fixed top-[120px] sm:top-20  right-4 z-50 w-60 md:w-80 p-2 bg-gradient-to-r from-green-200 via-green-100 to-green-50 border border-green-300 text-green-400 rounded-lg shadow-xl animate-slide-in">
-              {/* Close Button */}
-              <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 focus:outline-none"
-                onClick={closePopup}
-                aria-label="Close Popup"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-
-              {/* Pop-up Content */}
-              <div className="text-center mb-4 animate-pulse">
-                <h1 className="sm:text-2xl text-xl font-bold">
-                  Auction is Live!
-                </h1>
-              </div>
-
-              <div className="text-center">
-                <span className="font-bold sm:text-md text-sm text-green-400">
-                  Time Left: {timeLeft}
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Tailwind CSS Animations */}
-          <style jsx>{`
-            @keyframes slide-in {
-              0% {
-                transform: translateX(100%);
-                opacity: 0;
-              }
-              100% {
-                transform: translateX(0);
-                opacity: 1;
-              }
-            }
-
-            .animate-slide-in {
-              animation: slide-in 0.5s ease-out;
-            }
-          `}</style>
 
           {renderPositionBox()}
 

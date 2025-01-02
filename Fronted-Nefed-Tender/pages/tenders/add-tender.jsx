@@ -100,6 +100,7 @@ const AddTender = () => {
   const [subTenders, setSubTenders] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [accessPosition,setAccessPosition] = useState("yes")
 
   const handleDescriptionChange = (value) => {
     setDescription(value);
@@ -360,9 +361,10 @@ const AddTender = () => {
         sub_tenders: subTenders, // SubTender data with rows
       },
       selected_buyers: selectedBuyers,
+      accessPosition : accessPosition
     };
 
-    console.log("form data here 1", formData);
+    console.log("form data here 1sdd", formData);
     console.log("bsdbdhbd]]]]]]", selectedBuyers);
     try {
       const response = await callApiPost("create_new_tender", formData);
@@ -442,6 +444,8 @@ const AddTender = () => {
                 setAccessType={setAccessType}
                 accessType={accessType}
                 auctionType={auctionType}
+                accessPosition={accessPosition}
+                setAccessPosition={setAccessPosition}
                 onSelectedBuyersChange={() => handleSelectedBuyersChange}
               />
             </div>

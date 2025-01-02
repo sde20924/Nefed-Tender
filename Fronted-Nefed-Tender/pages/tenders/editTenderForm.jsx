@@ -67,6 +67,7 @@ const EditTenderForm = () => {
     qtySplittingCriteria: "",
     counterOfferTimer: "",
     customForm: {},
+    accessPosition: "",
   });
 
   // ---------- IMAGE UPLOAD STATE ----------
@@ -79,6 +80,7 @@ const EditTenderForm = () => {
   const [auctionType, setAuctionType] = useState("reverse");
   const [accessType, setAccessType] = useState("public");
   const [selectedBuyers, setSelectedBuyers] = useState([]);
+  const [accessPosition, setAccessPosition] = useState("yes");
 
   // ---------- DRAG & DROP HANDLER FOR FORM BUILDER ----------
   const onDragEnd = (result) => {
@@ -98,7 +100,7 @@ const EditTenderForm = () => {
     const draggedField = initialFields[source.index];
     setFormFields([...formFields, draggedField]);
   };
-   
+
   // ---------- FETCH TENDER DATA ON LOAD ----------
   useEffect(() => {
     if (id) {
@@ -108,6 +110,7 @@ const EditTenderForm = () => {
           const data = response.data || {};
           setHeaders(response.data.headers);
           setSubTenders(response.data.sub_tenders);
+          console.log("hasdjxdd", response.data);
 
           setTenderData((prev) => ({
             ...prev,
@@ -171,6 +174,7 @@ const EditTenderForm = () => {
           setAuctionType(data.auction_type || "reverse");
           setAccessType(data.accessType || "public");
           setSelectedBuyers(data.selected_buyers || []);
+          setAccessPosition(data.access_position);
 
           console.log("attachments data here :", tenderData.attachments);
         } catch (error) {
@@ -184,8 +188,8 @@ const EditTenderForm = () => {
   }, [id]);
   const handleSelectedBuyersChange = (buyers) => {
     const buyerIds = buyers.map((buyer) => buyer.user_id);
-    setSelectedBuyers(buyerIds); 
-    console.log(selectedBuyers)// Store only IDs in the state
+    setSelectedBuyers(buyerIds);
+    console.log(selectedBuyers); // Store only IDs in the state
   };
   // ---------- SUBMIT HANDLER ----------
   const handleSubmit = async (e) => {
@@ -236,11 +240,12 @@ const EditTenderForm = () => {
       audi_key: tenderData.audiKey,
       headers: headers,
       sub_tender: subTenders, // Audio key, set to null if not applicable
+      access_position:accessPosition
     };
 
     console.log("form data here 1", formData);
     console.log(accessType);
-    console.log("++++++++++++",selectedBuyers)
+    console.log("++++++++++++", selectedBuyers);
     try {
       const response = await callApiPost(`update-tender/${id}`, formData);
       toast.success("Tender Updated");
@@ -312,6 +317,8 @@ const EditTenderForm = () => {
                 setAuctionType={setAuctionType}
                 accessType={accessType}
                 setAccessType={setAccessType}
+                accessPosition={accessPosition}
+                setAccessPosition={setAccessPosition}
                 onSelectedBuyersChange={() => handleSelectedBuyersChange}
                 initialSelectedBuyersIds={tenderData.selected_buyers}
               />

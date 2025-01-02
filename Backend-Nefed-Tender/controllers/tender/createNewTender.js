@@ -38,8 +38,10 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     audi_key = null,
     editable_sheet,
     selected_buyers=[],
+    accessPosition,
+
   } = req.body;
-    console.log("+++++++++++++++++",selected_buyers)
+    console.log("+++++++++++++++++------",req.body)
   // Validation to ensure required fields are provided
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
@@ -86,8 +88,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key,user_access
-      ) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        tender_id, audi_key, user_access, access_position
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+
       [
         user_id,
         tender_title,
@@ -119,7 +122,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auction_type,
         tender_id,
         audi_key,
-        accessType,    ]
+        accessType,
+        accessPosition, // Insert `accessPosition` value
+      ]
     );
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
