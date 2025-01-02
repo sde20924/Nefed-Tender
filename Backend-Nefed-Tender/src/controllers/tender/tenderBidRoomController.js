@@ -1,17 +1,21 @@
-const db = require('../../config/config'); // MySQL connection pool
+import db from '../../config/config2.js';
 
-// Controller to handle bid submission
-const submitBid = async (req, res) => {
+/**
+ * Controller to handle bid submission
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+export const submitBid = async (req, res) => {
   try {
-    const { tender_id, bid_amount, fob_amount, freight_amount } = req.body; // Extract required fields from request body
-    const { user_id } = req.user; // Assuming req.user contains authenticated user details
+    const { tender_id, bid_amount, fob_amount, freight_amount } = req.body; // Extract required fields
+    const { user_id } = req.user; // Extract authenticated user ID
 
     // Validate required fields
     if (!tender_id || !bid_amount) {
-      return res.status(400).json({ success: false, message: 'All fields are required.' });
+      return res.status(400).json({ success: false, message: 'Tender ID and bid amount are required.' });
     }
 
-    // Fetch auction details from manage_tender
+    // Fetch auction details
     const tenderQuery = `
       SELECT auct_end_time, amt_of_ext, time_frame_ext, aut_auct_ext_bfr_end_time, no_of_aut_auct_ext_happened
       FROM manage_tender
@@ -23,48 +27,50 @@ const submitBid = async (req, res) => {
       return res.status(404).json({ success: false, message: 'Tender not found.' });
     }
 
-    const { auct_end_time, amt_of_ext, time_frame_ext, aut_auct_ext_bfr_end_time, no_of_aut_auct_ext_happened } = tenderResult[0];
+    const {
+      auct_end_time,
+      amt_of_ext,
+      time_frame_ext,
+      aut_auct_ext_bfr_end_time,
+      no_of_aut_auct_ext_happened,
+    } = tenderResult[0];
 
-    // Ensure auction end time is valid
     if (!auct_end_time || isNaN(auct_end_time)) {
       return res.status(400).json({ success: false, message: 'Invalid auction end time.' });
     }
 
     const currentTime = Date.now(); // Current time in milliseconds
-
-    // Convert extension time fields from minutes to milliseconds
-    const amtOfExtMs = amt_of_ext * 60 * 1000;
-    const timeFrameExtMs = time_frame_ext * 60 * 1000;
-    const auctEndTimeMs = auct_end_time * 1000;
-
-    // Calculate remaining time
+    const auctEndTimeMs = auct_end_time * 1000; // Convert auction end time to milliseconds
     const remainingTimeMs = auctEndTimeMs - currentTime;
 
-    // Log relevant details for debugging
     console.log(`Current time: ${new Date(currentTime).toISOString()}`);
-    console.log(`Auction end time (before update): ${new Date(auctEndTimeMs).toISOString()}`);
-    console.log(`Remaining time in milliseconds: ${remainingTimeMs}`);
+    console.log(`Auction end time: ${new Date(auctEndTimeMs).toISOString()}`);
+    console.log(`Remaining time: ${remainingTimeMs} ms`);
 
-    // Handle auction extension logic
-    if (no_of_aut_auct_ext_happened >= aut_auct_ext_bfr_end_time) {
-      console.log('Max auction extensions reached, no further extensions allowed.');
-    } else if (remainingTimeMs > 0 && remainingTimeMs <= amtOfExtMs) {
-      // Extend the auction end time
-      const newEndTime = auctEndTimeMs + timeFrameExtMs;
+    let auctionExtended = false;
 
-      const updateEndTimeQuery = `
-        UPDATE manage_tender
-        SET auct_end_time = ?, no_of_aut_auct_ext_happened = no_of_aut_auct_ext_happened + 1
-        WHERE tender_id = ?
-      `;
-      await db.execute(updateEndTimeQuery, [newEndTime / 1000, tender_id]); // Store back in seconds
+    // Handle auction extension
+    if (remainingTimeMs > 0 && remainingTimeMs <= amt_of_ext * 60 * 1000) {
+      if (no_of_aut_auct_ext_happened < aut_auct_ext_bfr_end_time) {
+        const newEndTime = auctEndTimeMs + time_frame_ext * 60 * 1000;
 
-      console.log(`Auction end time (after update): ${new Date(newEndTime).toISOString()}`);
+        const updateEndTimeQuery = `
+          UPDATE manage_tender
+          SET auct_end_time = ?, no_of_aut_auct_ext_happened = no_of_aut_auct_ext_happened + 1
+          WHERE tender_id = ?
+        `;
+        await db.execute(updateEndTimeQuery, [Math.floor(newEndTime / 1000), tender_id]); // Update in seconds
+
+        auctionExtended = true;
+        console.log(`Auction extended. New end time: ${new Date(newEndTime).toISOString()}`);
+      } else {
+        console.log('Max auction extensions reached.');
+      }
     } else {
       console.log('Bid placed outside the extension window.');
     }
 
-    // Insert the bid into tender_bid_room
+    // Insert the bid
     const insertBidQuery = `
       INSERT INTO tender_bid_room (tender_id, user_id, bid_amount, fob_amount, freight_amount)
       VALUES (?, ?, ?, ?, ?)
@@ -76,20 +82,17 @@ const submitBid = async (req, res) => {
       success: true,
       message: 'Bid placed successfully.',
       data: {
-        bid_id: bidResult.insertId, // MySQL returns the inserted ID
+        bid_id: bidResult.insertId,
         tender_id,
         user_id,
         bid_amount,
         fob_amount,
         freight_amount,
       },
-      auctionExtended:
-        remainingTimeMs > 0 && remainingTimeMs <= amtOfExtMs && no_of_aut_auct_ext_happened < aut_auct_ext_bfr_end_time,
+      auctionExtended,
     });
   } catch (error) {
     console.error('Error placing bid:', error.message);
     res.status(500).json({ success: false, message: 'Server error. Please try again later.' });
   }
 };
-
-module.exports = { submitBid };

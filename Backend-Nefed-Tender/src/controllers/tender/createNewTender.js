@@ -1,9 +1,13 @@
-const db = require("../../config/config");
-const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Async error handler middleware
+import db from "../../config/config2.js";
+import asyncErrorHandler from "../../utils/asyncErrorHandler.js";
 
-// Controller to create a new tender
-const createNewTenderController = asyncErrorHandler(async (req, res) => {
-  const user_id = req.user.user_id;
+/**
+ * Controller to create a new tender.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+export const createNewTenderController = asyncErrorHandler(async (req, res) => {
+  const user_id = req.user.user_id; // Extract authenticated user ID from middleware
   const {
     tender_title,
     tender_slug,
@@ -37,18 +41,15 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     tender_id,
     audi_key = null,
     editable_sheet,
-    selected_buyers=[],
+    selected_buyers = [],
   } = req.body;
-    console.log("+++++++++++++++++",selected_buyers)
-  // Validation to ensure required fields are provided
+
+  // Validate required fields
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
   if (!emd_amt) missingFields.push("emd_amt");
   if (!emt_lvl_amt) missingFields.push("emt_lvl_amt");
   if (!currency) missingFields.push("currency");
-  // if (!dest_port) missingFields.push("dest_port");
-  // if (!bag_size) missingFields.push("bag_size");
-  // if (!bag_type) missingFields.push("bag_type");
   if (!app_start_time) missingFields.push("app_start_time");
   if (!app_end_time) missingFields.push("app_end_time");
   if (!auct_start_time) missingFields.push("auct_start_time");
@@ -62,22 +63,24 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
   if (!counter_offr_accept_timer) missingFields.push("counter_offr_accept_timer");
 
   if (missingFields.length > 0) {
-    return res.status(400).send({
+    return res.status(400).json({
       msg: "Required fields are missing for tender creation.",
       missingFields,
     });
   }
 
   try {
+    console.log("Selected buyers:", selected_buyers);
+
     const parsedAttachments =
       typeof attachments === "string" ? JSON.parse(attachments) : attachments;
     const parsedCustomForm =
       typeof custom_form === "string" ? JSON.parse(custom_form) : custom_form;
 
-    // Begin a transaction
+    // Begin transaction
     await db.query("START TRANSACTION");
 
-    // Insert the new tender data into the `manage_tender` table
+    // Insert new tender
     const [newTender] = await db.query(
       `INSERT INTO manage_tender (
         user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt,
@@ -86,8 +89,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key,user_access
-      ) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        tender_id, audi_key, user_access
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user_id,
         tender_title,
@@ -119,8 +122,10 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auction_type,
         tender_id,
         audi_key,
-        accessType,    ]
+        accessType,
+      ]
     );
+
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
       const { key, label, extension, maxFileSize } = attachment;
@@ -131,70 +136,57 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
       );
     }
 
-    // Handle `editable_sheet`: Insert headers and sub-tenders
+    // Handle editable sheet headers and rows
     const { headers, sub_tenders } = editable_sheet;
-
-    // Insert headers into `tender_header` table and get the header_id
     for (let i = 0; i < headers.length; i++) {
       const headerName = headers[i];
       const [headerResult] = await db.query(
         `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
         [tender_id, headerName, i + 1]
       );
-      const headerId = headerResult.insertId; // Get the header_id for the inserted header
+      const headerId = headerResult.insertId;
 
       for (const subTender of sub_tenders) {
         const { name, rows } = subTender;
 
-        // Check if the subtender exists, insert if not
         let [subTenderResult] = await db.query(
           `SELECT subtender_id FROM subtender WHERE subtender_name = ? AND tender_id = ?`,
           [name, tender_id]
         );
 
-        let subtenderId;
-        if (subTenderResult.length === 0) {
-          const [newSubTender] = await db.query(
-            `INSERT INTO subtender (subtender_name,tender_id) VALUES (?,?)`,
-            [name,tender_id]
-          );
-          subtenderId = newSubTender.insertId;
-        } else {
-          subtenderId = subTenderResult[0].subtender_id;
-        }
+        let subtenderId = subTenderResult.length
+          ? subTenderResult[0].subtender_id
+          : (
+              await db.query(
+                `INSERT INTO subtender (subtender_name, tender_id) VALUES (?, ?)`,
+                [name, tender_id]
+              )
+            )[0].insertId;
 
-        // Insert rows into `seller_header_row_data` table
-        for (const [rowIndex, row] of rows.entries()) { 
+        for (const [rowIndex, row] of rows.entries()) {
           for (let j = 0; j < row.length; j++) {
             const cellData = row[j];
             await db.query(
               `INSERT INTO seller_header_row_data (
-                header_id, 
-                row_data, 
-                subtender_id, 
-                seller_id, 
-                \`order\`, 
-                type, 
-                row_number
+                header_id, row_data, subtender_id, seller_id, \`order\`, type, row_number
               ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
               [
-                headerId, 
-                cellData, 
-                subtenderId, 
+                headerId,
+                cellData,
+                subtenderId,
                 user_id,
-                j + 1, 
-                cellData === "" || cellData === null ? "edit" : "view", 
-                rowIndex + 1 
+                j + 1,
+                cellData === "" || cellData === null ? "edit" : "view",
+                rowIndex + 1,
               ]
             );
           }
         }
-        
       }
     }
-    // If accessType is private, insert selected buyers into `Tender_access`
-    if (accessType === "private" && Array.isArray(selected_buyers) && selected_buyers.length > 0) {
-      // Loop through each buyer_id in the selected_buyers array
+
+    // Insert selected buyers if access type is private
+    if (accessType === "private" && Array.isArray(selected_buyers)) {
       for (const buyer_id of selected_buyers) {
         await db.query(
           `INSERT INTO tender_access (buyer_id, tender_id) VALUES (?, ?)`,
@@ -206,12 +198,10 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     // Commit the transaction
     await db.query("COMMIT");
 
-    res.status(201).send({ msg: "Tender created successfully", tender_id: tender_id });
+    res.status(201).json({ msg: "Tender created successfully", tender_id });
   } catch (error) {
     await db.query("ROLLBACK");
-    console.error("Error creating tender:", error.message);
-    res.status(500).send({ msg: "Error creating tender", error: error.message });
+    console.error("Error creating tender:", error);
+    res.status(500).json({ msg: "Error creating tender", error: error.message });
   }
 });
-
-module.exports = createNewTenderController;

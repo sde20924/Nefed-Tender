@@ -5,6 +5,7 @@ import buyerRoute from './buyers/buyerRoute.js';
 import sellerRoute from './sellers/sellerRoute.js';
 import adminRoute from './admin/adminRoute.js';
 import managerRoute from './manager/managerRoute.js';
+import tenderRoutes from './tender/tenderRoute.js'
 
 const router = express.Router();
 
@@ -27,5 +28,5 @@ router.use(buyerRoute);
 router.use(sellerRoute);
 router.use(adminRoute);
 router.use(managerRoute);
-
+router.use(tenderRoutes);
 export default router;

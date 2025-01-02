@@ -1,4 +1,4 @@
-import db from '../../../config/config.js';
+import db from '../../../config/config2.js';
 import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 import generateUserToken from '../../../utils/generateToken.js';
 

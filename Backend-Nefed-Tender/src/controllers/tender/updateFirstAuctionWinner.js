@@ -1,13 +1,16 @@
-const db = require("../../config/config");
+import db from "../../config/config2.js";
 
-const announceWinner = async (req, res) => {
+export const announceWinner = async (req, res) => {
   try {
     const { tender_id } = req.params;
     const { winner_user_id, qty_secured, round, status } = req.body;
 
     // Validate required fields
     if (!tender_id || !winner_user_id || !qty_secured || !round || !status) {
-      return res.status(400).json({ success: false, message: "Missing required fields." });
+      return res.status(400).json({ 
+        success: false, 
+        message: "Missing required fields." 
+      });
     }
 
     // Update the tender_bid_room table to mark the winner
@@ -24,14 +27,21 @@ const announceWinner = async (req, res) => {
     const [result] = await db.execute(updateQuery, values);
 
     if (result.affectedRows === 0) {
-      return res.status(404).json({ success: false, message: "No bid found for the given tender and user." });
+      return res.status(404).json({ 
+        success: false, 
+        message: "No bid found for the given tender and user." 
+      });
     }
 
-    res.status(200).json({ success: true, message: "Winner announced successfully." });
+    return res.status(200).json({ 
+      success: true, 
+      message: "Winner announced successfully." 
+    });
   } catch (error) {
     console.error("Error announcing winner:", error);
-    res.status(500).json({ success: false, message: "Server error. Please try again later." });
+    return res.status(500).json({ 
+      success: false, 
+      message: "Server error. Please try again later." 
+    });
   }
 };
-
-module.exports = { announceWinner };

@@ -1,4 +1,4 @@
-import db from '../../../config/config.js';
+import db from '../../../config/config2.js';
 import asyncErrorHandler from '../../../utils/asyncErrorHandler.js';
 
 const getAllPendingSellersController = asyncErrorHandler(async (req, res) => {

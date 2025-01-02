@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import db from '../config/config.js';
+import db from '../config/config2.js';
 
 const isAdmin = async (req, res, next) => {
   const token = req.headers['authorization'];

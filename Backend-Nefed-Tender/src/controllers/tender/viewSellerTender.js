@@ -1,15 +1,34 @@
-const db = require("../../config/config"); // Adjusted path to the database configuration
-const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Adjusted path to async error handler middleware
+// File: controllers/tender/getSellerTenders.js
+import db from "../../config/config2.js"; // Import database connection
+import asyncErrorHandler from "../../utils/asyncErrorHandler.js"; // Import error handler middleware
 
-// Controller to get all tenders of a specific seller
-const getSellerTendersController = asyncErrorHandler(async (req, res) => {
+/**
+ * Controller to fetch all tenders of a specific seller
+ * @param {Object} req - Express request object
+ * @param {Object} res - Express response object
+ */
+export const getSellerTendersController = asyncErrorHandler(async (req, res) => {
+  const sellerId = req.user?.user_id; // Extract seller ID from authenticated user
+
   try {
-    const sellerId = req.user.user_id; // Assuming the user ID is correctly set in the middleware
+    // SQL query to fetch tenders for the specific seller, ordered by the latest creation date
+    const query = `
+      SELECT * 
+      FROM manage_tender 
+      WHERE user_id = ? 
+      ORDER BY created_at DESC
+    `;
+    const [sellerTenders] = await db.execute(query, [sellerId]);
 
-    // Query to fetch tenders for the specific seller, ordered by latest first
-    const sellerTenderQuery = `SELECT * FROM manage_tender WHERE user_id = ? ORDER BY created_at DESC`; 
-    const [sellerTenders] = await db.execute(sellerTenderQuery, [sellerId]);
-    // Return the response in the desired format
+    // Check if any tenders are found
+    if (!sellerTenders.length) {
+      return res.status(404).json({
+        msg: "No tenders found for the seller",
+        success: false,
+      });
+    }
+
+    // Success response with fetched tenders
     return res.status(200).json({
       data: sellerTenders,
       msg: "Seller tender data fetched successfully",
@@ -17,14 +36,12 @@ const getSellerTendersController = asyncErrorHandler(async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching seller tenders:", error.message);
-    return res.status(500).send({
+
+    // Error response
+    return res.status(500).json({
       msg: "Error fetching seller tenders",
-      error: error.message,
       success: false,
+      error: error.message,
     });
   }
 });
-
-module.exports = {
-  getSellerTendersController,
-};

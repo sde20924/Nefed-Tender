@@ -4,7 +4,7 @@ import xss from 'xss-clean';
 import compression from 'compression';
 import cors from 'cors';
 import httpStatus from 'http-status';
-import config from './config/config.js';
+import config from './config/config2.js';
 import morgan from './config/morgan.js';
 import authLimiter from './middlewares/rateLimiter.js';
 import routes from './routes/index.js';
@@ -23,15 +23,17 @@ if (config.env !== 'test') {
   app.use(morgan.errorHandler);
 }
 const corsOptions = {
-  origin: ['*'],
-  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
-  allowedHeaders: '*', // Allow all headers
-  credentials: true,
+  origin: '*', // Allows requests from any origin
+  methods: 'GET,HEAD,PUT,PATCH,POST,DELETE', // Allows common HTTP methods
+  allowedHeaders: '*', // Allows all headers
+  credentials: false, // Disable credentials if requests are accepted from any origin
 };
+
+app.use(cors(corsOptions));
 
 app.use('/Public', express.static(path.join(__dirname, '../Public')));
 
-app.use(cors(corsOptions));
+
 // set security HTTP headers
 
 

@@ -1,10 +1,14 @@
-const db = require("../../config/config"); // Import database connection
-const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Error handler middleware
+import db from "../../config/config2.js"; // Import database connection
+import asyncErrorHandler from "../../utils/asyncErrorHandler.js"; // Error handler middleware
 
-// Controller to fetch all demo tender sheets with their headers
-const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
+/**
+ * Controller to fetch all demo tender sheets with their headers.
+ * @param {Object} req - Express request object.
+ * @param {Object} res - Express response object.
+ */
+export const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
   try {
-    // Query to fetch all tender sheets and their headers
+    // SQL query to fetch demo tender sheets and their headers
     const query = `
       SELECT 
         dts.demo_tender_sheet_id,
@@ -29,6 +33,8 @@ const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
     // Organize results into a structured format
     const formattedData = results.reduce((acc, row) => {
       const sheetId = row.demo_tender_sheet_id;
+
+      // Initialize sheet entry if it doesn't exist
       if (!acc[sheetId]) {
         acc[sheetId] = {
           tender_table_name: row.tender_table_name,
@@ -36,6 +42,8 @@ const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
           headers: [],
         };
       }
+
+      // Add header information if available
       if (row.demo_tender_header_id) {
         acc[sheetId].headers.push({
           demo_tender_header_id: row.demo_tender_header_id,
@@ -43,23 +51,26 @@ const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
           created_at: row.header_created_at,
         });
       }
+
       return acc;
     }, {});
 
-    // Convert object to array
-    const responseData = Object.keys(formattedData).map((key) => ({
+    // Convert the formatted data object into an array for the response
+    const responseData = Object.entries(formattedData).map(([key, value]) => ({
       demo_tender_sheet_id: key,
-      ...formattedData[key],
+      ...value,
     }));
 
-    // Return the structured data
+    // Respond with the formatted data
     res.status(200).json({
       success: true,
-      data: responseData,
       message: "Demo tender sheets fetched successfully",
+      data: responseData,
     });
   } catch (error) {
     console.error("Error fetching demo tender sheets:", error.message);
+
+    // Respond with error details
     res.status(500).json({
       success: false,
       message: "Failed to fetch demo tender sheets",
@@ -67,7 +78,3 @@ const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
     });
   }
 });
-
-module.exports = {
-  getAllDemoExcelSheetsController,
-};

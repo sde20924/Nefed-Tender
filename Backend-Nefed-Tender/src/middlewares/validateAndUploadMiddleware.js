@@ -2,7 +2,7 @@ import multer from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
 import cloudinary from '../config/cloudinaryConfig.js';
-import db from '../config/config.js';
+import db from '../config/config2.js';
 import asyncErrorHandler from '../utils/asyncErrorHandler.js';
 
 // Multer setup for file storage in memory
