@@ -97,11 +97,11 @@ const AccessBidRoom = () => {
     }
   };
 
-  useEffect(() => {
-    if (auctionEnded && lBidUserId) {
-      announceWinner();
-    }
-  }, [auctionEnded, lBidUserId]);
+  // useEffect(() => {
+  //   if (auctionEnded && lBidUserId) {
+  //     announceWinner();
+  //   }
+  // }, [auctionEnded, lBidUserId]);
 
   // Function to check auction status and calculate countdown
   const checkAuctionStatus = (startTime, endTime) => {
