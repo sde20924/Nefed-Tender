@@ -12,7 +12,8 @@ const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
         dts.created_at AS sheet_created_at,
         dth.demo_tender_header_id,
         dth.header_display_name,
-        dth.created_at AS header_created_at
+        dth.created_at AS header_created_at,
+        dth.type AS type
       FROM 
         demo_tender_sheet dts
       LEFT JOIN 
@@ -41,6 +42,7 @@ const getAllDemoExcelSheetsController = asyncErrorHandler(async (req, res) => {
           demo_tender_header_id: row.demo_tender_header_id,
           header_display_name: row.header_display_name,
           created_at: row.header_created_at,
+          type:row.type
         });
       }
       return acc;

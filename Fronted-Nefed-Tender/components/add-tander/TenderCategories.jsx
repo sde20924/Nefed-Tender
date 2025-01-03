@@ -80,9 +80,9 @@ export default function TenderCategories({
               className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
             >
               <option value="">-- Choose a category --</option>
-              {categories.map((category) => (
+              {categories?.map((category) => (
                 <option key={category.demo_tender_sheet_id} value={category.demo_tender_sheet_id}>
-                  {category.tender_table_name}
+                  {category.tender_table_name} 
                 </option>
               ))}
             </select>

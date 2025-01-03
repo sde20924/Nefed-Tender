@@ -88,22 +88,30 @@ export default function EditableSheet({
   // Add column logic
   const handleAddColumnConfirm = () => {
     if (newColumnName && newColumnType) {
-      setHeaders((prev) => [...prev, newColumnName,newColumnType]);
+      // Add the new column to the headers array
+      setHeaders((prev) => [
+        ...prev,
+        { header: newColumnName, type: newColumnType },
+      ]);
+  
+      // Add a new blank cell for every row in all subtenders
       setSubTenders((prev) =>
         prev.map((subTender) => ({
           ...subTender,
-          rows: subTender.rows.map((row) => [...row, ""]),
+          rows: subTender.rows.map((row) => [...row, ""]), // Append a blank cell
         }))
       );
-      setNewColumnType('view')
+  
+      // Reset modal states
+      setNewColumnType("view");
       setNewColumnName("");
       setShowModal(false); // Close modal after adding column
+  
       toast.success(`Column "${newColumnName}" added successfully.`);
     } else {
-      toast.error("Please enter a valid column name.");
+      toast.error("Please enter a valid column name and type.");
     }
   };
-  console.log("+++++++++++++",newColumnName,newColumnType)
 
   // Close the modal without adding column
   const handleCloseModal = () => {
@@ -464,9 +472,17 @@ export default function EditableSheet({
                     className="w-full mb-4 p-2 border border-gray-300 rounded"
                     placeholder="Enter new column name"
                   />
-                  <h3 className="text-sm font-medium mb-2">
+                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
+                    <p>
+                      <strong>Note:</strong> Choosing{" "}
+                      <span className="font-bold">Edit</span> will allow buyers
+                      to fill in this column with editable data. Use this option
+                      if buyer input is required.
+                    </p>
+                  </div>
+                  <h2 className="text-lg font-semibold mb-4">
                     Select Column Type
-                  </h3>
+                  </h2>
                   <select
                     value={newColumnType}
                     onChange={handleColumnTypeChange}
@@ -512,7 +528,7 @@ export default function EditableSheet({
                     Select Columns to Delete
                   </h2>
                   <div className="mb-4">
-                    {headers.map((header, index) => (
+                    {headers.map(({ header, type,}, index ) => (
                       <div key={index} className="flex items-center mb-2">
                         <input
                           type="checkbox"
@@ -614,7 +630,7 @@ export default function EditableSheet({
             <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
               <thead className="bg-blue-100 text-gray-700">
                 <tr>
-                  {headers.map((header, index) => (
+                  {headers.map(({ header, type }, index) => (
                     <th
                       key={index}
                       className="border border-gray-300 px-4 py-2 font-bold"
