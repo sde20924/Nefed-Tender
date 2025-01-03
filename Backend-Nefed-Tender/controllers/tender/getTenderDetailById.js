@@ -58,6 +58,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             auction_type: tenderDetailsResult[0].auction_type,
             tender_id: tenderDetailsResult[0].tender_id,
             audi_key: tenderDetailsResult[0].audi_key,
+            access_position: tenderDetailsResult[0].access_position,
         };
              //      Parse attachments
              tenderDetails = {
