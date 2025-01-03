@@ -1,9 +1,11 @@
 import UserDashboard from "@/layouts/UserDashboard";
 import React, { useState, useEffect } from "react";
 import {
-  brokerGetApi,
   createBrokerApi,
   deleteBrokerApi,
+  authApi,
+  callApiGet,
+  callApiPost,
 } from "@/utils/FetchApi";
 import ViButton from "@/components/Input/ViButton";
 import ViDialog from "@/components/Input/ViDialog";
@@ -17,8 +19,10 @@ import { Button } from "@/components/ui/button";
 // import Withauth from "@/components/Higher-Order Component/admin/withAuth";
 
 function Brokers() {
-  const [brokersData, setBrokersData] = useState([]);
-  const [selectedBroker, setSelectedBroker] = useState(null);
+  const [buyerData, setBuyerData] = useState([]);
+  const [buyersList, setBuyersList] = useState([]);
+  const [selectedcategoryFilter, setSelectedcategoryFilter] = useState(null);
+  const [selectedBuyer, setSelectedbuyer] = useState(null);
   const [brokerList, setBrokerList] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -33,15 +37,19 @@ function Brokers() {
     company_name: "",
   });
 
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState([]);
+
   // Fetch the broker list for the table on component mount
-  const fetchBrokerList = async () => {
+  const fetchBuyerData = async () => {
     try {
       setIsLoading(true);
-      const response = await brokerGetApi("get-vessel-brokers");
-      if (response && response.brokers) {
-        setBrokerList(response.brokers);
-      } else {
-        setBrokerList([]);
+      const response = await callApiPost("buyer_list", {
+        demo_tender_sheet_id: selectedcategoryFilter,
+      });
+      console.log(response);
+      if (response.success) {
+        setBuyerData(response.data);
       }
     } catch (error) {
       setError("Failed to fetch brokers for table. Please try again.");
@@ -50,30 +58,46 @@ function Brokers() {
     }
   };
 
+  const fetchCategories = async () => {
+    // setIsLoading(true);
+    // setError(null);
+    try {
+      // Using axios
+      const response = await callApiGet("demo-excel-sheets");
+      // Assuming the API returns an array of categories
+      setCategories(response.data);
+    } catch (err) {
+      setError(err.message || "An error occurred while fetching categories.");
+    } finally {
+      // setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    fetchBrokerList();
+    fetchCategories();
   }, []);
+
+  useEffect(() => {
+    fetchBuyerData();
+  }, [selectedcategoryFilter]);
 
   // Debounced function to handle search
   const debouncedFetchBrokers = debounce(async (searchQuery) => {
     if (searchQuery.length < 3) {
-      setBrokersData([]); // Clear if less than 3 characters
+      buyersList([]); // Clear if less than 3 characters
       return;
     }
 
     setIsLoading(true);
     try {
-      const response = await brokerGetApi(
-        "get-vessel-broker-lists",
-        searchQuery
-      );
-      if (response && response.broker_data) {
-        setBrokersData(response.broker_data);
+      const response = await authApi(`ac?s=${searchQuery}`, "GET");
+      if (response && response.success) {
+        setBuyersList(response.data);
       } else {
-        setBrokersData([]);
+        setBuyersList([]);
       }
     } catch (err) {
-      setError("Failed to fetch brokers. Please try again.");
+      setError("Failed to fetch buyers. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -180,47 +204,49 @@ function Brokers() {
   };
 
   // Function to add selected broker to the list
-  const addBroker = async () => {
-    setIsLoading(true);
-    setError("");
+  const addBuyer = async () => {
+    // setIsLoading(true);
+    // setError("");
 
     // Check if broker already exists
-    const duplicateBroker = brokerList.some(
-      (broker) => broker.email === selectedBroker.email
-    );
-    if (duplicateBroker) {
-      toast.error("Broker already added.", { icon: false });
-      setSearchTerm("");
-      setBrokersData([]);
-      setIsLoading(false);
-      return;
-    }
+    // const duplicateBroker = brokerList.some(
+    //   (broker) => broker.email === selectedBroker.email
+    // );
+    // if (duplicateBroker) {
+    //   toast.error("Broker already added.", { icon: false });
+    //   setSearchTerm("");
+    //   setBrokersData([]);
+    //   setIsLoading(false);
+    //   return;
+    // }
 
     try {
-      const newBrokerResponse = await createBrokerApi(
-        "add-vessel-broker",
-        "POST",
-        selectedBroker
-      );
-      if (newBrokerResponse && newBrokerResponse.data.id) {
-        toast.success("Broker Successfully Added", {
+      const newBuyerResponse = await callApiPost("new_buyer", {
+        buyer_id: selectedBuyer.user_id,
+        demo_tender_sheet_id: selectedCategory,
+      });
+      if (newBuyerResponse && newBuyerResponse.success) {
+        toast.success("Buyer Successfully Added", {
           icon: false,
         });
-        setSelectedBroker(null);
+        setSelectedbuyer(null);
         setSearchTerm("");
-        setBrokersData([]);
-        fetchBrokerList();
+        setSelectedCategory(null);
+        setBuyersList([]);
+        setSelectedcategoryFilter(null);
+        fetchBuyerData();
       } else {
-        toast.error("Failed to add broker. Please try again.", {
+        toast.error("Failed to add Buyer. Please try again.", {
           icon: false,
         });
       }
     } catch (err) {
-      toast.error("Failed to add broker. Please try again.", {
+      console.error(err);
+      toast.error("Failed to add Buyer. Please try again.", {
         icon: false,
       });
     } finally {
-      setIsLoading(false);
+      // setIsLoading(false);
     }
   };
 
@@ -239,8 +265,21 @@ function Brokers() {
     if (searchQuery.length >= 3) {
       debouncedFetchBrokers(searchQuery);
     } else {
-      setBrokersData([]);
+      setBuyersList([]);
     }
+  };
+
+  const handleCategoryChange = (e, type) => {
+    if (type == "add") {
+      setSelectedCategory(e.target.value);
+    } else {
+      setSelectedcategoryFilter(e.target.value);
+      fetchBuyerData();
+    }
+  };
+
+  const handleReset = () => {
+    setSelectedcategoryFilter("");
   };
 
   return (
@@ -250,43 +289,75 @@ function Brokers() {
       </h2>
 
       <div className="w-full mb-4 flex items-center justify-between">
-        <div className="flex w-full relative">
+        {/*Buyer Search and Category*/}
+        <div className="flex w-full relative gap-4">
           <Input
-            id="broker-search"
-            name="broker"
-            label="Search Broker"
+            id="buyer-search"
+            name="buyer"
+            label="Search Buyer"
             value={searchTerm}
             onChange={handleSearchTermChange}
             placeholder="Search by Name, Email, or Company"
             className="w-full max-w-md rounded-md shadow-md border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 transition"
           />
 
-          {/* Autocomplete dropdown with reduced width */}
-          {brokersData.length > 0 && searchTerm.length >= 3 && (
+          {buyersList.length === 0 && searchTerm.length >= 3 && (
             <div className="absolute top-full left-0 w-full max-w-md bg-white shadow-lg rounded-md z-10 mt-2 max-h-60 overflow-y-auto border border-gray-200">
-              {brokersData.map((broker) => (
-                <div
-                  key={broker.email}
-                  className="p-3 hover:bg-gray-100 cursor-pointer text-gray-700"
-                  onClick={() => {
-                    setSelectedBroker(broker);
-                    setSearchTerm(
-                      `${broker.first_name} ${broker.last_name} | ${broker.email}`
-                    );
-                    setBrokersData([]);
-                  }}
-                >
-                  {`${broker.first_name} ${broker.last_name} | ${broker.email} | ${broker.company_name}`}
-                </div>
-              ))}
+              <div className="p-3 hover:bg-gray-100 cursor-pointer text-gray-700">
+                No Buyer Found..
+              </div>
             </div>
           )}
 
-          {selectedBroker && (
+          {/* Autocomplete dropdown with reduced width */}
+          {buyersList.length > 0 && searchTerm.length >= 3 && (
+            <div className="absolute top-full left-0 w-full max-w-md bg-white shadow-lg rounded-md z-10 mt-2 max-h-60 overflow-y-auto border border-gray-200">
+              {buyersList.map((buyer) => {
+                return (
+                  <div
+                    key={buyer.email}
+                    className="p-3 hover:bg-gray-100 cursor-pointer text-gray-700"
+                    onClick={() => {
+                      setSelectedbuyer(buyer);
+                      setSearchTerm(
+                        `${buyer.first_name} ${buyer.last_name} | ${buyer.email}`
+                      );
+                      setBuyersList([]);
+                    }}
+                  >
+                    {`${buyer.first_name} ${buyer.last_name} | ${buyer.email} | ${buyer.company_name}`}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {selectedBuyer && (
+            <div>
+              <select
+                id="tender-categories"
+                value={selectedCategory}
+                onChange={(e) => handleCategoryChange(e, "add")}
+                className="block w-full pl-3 pr-10 py-2 text-base border-gray-300  sm:text-sm rounded-md"
+              >
+                <option value="">-- Choose a category --</option>
+                {categories?.map((category) => (
+                  <option
+                    key={category.demo_tender_sheet_id}
+                    value={category.demo_tender_sheet_id}
+                  >
+                    {category.tender_table_name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {selectedBuyer && selectedCategory && (
             <Button
               color="primary"
-              onClick={addBroker}
-              className="ml-4 bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-lg transition-all"
+              onClick={addBuyer}
+              className=" bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-lg transition-all"
             >
               Add Buyer
             </Button>
@@ -303,9 +374,38 @@ function Brokers() {
       </div>
 
       <div>
-        <h3 className="text-lg font-semibold mb-4 text-gray-600">
-          Your Buyers
-        </h3>
+        <div className="flex justify-between items-end  mb-2">
+          <h2 className="text-lg font-semibold text-gray-600">Your Buyers</h2>
+
+          <div className="flex items-center gap-2">
+            <select
+              id="tender-categories"
+              value={selectedcategoryFilter}
+              onChange={(e) => handleCategoryChange(e, "filter")}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300  sm:text-sm rounded-md"
+            >
+              <option value="">-- Choose a category --</option>
+              {categories?.map((category) => (
+                <option
+                  key={category.demo_tender_sheet_id}
+                  value={category.demo_tender_sheet_id}
+                >
+                  {category.tender_table_name}
+                </option>
+              ))}
+            </select>
+            {selectedcategoryFilter && (
+              <Button
+                color="secondary"
+                onClick={handleReset}
+                className=" bg-green-500 hover:bg-green-600 text-white font-semibold  rounded-md shadow-lg transition-all"
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+        </div>
+
         <table className="min-w-full bg-white border border-gray-300 rounded-lg shadow-lg text-sm">
           <thead className="bg-gray-100">
             <tr>
@@ -327,16 +427,16 @@ function Brokers() {
             </tr>
           </thead>
           <tbody>
-            {brokerList.map((broker, index) => (
+            {buyerData.map((buyer, index) => (
               <tr key={index} className="border-t hover:bg-gray-50">
-                <td className="px-6 py-4">{broker.first_name}</td>
-                <td className="px-6 py-4">{broker.last_name}</td>
-                <td className="px-6 py-4">{broker.email}</td>
-                <td className="px-6 py-4">{broker.company_name}</td>
+                <td className="px-6 py-4">{buyer.first_name}</td>
+                <td className="px-6 py-4">{buyer.last_name}</td>
+                <td className="px-6 py-4">{buyer.email}</td>
+                <td className="px-6 py-4">{buyer.company_name}</td>
                 <td className="px-6 py-4">
                   <FaTrashAlt
                     className="cursor-pointer text-red-500 hover:text-red-600 transition"
-                    onClick={() => handleDeleteClick(broker)}
+                    onClick={() => handleDeleteClick(buyer)}
                   />
                 </td>
               </tr>
