@@ -22,6 +22,8 @@ const AccessBidRoom = () => {
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
   const [bidDetails, setBidDetails] = useState();
+  // console.log("343443", formdata); `
+
   useEffect(() => {
     if (tenderId) {
       fetchTenderDetails();
@@ -649,6 +651,98 @@ const AccessBidRoom = () => {
               </div>
             </div>
           </div>
+
+          {/* sugession Table  */}
+
+          <div className="mt-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">
+              Suggestion Table
+            </h2>
+            {formdata.map((subTender, subIndex) => (
+              <div
+                key={subIndex}
+                className="mb-8 border border-gray-300 rounded-lg shadow-md p-6 bg-white"
+              >
+                {/* Subtender Name */}
+                <h3 className="text-xl font-semibold text-blue-600 mb-4">
+                  {subTender.name}
+                </h3>
+
+                {/* Card List */}
+                <div className="flex flex-col space-y-4">
+                  {subTender.rows.map((row, rowIndex) => {
+                    console.log("dsdf---",row);
+                    
+                    // Extract data for the required fields
+                    const itemName =
+                      row.data || "N/A";
+                    const suggestionAmount =
+                      row.find((cell) => cell.header === "Suggestion Amount")
+                        ?.data || 0;
+                    const currentPrice =
+                      row.find((cell) => cell.header === "Current Amount")
+                        ?.data || 0;
+
+                    return (
+                      <div
+                        key={rowIndex}
+                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition"
+                      >
+                        {/* Serial Number */}
+                        <div className="flex-shrink-0 w-8 text-center font-semibold text-gray-700">
+                          {rowIndex + 1}
+                        </div>
+
+                        {/* Card Content */}
+                        <div className="flex flex-1 items-center space-x-4">
+                          <div className="flex-1">
+                            <p className="text-sm text-gray-800">
+                              <span className="font-bold">Item: </span>
+                              {itemName}
+                            </p>
+                          </div>
+                          <div className="flex-1 text-center">
+                            <p className="text-sm text-green-600">
+                              ₹{parseFloat(suggestionAmount).toFixed(2)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Suggestion Amount
+                            </p>
+                          </div>
+                          <div className="flex-1 text-center">
+                            <p className="text-sm text-blue-600">
+                              ₹{parseFloat(currentPrice).toFixed(2)}
+                            </p>
+                            <p className="text-xs text-gray-500">
+                              Current Price
+                            </p>
+                          </div>
+                        </div>
+
+                        {/* Action Buttons */}
+                        <div className="flex space-x-2">
+                          <button
+                            className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600"
+                            onClick={() => handleEdit(subTender.id, rowIndex)}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            className="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600"
+                            onClick={() => handleDelete(subTender.id, rowIndex)}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* suggesion End  */}
 
           {/* Table Data */}
           <div className="space-y-8">

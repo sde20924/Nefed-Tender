@@ -55,6 +55,7 @@ const SubmittedApplications = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [buyerDetails, setBuyerDetails] = useState();
 
   // Function to safely access a string and handle undefined/null
   const safeString = (str) => (str ? str.toLowerCase() : "");
@@ -62,10 +63,12 @@ const SubmittedApplications = () => {
   const filteredApplications = applications.filter((application) => {
     return (
       safeString(application.tender_title).includes(searchQuery.toLowerCase()) ||
-      safeString(application.first_name + " " + application.last_name).includes(
+      safeString(
+        `${application.buyer_details.first_name} ${application.buyer_details.last_name}`
+      ).includes(searchQuery.toLowerCase()) ||
+      safeString(application.buyer_details.company_name).includes(
         searchQuery.toLowerCase()
-      ) ||
-      safeString(application.company_name).includes(searchQuery.toLowerCase())
+      )
     );
   });
 
@@ -73,6 +76,7 @@ const SubmittedApplications = () => {
     const fetchSubmittedApplications = async () => {
       try {
         const data = await callApiGet("submitted-tender-applications");
+
         setApplications(data.data || []);
         setLoading(false);
       } catch (err) {
@@ -83,6 +87,8 @@ const SubmittedApplications = () => {
 
     fetchSubmittedApplications();
   }, []);
+
+  console.log("application-Dataasd---", applications);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -134,72 +140,75 @@ const SubmittedApplications = () => {
         title={"Submitted Applications"}
       />
 
-<div className="container mx-auto p-4">
-      {/* Section Header */}
-      <div className="mb-6 flex flex-col md:flex-row justify-between items-center">
-        
-        <input
-          type="text"
-          placeholder="Search by Tender Name, Buyer Name, or Company"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className="mt-4 md:mt-0 border border-gray-300 rounded-lg px-4 py-2 w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-      </div>
+      <div className="container mx-auto p-4">
+        {/* Section Header */}
+        <div className="mb-6 flex flex-col md:flex-row justify-between items-center">
+          <input
+            type="text"
+            placeholder="Search by Tender Name, Buyer Name, or Company"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="mt-4 md:mt-0 border border-gray-300 rounded-lg px-4 py-2 w-full md:w-96 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+        </div>
 
-      {/* Applications Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredApplications.length > 0 ? (
-          filteredApplications.map((application) => (
-            <div
-              key={application.tender_application_id}
-              className="bg-gradient-to-b from-white via-gray-100 to-gray-50 shadow-lg rounded-lg p-6 border border-gray-300 hover:shadow-xl transition-shadow duration-300"
-            >
-              {/* Tender Details */}
-              <h2 className="text-xl font-semibold mb-2 text-gray-800">
-                {application.tender_title || "Unnamed Tender"}
-              </h2>
-              <h3 className="text-gray-700">
-                <span className="font-bold">Buyer Name:</span>{" "}
-                {(application.first_name || "") +
-                  " " +
-                  (application.last_name || "")}
-              </h3>
-              <h3 className="text-gray-700">
-                <span className="font-bold">Company:</span>{" "}
-                {application.company_name || "N/A"}
-              </h3>
-              <p className="text-lg font-medium mb-2 text-gray-600">
-                <span className="font-bold">Status:</span>{" "}
-                {application.status || "Unknown"}
-              </p>
+        {/* Applications Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredApplications.length > 0 ? (
+            filteredApplications.map((application) => (
+              <div
+                key={application.tender_application_id}
+                className="bg-gradient-to-b from-white via-gray-100 to-gray-50 shadow-lg rounded-lg p-6 border border-gray-300 hover:shadow-xl transition-shadow duration-300"
+              >
+                {/* Tender Details */}
+                <h2 className="text-xl font-semibold mb-2 text-gray-800">
+                  {application.tender_title || "Unnamed Tender"}
+                </h2>
+                <h3 className="text-gray-700 mb-1">
+                  <span className="font-bold">Buyer Name:</span>{" "}
+                  {application.buyer_details?.first_name || "N/A"}{" "}
+                  {application.buyer_details?.last_name || ""}
+                </h3>
+                <h3 className="text-gray-700 mb-1">
+                  <span className="font-bold">Company:</span>{" "}
+                  {application.buyer_details?.company_name || "N/A"}
+                </h3>
+                <p className="text-lg font-medium mb-2 text-gray-600">
+                  <span className="font-bold">Status:</span>{" "}
+                  {application.status || "Unknown"}
+                </p>
 
-              {/* Action Buttons */}
-              <div className="flex justify-between items-center mt-4">
-                <button
-                  onClick={() =>
-                    handleAction(application.tender_application_id, "accepted")
-                  }
-                  className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300"
-                >
-                  Accept
-                </button>
-                <button
-                  onClick={() => handleReject(application.tender_application_id)}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-300"
-                >
-                  Reject
-                </button>
+                {/* Action Buttons */}
+                <div className="flex justify-between items-center mt-4">
+                  <button
+                    onClick={() =>
+                      handleAction(
+                        application.tender_application_id,
+                        "accepted"
+                      )
+                    }
+                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300"
+                  >
+                    Accept
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleReject(application.tender_application_id)
+                    }
+                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-300"
+                  >
+                    Reject
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
-        ) : (
-          <p className="text-gray-500 text-center col-span-3">
-            No submitted applications found.
-          </p>
-        )}
+            ))
+          ) : (
+            <p className="text-gray-500 text-center col-span-3">
+              No submitted applications found.
+            </p>
+          )}
+        </div>
       </div>
-    </div>
       {/* Modal for Rejection Reason */}
       <Modal
         isOpen={isModalOpen}
