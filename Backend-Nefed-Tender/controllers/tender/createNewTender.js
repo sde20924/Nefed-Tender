@@ -141,10 +141,10 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
     // Insert headers into `tender_header` table and get the header_id
     for (let i = 0; i < headers.length; i++) {
-      const headerName = headers[i];
+      const { header, type } = headers[i]; // Extract name and type
       const [headerResult] = await db.query(
-        `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
-        [tender_id, headerName, i + 1]
+        `INSERT INTO tender_header (tender_id, table_head, type, \`order\`) VALUES (?, ?, ?, ?)`,
+        [tender_id, header, type, i + 1]
       );
       const headerId = headerResult.insertId; // Get the header_id for the inserted header
 

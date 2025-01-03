@@ -276,14 +276,21 @@ const AddTender = () => {
       const selectedData = categories.find(
         (category) => category.demo_tender_sheet_id === selectedCategory
       );
+  
       console.log("Selected Category Data:", selectedData);
-
+  
       if (selectedData) {
-        const headerNames = selectedData.headers.map(
-          (header) => header.header_display_name
-        ); // Extract only header_display_name
-        setHeaders(headerNames); // Update headers with header_display_name only
-        console.log("Headers Updated:", headerNames);
+        // Map headers to extract header_display_name and type
+        const headers = selectedData.headers.map((header) => ({
+          header: header.header_display_name,
+          type: header.type,
+        }));
+  
+        // Separate header names and types for individual use if needed
+       
+  
+        setHeaders(headers); // Set headers with both display name and type
+      
       } else {
         setHeaders([]); // Clear headers if no match found
         console.log(

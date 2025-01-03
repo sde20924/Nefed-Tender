@@ -8,18 +8,22 @@ export default function EditableSheet({
   setHeaders,
   subTenders,
   setSubTenders,
-  selectedCategory
+  selectedCategory,
 }) {
   // Add a new subtender
   console.log("headerrrr", headers);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
+  const [newColumnType, setNewColumnType] = useState("view");
 
+  const handleColumnTypeChange = (e) => {
+    setNewColumnType(e.target.value);
+  };
   // Function to open the modal
   const openAddSubTenderModal = () => {
-    if(selectedCategory === "" || selectedCategory === null){
-      toast.success("Select the categories first")
+    if (selectedCategory === "" || selectedCategory === null) {
+      toast.success("Select the categories first");
       return;
     }
 
@@ -83,19 +87,29 @@ export default function EditableSheet({
 
   // Add column logic
   const handleAddColumnConfirm = () => {
-    if (newColumnName) {
-      setHeaders((prev) => [...prev, newColumnName]);
+    if (newColumnName && newColumnType) {
+      // Add the new column to the headers array
+      setHeaders((prev) => [
+        ...prev,
+        { header: newColumnName, type: newColumnType },
+      ]);
+  
+      // Add a new blank cell for every row in all subtenders
       setSubTenders((prev) =>
         prev.map((subTender) => ({
           ...subTender,
-          rows: subTender.rows.map((row) => [...row, ""]),
+          rows: subTender.rows.map((row) => [...row, ""]), // Append a blank cell
         }))
       );
+  
+      // Reset modal states
+      setNewColumnType("view");
       setNewColumnName("");
       setShowModal(false); // Close modal after adding column
+  
       toast.success(`Column "${newColumnName}" added successfully.`);
     } else {
-      toast.error("Please enter a valid column name.");
+      toast.error("Please enter a valid column name and type.");
     }
   };
 
@@ -458,6 +472,25 @@ export default function EditableSheet({
                     className="w-full mb-4 p-2 border border-gray-300 rounded"
                     placeholder="Enter new column name"
                   />
+                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
+                    <p>
+                      <strong>Note:</strong> Choosing{" "}
+                      <span className="font-bold">Edit</span> will allow buyers
+                      to fill in this column with editable data. Use this option
+                      if buyer input is required.
+                    </p>
+                  </div>
+                  <h2 className="text-lg font-semibold mb-4">
+                    Select Column Type
+                  </h2>
+                  <select
+                    value={newColumnType}
+                    onChange={handleColumnTypeChange}
+                    className="w-full mb-4 p-2 border border-gray-300 rounded"
+                  >
+                    <option value="view">View</option>
+                    <option value="edit">Edit</option>
+                  </select>
                   <div className="flex justify-end space-x-4">
                     <button
                       onClick={handleCloseModal}
@@ -495,7 +528,7 @@ export default function EditableSheet({
                     Select Columns to Delete
                   </h2>
                   <div className="mb-4">
-                    {headers.map((header, index) => (
+                    {headers.map(({ header, type,}, index ) => (
                       <div key={index} className="flex items-center mb-2">
                         <input
                           type="checkbox"
@@ -597,7 +630,7 @@ export default function EditableSheet({
             <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
               <thead className="bg-blue-100 text-gray-700">
                 <tr>
-                  {headers.map((header, index) => (
+                  {headers.map(({ header, type }, index) => (
                     <th
                       key={index}
                       className="border border-gray-300 px-4 py-2 font-bold"
