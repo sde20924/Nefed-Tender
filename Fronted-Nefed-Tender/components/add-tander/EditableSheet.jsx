@@ -8,18 +8,22 @@ export default function EditableSheet({
   setHeaders,
   subTenders,
   setSubTenders,
-  selectedCategory
+  selectedCategory,
 }) {
   // Add a new subtender
   console.log("headerrrr", headers);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
+  const [newColumnType, setNewColumnType] = useState("view");
 
+  const handleColumnTypeChange = (e) => {
+    setNewColumnType(e.target.value);
+  };
   // Function to open the modal
   const openAddSubTenderModal = () => {
-    if(selectedCategory === "" || selectedCategory === null){
-      toast.success("Select the categories first")
+    if (selectedCategory === "" || selectedCategory === null) {
+      toast.success("Select the categories first");
       return;
     }
 
@@ -83,14 +87,15 @@ export default function EditableSheet({
 
   // Add column logic
   const handleAddColumnConfirm = () => {
-    if (newColumnName) {
-      setHeaders((prev) => [...prev, newColumnName]);
+    if (newColumnName && newColumnType) {
+      setHeaders((prev) => [...prev, newColumnName,newColumnType]);
       setSubTenders((prev) =>
         prev.map((subTender) => ({
           ...subTender,
           rows: subTender.rows.map((row) => [...row, ""]),
         }))
       );
+      setNewColumnType('view')
       setNewColumnName("");
       setShowModal(false); // Close modal after adding column
       toast.success(`Column "${newColumnName}" added successfully.`);
@@ -98,6 +103,7 @@ export default function EditableSheet({
       toast.error("Please enter a valid column name.");
     }
   };
+  console.log("+++++++++++++",newColumnName,newColumnType)
 
   // Close the modal without adding column
   const handleCloseModal = () => {
@@ -458,6 +464,17 @@ export default function EditableSheet({
                     className="w-full mb-4 p-2 border border-gray-300 rounded"
                     placeholder="Enter new column name"
                   />
+                  <h3 className="text-sm font-medium mb-2">
+                    Select Column Type
+                  </h3>
+                  <select
+                    value={newColumnType}
+                    onChange={handleColumnTypeChange}
+                    className="w-full mb-4 p-2 border border-gray-300 rounded"
+                  >
+                    <option value="view">View</option>
+                    <option value="edit">Edit</option>
+                  </select>
                   <div className="flex justify-end space-x-4">
                     <button
                       onClick={handleCloseModal}

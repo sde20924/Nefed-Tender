@@ -3,21 +3,28 @@ import UserDashboard from "@/layouts/UserDashboard";
 import TenderSelect from "@/components/TenderSelectList/TenderSelect"; // Import TenderSelect component
 import { callApiGet } from "@/utils/FetchApi";
 import { useState } from "react";
+import TenderTable from "@/components/Report/TenderTable";
 
 const AuctionBids = () => {
   const [selectedTender, setSelectedTender] = useState("");
   const [bids, setBids] = useState([]);
   const [loadingBids, setLoadingBids] = useState(false);
   const [error, setError] = useState("");
+  const [iseditableSheet, setEditableSheet] = useState(null);
+  const [tenderData, setTenderData] = useState(null);
 
   const fetchAuctionBids = async (selectedTender) => {
     setLoadingBids(true);
     try {
       const response = await callApiGet(
         `tender-Auction-bids/${selectedTender}`
+        
       );
+
+      setEditableSheet(response.data);
       if (response && response.success) {
-        setBids(response.allBids || []);
+        setBids(response.data.allBids);
+        setTenderData(response.data)
         setError("");
       } else {
         throw new Error("No bids found or failed to load bids");
@@ -25,6 +32,7 @@ const AuctionBids = () => {
     } catch (error) {
       console.error("Error fetching auction bids:", error.message);
       setError("Failed to fetch bids. Please try again later.");
+      setTenderData(null);
       setBids([]);
     } finally {
       setLoadingBids(false);
@@ -63,8 +71,14 @@ const AuctionBids = () => {
           </div>
         </div>
 
-        {loadingBids && <p className="text-center text-blue-500 font-semibold">Loading auction bids...</p>}
-        {error && <p className="text-center text-red-500">No Bids Found</p>}
+        {loadingBids && (
+          <p className="text-center text-blue-500 font-semibold">
+            Loading auction bids...
+          </p>
+        )}
+        {error && (
+          <p className="text-center text-red-500">No Bids Found</p>
+        )}
 
         <div className="overflow-x-auto mt-4">
           <div className="p-4 bg-gray-50 rounded-md shadow-md">
@@ -86,7 +100,7 @@ const AuctionBids = () => {
                   ].map((header) => (
                     <th
                       key={header}
-                      className="px-4 py-2 border-b text-sm font-medium text-gray-700 "
+                      className="px-4 py-2 border-b text-sm font-medium text-gray-700"
                     >
                       {header}
                     </th>
@@ -171,6 +185,61 @@ const AuctionBids = () => {
           </div>
         </div>
       </div>
+
+      {/* Editable Sub-Tenders Section */}
+      <div className="space-y-8">
+        {iseditableSheet?.sub_tenders?.map((subTender) => (
+          
+          <div
+            key={subTender.id}
+            className="border border-gray-300 p-4 rounded"
+          >
+            
+            <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
+            <div className="overflow-x-auto">
+              <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                <thead className="bg-blue-100 text-gray-700">
+                  <tr>
+                    {iseditableSheet.headers.map((header, index) => (
+                      <th
+                        key={index}
+                        className="border border-gray-300 px-4 py-2 font-bold"
+                      >
+                        {header.table_head}
+                      </th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {subTender.rows.map((row, rowIndex) => (
+                    <tr
+                      key={rowIndex}
+                      className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
+                    >
+                      {row.map((cell, cellIndex) => (
+                        <td
+                          key={cellIndex}
+                          className={`border border-gray-300 px-4 py-2 ${
+                            cell?.type === "edit"
+                              ? "bg-yellow-100"
+                              : "bg-gray-50"
+                          }`}
+                        >
+                          {cell.data || "-"}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+        ))}
+      </div>
+      {!loadingBids && tenderData && (
+          <TenderTable data={tenderData} />
+        )}
     </>
   );
 };
