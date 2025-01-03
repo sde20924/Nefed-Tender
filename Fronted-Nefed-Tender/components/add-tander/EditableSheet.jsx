@@ -11,7 +11,8 @@ export default function EditableSheet({
   selectedCategory,
 }) {
   // Add a new subtender
-  console.log("headerrrr", headers);
+  console.log("headerrrr--", headers);
+  // console.log("hsdfsdf--", subTenders);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
@@ -21,14 +22,21 @@ export default function EditableSheet({
     setNewColumnType(e.target.value);
   };
   // Function to open the modal
-  const openAddSubTenderModal = () => {
-    if (selectedCategory === "" || selectedCategory === null) {
+  const openAddSubTenderModal = (e) => {
+    // Get the button text
+    const buttonText = e.currentTarget.textContent.replace(/\s+/g, "");
+    console.log("Button text without spaces:", buttonText);
+    
+    // Check if the button text is "Create Sheet" and the category is not selected
+    if (buttonText == "CreateSheet" && (selectedCategory === "" || selectedCategory === null)) {
       toast.success("Select the categories first");
-      return;
+      return; // Exit the function to prevent opening the modal
     }
-
-    setIsModalOpen(true); // Show modal
+  
+    // Open the modal if the conditions are met
+    setIsModalOpen(true);
   };
+  
   const [showModal, setShowModal] = useState(false);
 
   // Function to handle input change for SubTender name
@@ -93,7 +101,7 @@ export default function EditableSheet({
         ...prev,
         { header: newColumnName, type: newColumnType },
       ]);
-  
+
       // Add a new blank cell for every row in all subtenders
       setSubTenders((prev) =>
         prev.map((subTender) => ({
@@ -101,12 +109,12 @@ export default function EditableSheet({
           rows: subTender.rows.map((row) => [...row, ""]), // Append a blank cell
         }))
       );
-  
+
       // Reset modal states
       setNewColumnType("view");
       setNewColumnName("");
       setShowModal(false); // Close modal after adding column
-  
+
       toast.success(`Column "${newColumnName}" added successfully.`);
     } else {
       toast.error("Please enter a valid column name and type.");
@@ -310,7 +318,7 @@ export default function EditableSheet({
   };
 
   // Parse uploaded sheet data into subtenders
-  const parseSheetData = (sheetData) => {
+  const parseSheetData = (sheetData, headers) => {
     const newSubTenders = [];
     let currentSubTender = null;
 
@@ -356,7 +364,19 @@ export default function EditableSheet({
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
         if (jsonData.length > 0) {
-          parseSheetData(jsonData);
+          console.log("Sheet Data:", jsonData);
+
+          // Transform headers into the desired format
+          const transformedHeaders = jsonData[0].map((header) => ({
+            header: header || "Unknown Header", // Handle empty headers
+            type: "view", // Default type
+          }));
+
+          // Set transformed headers to state
+          setHeaders(transformedHeaders);
+
+          // Parse sheet data into subtenders
+          parseSheetData(jsonData, jsonData[0]);
         } else {
           alert("The uploaded file is empty.");
         }
@@ -404,7 +424,7 @@ export default function EditableSheet({
         {subTenders.length > 0 && (
           <button
             type="button"
-            onClick={openAddSubTenderModal}
+            onClick={(e)=>openAddSubTenderModal(e)}
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
           >
             Add SubTender
@@ -528,7 +548,7 @@ export default function EditableSheet({
                     Select Columns to Delete
                   </h2>
                   <div className="mb-4">
-                    {headers.map(({ header, type,}, index ) => (
+                    {headers.map(({ header, type }, index) => (
                       <div key={index} className="flex items-center mb-2">
                         <input
                           type="checkbox"
@@ -770,7 +790,7 @@ export default function EditableSheet({
                 <button
                   type="button"
                   // disabled ={selectedCategory!== "" && selectedCategory !== null ? false : true}
-                  onClick={openAddSubTenderModal}
+                  onClick={(e)=>openAddSubTenderModal(e)}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg"
                 >
                   <i className="mr-2 fas fa-edit transition-all duration-200 ease-in-out transform hover:scale-110"></i>{" "}
