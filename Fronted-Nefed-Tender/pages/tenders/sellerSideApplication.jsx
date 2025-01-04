@@ -158,7 +158,6 @@ const SubmittedApplications = () => {
     }
     setIsModalOpen(false);
   };
-
   return (
     <>
       <HeaderTitle
@@ -185,6 +184,8 @@ const SubmittedApplications = () => {
             filteredApplications.map((application,index) => {
 
               // Find the uploaded file for the current application
+              console.log("-=-=-=--=application",application)
+              console.log("-=-=-=--=buyeruploadedFilesData",buyeruploadedFilesData)
               const uploadedFile = buyeruploadedFilesData.find(
                 (file) =>
                   file.tender_id === application.tender_id &&

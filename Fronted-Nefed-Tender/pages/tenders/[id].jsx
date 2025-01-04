@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { callApiGet, callApiPost, uploadDocApi } from "@/utils/FetchApi"; // Import API call functions
 import { ToastContainer, toast } from "react-toastify";
+import { FaTimes } from "react-icons/fa";
 
 const TenderDetail = () => {
   const router = useRouter();
@@ -16,6 +17,7 @@ const TenderDetail = () => {
   const [isApplicationSaved, setIsApplicationSaved] = useState(false); // Track if the application is saved
   const [iseditableSheet, setEditableSheet] = useState(null);
   const [editedData, setEditedData] = useState({});
+  const [previewImage, setPreviewImage] = useState(null);
   // console.log("formData", formdata);
 
   useEffect(() => {
@@ -89,32 +91,74 @@ const TenderDetail = () => {
 
   // Function to handle file selection and upload
   const handleFileChange = async (event, docKey, tender_doc_id) => {
-    const file = event.target.files[0];
+    const file = event.target.files[0]; // Get the uploaded file
     if (file) {
-      const formData = new FormData();
-      formData.append("file", file); // Append the file to the form data
+      // Find the corresponding tender document
+      const matchingDocument = tender.tenderDocuments.find(
+        (doc) => doc.tender_doc_id === tender_doc_id
+      );
 
-      try {
-        const response = await uploadDocApi("upload-doc", formData); // Correct endpoint for file upload
-        if (response && response.uploaded_data) {
-          const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
-          const tenderDocId = tender_doc_id; // Get the tender_doc_id
+      if (matchingDocument) {
+        const { doc_ext, doc_size } = matchingDocument;
 
-          const newUploadedFiles = [
-            ...uploadedFiles,
-            { tender_doc_id: tenderDocId, doc_url: fileUrl },
-          ];
-          setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
-
-          toast.success("File uploaded successfully");
-        } else {
-          toast.error("Failed to upload file");
+        // Check file extension
+        const fileExtension = file.name.split(".").pop().toLowerCase();
+        if (
+          !doc_ext
+            .split(",")
+            .map((ext) => ext.trim())
+            .includes(fileExtension)
+        ) {
+          toast.error(`Invalid file type. Please upload a ${doc_ext} file.`);
+          return;
         }
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-        toast.error("Error uploading file");
+
+        // Check file size
+        const fileSizeInMB = file.size / (1024 * 1024); // Convert bytes to MB
+        if (fileSizeInMB > parseFloat(doc_size)) {
+          toast.error(
+            `File size exceeds limit. Maximum allowed size is ${doc_size} MB.`
+          );
+          return;
+        }
+
+        // If validation passes, proceed with the upload
+        const formData = new FormData();
+        formData.append("file", file); // Append the file to the form data
+
+        try {
+          const response = await uploadDocApi("upload-doc", formData); // Correct endpoint for file upload
+
+          if (response && response.uploaded_data) {
+            const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
+            const newUploadedFiles = [
+              ...uploadedFiles,
+              { tender_doc_id, doc_url: fileUrl },
+            ];
+            setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
+
+            toast.success("File uploaded successfully");
+          } else {
+            toast.error("Failed to upload file");
+          }
+        } catch (error) {
+          console.error("Error uploading file:", error.message);
+          toast.error("Error uploading file");
+        }
+      } else {
+        toast.error("Invalid tender document configuration.");
       }
     }
+  };
+
+  // handel remove file
+  const removeFile = (tenderDocId, fileIndex) => {
+    setUploadedFiles((prevFiles) =>
+      prevFiles.filter(
+        (file, index) =>
+          !(file.tender_doc_id === tenderDocId && index === fileIndex)
+      )
+    );
   };
 
   // Handle Save Application Button Click
@@ -314,66 +358,121 @@ const TenderDetail = () => {
               <h5 className="text-lg font-bold mb-2">Submit Application</h5>
 
               {/* Attached Files Section */}
-              <div className="mb-2">
-                <h6 className="text-md font-semibold mb-2">Attached Files</h6>
-                <p className="text-sm text-gray-600 mb-2">
-                  Please upload the following documents and details. All
-                  documents to be uploaded.
+              <div className="mb-4">
+                <h6 className="text-lg font-semibold mb-3 text-gray-800">
+                  Attached Files
+                </h6>
+                <p className="text-sm text-gray-600 mb-4">
+                  Please upload the following documents. All documents are
+                  mandatory.
                 </p>
 
-                {/* Map through tender documents */}
                 {tender.tenderDocuments && tender.tenderDocuments.length > 0 ? (
                   tender.tenderDocuments.map((doc, index) => (
                     <div
                       key={index}
-                      className="border rounded-md p-4 mb-2 bg-blue-50"
+                      className="border rounded-lg p-4 mb-4 bg-gradient-to-r from-blue-50 to-white shadow-md"
                     >
-                      <div className="flex items-center mb-2">
-                        <i className="fas fa-file-alt text-blue-400 mr-2"></i>
-                        <span className="font-medium">{doc.doc_label}</span>
+                      {/* Document Header */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center space-x-2">
+                          <i className="fas fa-file-alt text-blue-500"></i>
+                          <span className="font-medium text-gray-800">
+                            {doc.doc_label}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                          {doc.doc_ext} | Max Size: {doc.doc_size} MB
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-500 mb-2">
-                        {doc.doc_ext} - {doc.doc_size} MB Allowed
-                      </p>
-                      <div className="flex items-center">
+
+                      {/* Uploaded Files Preview */}
+                      <div className="flex flex-wrap mt-4 gap-3">
+                        {uploadedFiles
+                          .filter(
+                            (file) => file.tender_doc_id === doc.tender_doc_id
+                          )
+                          .map((file, fileIndex) => (
+                            <div
+                              key={fileIndex}
+                              className="relative w-28 h-28 border rounded-lg overflow-hidden bg-white shadow hover:shadow-lg transition-all"
+                            >
+                              {file.doc_url.match(/\.(jpg|jpeg|png|gif)$/i) ? (
+                                <img
+                                  src={file.doc_url}
+                                  alt="Preview"
+                                  className="w-full h-full object-cover cursor-pointer"
+                                  onClick={() => setPreviewImage(file.doc_url)}
+                                />
+                              ) : (
+                                <a
+                                  href={file.doc_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center justify-center text-blue-500 text-sm underline h-full"
+                                >
+                                  View File
+                                </a>
+                              )}
+                              <button
+                                onClick={() =>
+                                  removeFile(file.tender_doc_id, fileIndex)
+                                }
+                                className="absolute top-1 right-1 bg-gray-600 text-white rounded-full p-1 hover:bg-red-600"
+                                title="Remove File"
+                              >
+                                <FaTimes className="w-4 h-4" />
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+
+                      {/* Upload Input */}
+                      <div className="flex items-center space-x-4 mt-4">
+                        <label
+                          htmlFor={`file-upload-${index}`}
+                          className="cursor-pointer bg-gray-500 text-white px-4 py-2 rounded-lg text-sm shadow-md transition-all"
+                        >
+                          Upload Files
+                        </label>
                         <input
+                          id={`file-upload-${index}`}
                           type="file"
-                          className="mr-4"
+                          multiple
+                          className="hidden"
                           onChange={(e) =>
                             handleFileChange(e, doc.doc_key, doc.tender_doc_id)
                           }
-                          required
                           disabled={isCountdownComplete}
                         />
-                        <span>
-                          {uploadedFiles.find(
-                            (file) => file.tender_doc_id === doc.tender_doc_id
-                          ) ? (
-                            <a
-                              href={
-                                uploadedFiles.find(
-                                  (file) =>
-                                    file.tender_doc_id === doc.tender_doc_id
-                                ).doc_url
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              View Uploaded File
-                            </a>
-                          ) : (
-                            "No file chosen"
-                          )}
-                        </span>
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500 mb-2">
-                    No documents required for this tender.
+                  <p className="text-sm text-gray-500 mb-4">
+                    No documents are required for this tender.
                   </p>
                 )}
               </div>
+
+              {/* Modal for Image Preview */}
+              {previewImage && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+                  <div className="bg-white p-4 rounded-md shadow-lg max-w-full max-h-full relative">
+                    <button
+                      onClick={() => setPreviewImage(null)}
+                      className="absolute top-4 right-4 bg-red-500 text-white rounded-full px-3 py-1 hover:bg-red-600 transition"
+                    >
+                      Close
+                    </button>
+                    <img
+                      src={previewImage}
+                      alt="Full Preview"
+                      className="max-w-full max-h-screen"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Save Application Button */}
               <button
@@ -419,10 +518,8 @@ const TenderDetail = () => {
                           className="border border-gray-300 px-4 py-2 font-bold"
                         >
                           {header.table_head}
-
                         </th>
                       ))}
-                      
                     </tr>
                   </thead>
                   <tbody>
