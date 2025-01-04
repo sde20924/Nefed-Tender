@@ -39,6 +39,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     editable_sheet,
     selected_buyers=[],
     accessPosition,
+    formula,
     save_as
 
   } = req.body;
@@ -89,7 +90,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key, user_access, access_position,save_as
+        tender_id, audi_key, user_access, access_position,cal_formula,save_as
       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
 
       [
@@ -125,6 +126,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         audi_key,
         accessType,
         accessPosition,
+        formula, // Insert `accessPosition` value
         save_as // Insert `accessPosition` value
       ]
     );
@@ -143,62 +145,71 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
     // Insert headers into `tender_header` table and get the header_id
     for (let i = 0; i < headers.length; i++) {
-      const { header, type } = headers[i]; // Extract name and type
+      const { header, type, sortform } = headers[i];
+    
+      // Insert the tender_header row
       const [headerResult] = await db.query(
-        `INSERT INTO tender_header (tender_id, table_head, type, \`order\`) VALUES (?, ?, ?, ?)`,
-        [tender_id, header, type, i + 1]
+        `INSERT INTO tender_header 
+           (tender_id, table_head, type, \`order\`, cal_col) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [tender_id, header, type, i + 1, sortform]
       );
-      const headerId = headerResult.insertId; // Get the header_id for the inserted header
-
+      const headerId = headerResult.insertId; // The header_id for this column
+    
+      // Now insert data for each Sub-Tender
       for (const subTender of sub_tenders) {
         const { name, rows } = subTender;
-
-        // Check if the subtender exists, insert if not
-        let [subTenderResult] = await db.query(
-          `SELECT subtender_id FROM subtender WHERE subtender_name = ? AND tender_id = ?`,
+    
+        // Make sure subtender row exists
+        const [subTenderResult] = await db.query(
+          `SELECT subtender_id 
+             FROM subtender 
+            WHERE subtender_name = ? 
+              AND tender_id      = ?`,
           [name, tender_id]
         );
-
+    
         let subtenderId;
         if (subTenderResult.length === 0) {
           const [newSubTender] = await db.query(
-            `INSERT INTO subtender (subtender_name,tender_id) VALUES (?,?)`,
-            [name,tender_id]
+            `INSERT INTO subtender (subtender_name, tender_id)
+             VALUES (?, ?)`,
+            [name, tender_id]
           );
           subtenderId = newSubTender.insertId;
         } else {
           subtenderId = subTenderResult[0].subtender_id;
         }
-
-        // Insert rows into `seller_header_row_data` table
-        for (const [rowIndex, row] of rows.entries()) { 
-          for (let j = 0; j < row.length; j++) {
-            const cellData = row[j];
-            await db.query(
-              `INSERT INTO seller_header_row_data (
-                header_id, 
-                row_data, 
-                subtender_id, 
-                seller_id, 
-                \`order\`, 
-                type, 
-                row_number
-              ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-              [
-                headerId, 
-                cellData, 
-                subtenderId, 
-                user_id,
-                j + 1, 
-                cellData === "" || cellData === null ? "edit" : "view", 
-                rowIndex + 1 
-              ]
-            );
-          }
+    
+        // Insert each row’s data for this column
+        for (const [rowIndex, row] of rows.entries()) {
+          // row[i] corresponds to the cell data for this column
+          const cellData = row[i] ?? "";
+    
+          await db.query(
+            `INSERT INTO seller_header_row_data (
+               header_id, 
+               row_data, 
+               subtender_id, 
+               seller_id, 
+               \`order\`, 
+               type, 
+               row_number
+             ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+              headerId,    // The column's header_id
+              cellData,    // Actual cell data
+              subtenderId, // The subtender we are inserting for
+              user_id,     
+              i + 1,       // "order" could be column index or up to you
+              type,        // <-- Use the header's type (e.g. 'edit' or 'view')
+              rowIndex + 1 // row_number
+            ]
+          );
         }
-        
       }
     }
+    
     // If accessType is private, insert selected buyers into `Tender_access`
     if (accessType === "private" && Array.isArray(selected_buyers) && selected_buyers.length > 0) {
       // Loop through each buyer_id in the selected_buyers array
