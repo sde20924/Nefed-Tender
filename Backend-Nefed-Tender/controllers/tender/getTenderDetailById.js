@@ -16,8 +16,6 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         const [bidParticipationResult] = await db.query(bidParticipationQuery, [tenderId, user_id]);
         const hasParticipated = bidParticipationResult[0].bid_count > 0;
 
-        
-
         // Fetch tender details from the manage_tender table
         const tenderDetailsQuery = `
             SELECT 
@@ -73,6 +71,17 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             audi_key: tenderDetailsResult[0].audi_key,
             access_position: tenderDetailsResult[0].access_position,
         };
+        tenderDetails = {
+            ...tenderDetails, // Base tender details from the first row
+            tenderDocuments: tenderDetailsResult.map(row => ({
+              doc_key: row.doc_key,
+              tender_doc_id: row.tender_doc_id,
+              doc_label: row.doc_label,
+              doc_ext: row.doc_ext,
+              doc_size: row.doc_size,
+            })).filter(doc => doc.doc_key) // Filter out any rows without documents
+          }
+
 
         // Fetch headers and identify those with type "edit"
         const headersQuery = `

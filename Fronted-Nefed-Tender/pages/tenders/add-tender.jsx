@@ -164,9 +164,8 @@ const AddTender = () => {
     ]);
   };
   const handleFormulaChange = (payload) => {
-    setHeaders(payload.headers); // Update headers
-    setGeneratedFormula(payload.formula); // Update formula
-    console.log("Updated Formula:", payload.formula);
+    setHeaders(payload.headers); 
+    setGeneratedFormula(payload.formula); 
   };
 
   const handleRemoveAttachment = (index) => {
@@ -372,12 +371,16 @@ const AddTender = () => {
       accessPosition : accessPosition,
       formula: generatedFormula
     };
-
+    
     console.log("Form data:", formData);
-
+    
     try {
-      const response = await callApiPost("create_new_tender", formData);
-      console.log("Response:", response);
+      if(generatedFormula==""){
+        toast.error("Formula Required For Calculate Total Coast")
+      }else{     
+        const response = await callApiPost("create_new_tender", formData);
+        console.log("Response:", response);
+      }
       toast.success(response.msg);
     } catch (error) {
       console.error("Error submitting form:", error);

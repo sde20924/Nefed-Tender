@@ -22,6 +22,7 @@ const AccessBidRoom = () => {
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
   const [bidDetails, setBidDetails] = useState();
+
   const [suggestionData, setSuggestionData] = useState([
     {
       tableName: "Civil & MS Works",
@@ -143,6 +144,7 @@ const AccessBidRoom = () => {
       const tenderData = await callApiGet(`tender/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
       setFormData(tenderData.data.sub_tenders);
+      setSuggestionData(tenderData.data.suggested_prices)
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -151,7 +153,7 @@ const AccessBidRoom = () => {
       console.error("Error fetching tender details:", error.message);
     }
   };
-
+   
   // Fetch bids for the specific tender
   const fetchBids = async () => {
     try {
@@ -734,7 +736,7 @@ const AccessBidRoom = () => {
                 >
                   <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
                     <h3 className="text-xl font-semibold text-blue-700">
-                      {table.tableName}
+                    {table.subtender_name}
                     </h3>
                   </div>
                   <div className="overflow-x-auto p-4">
@@ -766,12 +768,14 @@ const AccessBidRoom = () => {
                           >
                             {/* Item */}
                             <td className="border border-gray-300 px-3 py-2">
-                              {row.item}
+                            {row.item_name}
                             </td>
 
                             {/* Suggestion Amount */}
                             <td className="border border-gray-300 px-3 py-2">
-                              ₹{row.suggestionAmount}
+                              {row.suggested_price
+                          ? `₹${row.suggested_price}`
+                          : "N/A"}
                             </td>
 
                             {/* Current Amount (Editable) */}
@@ -792,7 +796,7 @@ const AccessBidRoom = () => {
                                   className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
                                 />
                               ) : (
-                                `₹${row.currentAmount}`
+                                `${row.user_rate ? `₹${row.user_rate}` : "N/A"}`
                               )}
                             </td>
 
@@ -804,7 +808,7 @@ const AccessBidRoom = () => {
                                   : "text-green-500"
                               }`}
                             >
-                              ₹{row.difference}
+                              ${row.user_rate-row.suggested_price}
                             </td>
 
                             {/* Actions */}
