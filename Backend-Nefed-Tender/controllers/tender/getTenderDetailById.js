@@ -1,6 +1,6 @@
 const db = require('../../config/config'); // Database configuration
 const asyncErrorHandler = require('../../utils/asyncErrorHandler'); // Async error handler middleware
-const { SuggestedPrice } = require('../../utils/suggestedPrice');
+const { SuggestedPrice } = require('../../utils/SuggestedPrice');
 
 const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
     try {
