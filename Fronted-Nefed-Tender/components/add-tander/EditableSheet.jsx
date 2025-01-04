@@ -3,14 +3,13 @@ import * as XLSX from "xlsx";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
-
 export default function EditableSheet({
   headers,
   setHeaders,
   subTenders,
   setSubTenders,
   selectedCategory,
-  onFormulaChange
+  onFormulaChange,
 }) {
   // Add a new subtender
   console.log("headerrrr--", headers);
@@ -20,7 +19,8 @@ export default function EditableSheet({
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
   const [newColumnType, setNewColumnType] = useState("view");
   const [formula, setFormula] = useState("");
-  const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] = useState([]);
+  const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] =
+    useState([]);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
 
   const handleColumnTypeChange = (e) => {
@@ -31,17 +31,19 @@ export default function EditableSheet({
     // Get the button text
     const buttonText = e.currentTarget.textContent.replace(/\s+/g, "");
     console.log("Button text without spaces:", buttonText);
-    
+
     // Check if the button text is "Create Sheet" and the category is not selected
-    if (buttonText == "CreateSheet" && (selectedCategory === "" || selectedCategory === null)) {
+    if (
+      buttonText == "CreateSheet" &&
+      (selectedCategory === "" || selectedCategory === null)
+    ) {
       toast.success("Select the categories first");
       return; // Exit the function to prevent opening the modal
     }
-    
 
     setIsModalOpen(true); // Show modal
   };
-  
+
   const [showModal, setShowModal] = useState(false);
 
   // Function to handle input change for SubTender name
@@ -56,8 +58,8 @@ export default function EditableSheet({
         ...prev,
         { id: prev.length + 1, name: newSubTenderName, rows: [] },
       ]);
-      setIsModalOpen(false); 
-      setNewSubTenderName(""); 
+      setIsModalOpen(false);
+      setNewSubTenderName("");
       toast.success(`SubTender "${newSubTenderName}" added successfully.`);
     } else {
       toast.error("Please enter a valid SubTender name.");
@@ -66,29 +68,31 @@ export default function EditableSheet({
   //Formule
   const identifierSequence = ["P", "R", "Q"];
   const handleHeaderSelect = (header) => {
-    const nextIdentifier = identifierSequence[selectedHeadersWithShortNames.length];
+    const nextIdentifier =
+      identifierSequence[selectedHeadersWithShortNames.length];
     if (nextIdentifier) {
       setFormula((prev) => `${prev}${nextIdentifier}`);
       setSelectedHeadersWithShortNames((prev) => [
         ...prev,
         { header: header.header, type: header.type, sortform: nextIdentifier },
       ]);
-      console.log("-=-=-==-=nextIdentifier",)
+      console.log("-=-=-==-=nextIdentifier");
       setHeaders((prev) =>
         prev.map((h) =>
-          h.header === header
-            ? { ...h, sortform: nextIdentifier }
-            : h
+          h.header === header ? { ...h, sortform: nextIdentifier } : h
         )
       );
-      console.log("-=-=-=-=-=-=headers`1",headers)
-      console.log("-=-=-=-=-=-=headers`2",headers)
     } else {
       console.warn("No more identifiers available for headers.");
     }
   };
-  const handleOperationClick = (operation) => {
+  const handleOperationClick = ( operation) => {
+
     setFormula((prev) => `${prev}${operation}`);
+  };
+  const handleNumberClick = ( number) => {
+  
+    setFormula((prev) => `${prev}${number}`);
   };
 
   const handleClearFormula = () => {
@@ -97,29 +101,30 @@ export default function EditableSheet({
     setHeaders((prev) => prev.map((h) => ({ ...h, sortform: null })));
   };
 
-  const handleSaveFormula = () => {
-    console.log("jdnjddn",headers)
-    setShowFormulaModal(false)
+  const handleSaveFormula = (e) => {
+    if (e) e.preventDefault();
+    console.log("jdnjddn", headers);
+    setShowFormulaModal(false);
     const enrichedHeaders = headers.map((header) => ({
       header: header.header,
       type: header.type,
-      sortform: header.sortform// Set sortform to null if not provided
+      sortform: header.sortform, // Set sortform to null if not provided
     }));
 
     const payload = {
       headers: enrichedHeaders,
       sub_tenders: subTenders,
-      formula:formula
+      formula: formula,
     };
+    if (formula == "") {
+      toast.error("Formula Required");
+    }
 
     console.log("Sending payload from EditableSheet:", payload);
     if (onFormulaChange) {
       onFormulaChange(payload); // Pass payload back to AddTender
     }
   };
-
-
- 
 
   // Function to close the modal without adding SubTender
   const closeModal = () => {
@@ -451,7 +456,7 @@ export default function EditableSheet({
   const handleDownload = () => {
     const worksheetData = [];
 
-    worksheetData.push([...headers]); 
+    worksheetData.push([...headers]);
     subTenders.forEach((subTender) => {
       const subTenderHeaderRow = new Array(headers.length).fill("");
       subTenderHeaderRow[0] = subTender.id;
@@ -485,7 +490,7 @@ export default function EditableSheet({
         {subTenders.length > 0 && (
           <button
             type="button"
-            onClick={(e)=>openAddSubTenderModal(e)}
+            onClick={(e) => openAddSubTenderModal(e)}
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
           >
             Add SubTender
@@ -531,92 +536,121 @@ export default function EditableSheet({
         {subTenders.length > 0 && (
           <div className=" flex gap-2">
             <div>
-      <button
-        type="button"
-        onClick={() => setShowFormulaModal(true)}
-        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-      >
-        Generate Formula
-      </button>
-
-      {showFormulaModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
-            <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Headers</h3>
-              <div className="flex flex-wrap gap-2">
-               {headers.map(({ header, type}, index ) => (
-                  <button
-                    key={index}
-                    onClick={() => handleHeaderSelect(header)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    {header}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Operations</h3>
-              <div className="flex space-x-2">
-                {[1,2,3,4,5,6,7,8,9,0].map((operation) => (
-                  <button
-                    key={operation}
-                    onClick={() => handleOperationClick(operation)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    {operation}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Operations</h3>
-              <div className="flex space-x-2">
-                {["+", "-", "*", "/", "="].map((operation) => (
-                  <button
-                    key={operation}
-                    onClick={() => handleOperationClick(operation)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    {operation}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Formula</h3>
-              <div className="p-2 border border-gray-300 rounded bg-gray-100">
-                {formula || "Start creating your formula..."}
-              </div>
-            </div>
-            <div className="flex justify-between">
               <button
-                onClick={handleClearFormula}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+                type="button"
+                onClick={() => setShowFormulaModal(true)}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
               >
-                Clear
+                Generate Formula
               </button>
-              <div className="space-x-2">
-                <button
-                  onClick={() => setShowFormulaModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveFormula}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                >
-                  Save Formula
-                </button>
-              </div>
+
+              {showFormulaModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+                    <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
+                      <p>
+                        <strong>Note:</strong> When creating formulas, follow
+                        this structure:
+                        <span className="font-bold">P = R * Q</span>, where:
+                        <ul className="list-disc ml-6">
+                          <li>
+                            <strong>P:</strong> Total Cost (first field).
+                          </li>
+                          <li>
+                            <strong>R:</strong> Rate (second field).
+                          </li>
+                          <li>
+                            <strong>Q:</strong> Quantity (third field).
+                          </li>
+                        </ul>
+                        Always start with this sequence (P, R, Q). You can add
+                        operators (+, -, *, /) or numbers, but{" "}
+                        <span className="font-bold">
+                          do not change the order.
+                        </span>
+                        If buyer input is needed, select{" "}
+                        <span className="font-bold">Edit</span> for the
+                        respective columns.
+                      </p>
+                    </div>
+
+                    <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
+
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Headers</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {headers.map(({ header, type }, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleHeaderSelect(header)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
+                          >
+                            {header}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Numbers</h3>
+                      <div className="flex space-x-2">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((numbers) => (
+                          <button
+                            key={operation}
+                            onClick={() => handleNumberClick(numbers)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
+                          >
+                            {operation}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Operations</h3>
+                      <div className="flex space-x-2">
+                        {["+", "-", "*", "/", "="].map((operation) => (
+                          <button
+                            key={operation}
+                            onClick={ handleOperationClick(operation)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
+                          >
+                            {operation}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Formula</h3>
+
+                      <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
+                        {formula || "Start creating your formula..."}
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <button
+                        onClick={handleClearFormula}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+                      >
+                        Clear
+                      </button>
+                      <div className="space-x-2">
+                        <button
+                          onClick={() => setShowFormulaModal(false)}
+                          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveFormula}
+                          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                        >
+                          Save Formula
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        </div>
-      )}
-    </div>
             <button
               type="button"
               onClick={handleAddColumn}
@@ -938,7 +972,7 @@ export default function EditableSheet({
                 <button
                   type="button"
                   // disabled ={selectedCategory!== "" && selectedCategory !== null ? false : true}
-                  onClick={(e)=>openAddSubTenderModal(e)}
+                  onClick={(e) => openAddSubTenderModal(e)}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg"
                 >
                   <i className="mr-2 fas fa-edit transition-all duration-200 ease-in-out transform hover:scale-110"></i>{" "}

@@ -14,7 +14,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
   try {
     await db.query("START TRANSACTION");
 
-    // Save editable rows in buyer_header_row_data
+    // Save editable rows in buyer_header_row_dat
     for (const subTender of formdata) {
       const { id: subtender_id, rows } = subTender;
 
