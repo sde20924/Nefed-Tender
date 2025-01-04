@@ -3,12 +3,14 @@ import * as XLSX from "xlsx";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
+
 export default function EditableSheet({
   headers,
   setHeaders,
   subTenders,
   setSubTenders,
   selectedCategory,
+  onFormulaChange
 }) {
   // Add a new subtender
   console.log("headerrrr", headers);
@@ -16,6 +18,9 @@ export default function EditableSheet({
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
   const [newColumnType, setNewColumnType] = useState("view");
+  const [formula, setFormula] = useState("");
+  const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] = useState([]);
+  const [showFormulaModal, setShowFormulaModal] = useState(false);
 
   const handleColumnTypeChange = (e) => {
     setNewColumnType(e.target.value);
@@ -26,6 +31,7 @@ export default function EditableSheet({
       toast.success("Select the categories first");
       return;
     }
+    
 
     setIsModalOpen(true); // Show modal
   };
@@ -43,13 +49,70 @@ export default function EditableSheet({
         ...prev,
         { id: prev.length + 1, name: newSubTenderName, rows: [] },
       ]);
-      setIsModalOpen(false); // Close the modal
-      setNewSubTenderName(""); // Clear input field
+      setIsModalOpen(false); 
+      setNewSubTenderName(""); 
       toast.success(`SubTender "${newSubTenderName}" added successfully.`);
     } else {
       toast.error("Please enter a valid SubTender name.");
     }
   };
+  //Formule
+  const identifierSequence = ["P", "R", "Q"];
+  const handleHeaderSelect = (header) => {
+    const nextIdentifier = identifierSequence[selectedHeadersWithShortNames.length];
+    if (nextIdentifier) {
+      setFormula((prev) => `${prev}${nextIdentifier}`);
+      setSelectedHeadersWithShortNames((prev) => [
+        ...prev,
+        { header: header.header, type: header.type, sortform: nextIdentifier },
+      ]);
+      console.log("-=-=-==-=nextIdentifier",)
+      setHeaders((prev) =>
+        prev.map((h) =>
+          h.header === header
+            ? { ...h, sortform: nextIdentifier }
+            : h
+        )
+      );
+      console.log("-=-=-=-=-=-=headers`1",headers)
+      console.log("-=-=-=-=-=-=headers`2",headers)
+    } else {
+      console.warn("No more identifiers available for headers.");
+    }
+  };
+  const handleOperationClick = (operation) => {
+    setFormula((prev) => `${prev}${operation}`);
+  };
+
+  const handleClearFormula = () => {
+    setFormula("");
+    setSelectedHeadersWithShortNames([]);
+    setHeaders((prev) => prev.map((h) => ({ ...h, sortform: null })));
+  };
+
+  const handleSaveFormula = () => {
+    console.log("jdnjddn",headers)
+    setShowFormulaModal(false)
+    const enrichedHeaders = headers.map((header) => ({
+      header: header.header,
+      type: header.type,
+      sortform: header.sortform// Set sortform to null if not provided
+    }));
+
+    const payload = {
+      headers: enrichedHeaders,
+      sub_tenders: subTenders,
+      formula:formula
+    };
+
+    console.log("Sending payload from EditableSheet:", payload);
+    if (onFormulaChange) {
+      onFormulaChange(payload); // Pass payload back to AddTender
+    }
+  };
+
+
+ 
 
   // Function to close the modal without adding SubTender
   const closeModal = () => {
@@ -63,7 +126,6 @@ export default function EditableSheet({
       prev.map((subTender) => {
         if (subTender.id === subTenderId) {
           const newRow = headers.map(() => "");
-          // Template literal with backticks:
           const newRowNumber = `${subTender.id}.${subTender.rows.length + 1}`;
           newRow[0] = newRowNumber; // Set S.No as hierarchical numbering
           return { ...subTender, rows: [...subTender.rows, newRow] };
@@ -370,7 +432,7 @@ export default function EditableSheet({
   const handleDownload = () => {
     const worksheetData = [];
 
-    worksheetData.push([...headers]);
+    worksheetData.push([...headers]); 
     subTenders.forEach((subTender) => {
       const subTenderHeaderRow = new Array(headers.length).fill("");
       subTenderHeaderRow[0] = subTender.id;
@@ -390,7 +452,7 @@ export default function EditableSheet({
     // Download the file
     XLSX.writeFile(workbook, "editable_subtender_table.xlsx");
   };
-
+  console.log("headdsdddderrrr", headers);
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
       {/* File Upload */}
@@ -449,6 +511,93 @@ export default function EditableSheet({
         )}
         {subTenders.length > 0 && (
           <div className=" flex gap-2">
+            <div>
+      <button
+        type="button"
+        onClick={() => setShowFormulaModal(true)}
+        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+      >
+        Generate Formula
+      </button>
+
+      {showFormulaModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+            <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
+            <div className="mb-4">
+              <h3 className="font-bold mb-2">Headers</h3>
+              <div className="flex flex-wrap gap-2">
+               {headers.map(({ header, type}, index ) => (
+                  <button
+                    key={index}
+                    onClick={() => handleHeaderSelect(header)}
+                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
+                  >
+                    {header}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-4">
+              <h3 className="font-bold mb-2">Operations</h3>
+              <div className="flex space-x-2">
+                {[1,2,3,4,5,6,7,8,9,0].map((operation) => (
+                  <button
+                    key={operation}
+                    onClick={() => handleOperationClick(operation)}
+                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
+                  >
+                    {operation}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-4">
+              <h3 className="font-bold mb-2">Operations</h3>
+              <div className="flex space-x-2">
+                {["+", "-", "*", "/", "="].map((operation) => (
+                  <button
+                    key={operation}
+                    onClick={() => handleOperationClick(operation)}
+                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
+                  >
+                    {operation}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="mb-4">
+              <h3 className="font-bold mb-2">Formula</h3>
+              <div className="p-2 border border-gray-300 rounded bg-gray-100">
+                {formula || "Start creating your formula..."}
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <button
+                onClick={handleClearFormula}
+                className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Clear
+              </button>
+              <div className="space-x-2">
+                <button
+                  onClick={() => setShowFormulaModal(false)}
+                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveFormula}
+                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                >
+                  Save Formula
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
             <button
               type="button"
               onClick={handleAddColumn}

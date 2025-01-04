@@ -101,7 +101,7 @@ const AddTender = () => {
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [accessPosition,setAccessPosition] = useState("yes")
-
+  const [generatedFormula, setGeneratedFormula] = useState("");
   const handleDescriptionChange = (value) => {
     setDescription(value);
   };
@@ -162,6 +162,11 @@ const AddTender = () => {
       ...attachments,
       { key: "", extension: "", maxFileSize: "", label: "" },
     ]);
+  };
+  const handleFormulaChange = (payload) => {
+    setHeaders(payload.headers); // Update headers
+    setGeneratedFormula(payload.formula); // Update formula
+    console.log("Updated Formula:", payload.formula);
   };
 
   const handleRemoveAttachment = (index) => {
@@ -368,7 +373,8 @@ const AddTender = () => {
         sub_tenders: subTenders, // SubTender data with rows
       },
       selected_buyers: selectedBuyers,
-      accessPosition : accessPosition
+      accessPosition : accessPosition,
+      formula: generatedFormula
     };
 
     console.log("form data here 1sdd", formData);
@@ -534,6 +540,7 @@ const AddTender = () => {
             subTenders={subTenders}
             setSubTenders={setSubTenders}
             selectedCategory={selectedCategory}
+            onFormulaChange={handleFormulaChange}
           />
         </form>
         {/* Sticky Submit Button */}
