@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { callApiGet, callApiPost } from "@/utils/FetchApi";
 import { ToastContainer, toast } from "react-toastify";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaEdit, FaSave } from "react-icons/fa";
 
 const AccessBidRoom = () => {
   const router = useRouter();
@@ -22,7 +22,74 @@ const AccessBidRoom = () => {
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
   const [bidDetails, setBidDetails] = useState();
-  // console.log("343443", formdata); `
+  const [suggestionData, setSuggestionData] = useState([
+    {
+      tableName: "Civil & MS Works",
+      items: [
+        {
+          item: "Brick Work",
+          suggestionAmount: 1200,
+          currentAmount: 1000,
+          difference: 200,
+        },
+        {
+          item: "Plaster Work",
+          suggestionAmount: 1500,
+          currentAmount: 1400,
+          difference: 100,
+        },
+      ],
+    },
+    {
+      tableName: "Glazing Works",
+      items: [
+        {
+          item: "Aluminium Partition",
+          suggestionAmount: 800,
+          currentAmount: 700,
+          difference: 100,
+        },
+        {
+          item: "Glass Door",
+          suggestionAmount: 3000,
+          currentAmount: 3100,
+          difference: -100,
+        },
+      ],
+    },
+  ]);
+
+  const [editingRow, setEditingRow] = useState({
+    tableIndex: null,
+    rowIndex: null,
+  });
+
+  // Handle input changes for editable fields
+  const handleInputChange = (tableIndex, rowIndex, field, value) => {
+    const updatedData = [...suggestionData];
+    const row = updatedData[tableIndex].items[rowIndex];
+    row[field] = field === "item" ? value : parseFloat(value);
+    row.difference = row.suggestionAmount - row.currentAmount; // Update difference
+    setSuggestionData(updatedData);
+  };
+
+  // Handle edit action
+  const handleEdit = (tableIndex, rowIndex) => {
+    setEditingRow({ tableIndex, rowIndex });
+  };
+
+  // Handle save action
+  const handleSave = () => {
+    setEditingRow({ tableIndex: null, rowIndex: null });
+  };
+
+  // Handle cancel action
+  const handleCancel = () => {
+    setEditingRow({ tableIndex: null, rowIndex: null });
+  };
+  // ajsajksdnkajsnkjsnkajsd
+
+  console.log("343443---------", formdata);
 
   useEffect(() => {
     if (tenderId) {
@@ -590,7 +657,6 @@ const AccessBidRoom = () => {
                 {bidDetails ? (
                   <div className="flex justify-between items-center">
                     <p className="text-gray-600 font-medium">{`Bid Amount: $${bidDetails.data.latestUserBid.bid_amount}`}</p>
-                    <p className="text-gray-600 font-medium">{`Position: ${bidDetails.data.position}`}</p>
                   </div>
                 ) : (
                   <p className="text-center text-gray-400">Loading...</p>
@@ -654,98 +720,142 @@ const AccessBidRoom = () => {
 
           {/* sugession Table  */}
 
-          <div className="mt-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">
-              Suggestion Table
+          <div className="p-4 bg-gray-50">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+              Suggested Bids for Items
             </h2>
-            {formdata.map((subTender, subIndex) => (
-              <div
-                key={subIndex}
-                className="mb-8 border border-gray-300 rounded-lg shadow-md p-6 bg-white"
-              >
-                {/* Subtender Name */}
-                <h3 className="text-xl font-semibold text-blue-600 mb-4">
-                  {subTender.name}
-                </h3>
 
-                {/* Card List */}
-                <div className="flex flex-col space-y-4">
-                  {subTender.rows.map((row, rowIndex) => {
-                    console.log("dsdf---",row);
-                    
-                    // Extract data for the required fields
-                    const itemName =
-                      row.data || "N/A";
-                    const suggestionAmount =
-                      row.find((cell) => cell.header === "Suggestion Amount")
-                        ?.data || 0;
-                    const currentPrice =
-                      row.find((cell) => cell.header === "Current Amount")
-                        ?.data || 0;
-
-                    return (
-                      <div
-                        key={rowIndex}
-                        className="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm hover:shadow-md transition"
-                      >
-                        {/* Serial Number */}
-                        <div className="flex-shrink-0 w-8 text-center font-semibold text-gray-700">
-                          {rowIndex + 1}
-                        </div>
-
-                        {/* Card Content */}
-                        <div className="flex flex-1 items-center space-x-4">
-                          <div className="flex-1">
-                            <p className="text-sm text-gray-800">
-                              <span className="font-bold">Item: </span>
-                              {itemName}
-                            </p>
-                          </div>
-                          <div className="flex-1 text-center">
-                            <p className="text-sm text-green-600">
-                              ₹{parseFloat(suggestionAmount).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Suggestion Amount
-                            </p>
-                          </div>
-                          <div className="flex-1 text-center">
-                            <p className="text-sm text-blue-600">
-                              ₹{parseFloat(currentPrice).toFixed(2)}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              Current Price
-                            </p>
-                          </div>
-                        </div>
-
-                        {/* Action Buttons */}
-                        <div className="flex space-x-2">
-                          <button
-                            className="px-3 py-1 bg-blue-500 text-white text-xs rounded-md hover:bg-blue-600"
-                            onClick={() => handleEdit(subTender.id, rowIndex)}
+            {/* Grid container for tables */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {suggestionData.map((table, tableIndex) => (
+                <div
+                  key={tableIndex}
+                  className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
+                    <h3 className="text-xl font-semibold text-blue-700">
+                      {table.tableName}
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto p-4">
+                    <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                      <thead className="bg-blue-100">
+                        <tr>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Item
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Suggestion Amount
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Current Amount
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Difference
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-center text-blue-800 font-medium">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {table.items?.map((row, rowIndex) => (
+                          <tr
+                            key={rowIndex}
+                            className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 transition-all duration-200"
                           >
-                            Edit
-                          </button>
-                          <button
-                            className="px-3 py-1 bg-red-500 text-white text-xs rounded-md hover:bg-red-600"
-                            onClick={() => handleDelete(subTender.id, rowIndex)}
-                          >
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
+                            {/* Item */}
+                            <td className="border border-gray-300 px-3 py-2">
+                              {row.item}
+                            </td>
+
+                            {/* Suggestion Amount */}
+                            <td className="border border-gray-300 px-3 py-2">
+                              ₹{row.suggestionAmount}
+                            </td>
+
+                            {/* Current Amount (Editable) */}
+                            <td className="border border-gray-300 px-3 py-2">
+                              {editingRow?.tableIndex === tableIndex &&
+                              editingRow?.rowIndex === rowIndex ? (
+                                <input
+                                  type="number"
+                                  value={row.currentAmount}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      tableIndex,
+                                      rowIndex,
+                                      "currentAmount",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
+                                />
+                              ) : (
+                                `₹${row.currentAmount}`
+                              )}
+                            </td>
+
+                            {/* Difference */}
+                            <td
+                              className={`border border-gray-300 px-3 py-2 font-medium ${
+                                row.difference < 0
+                                  ? "text-red-500"
+                                  : "text-green-500"
+                              }`}
+                            >
+                              ₹{row.difference}
+                            </td>
+
+                            {/* Actions */}
+                            <td className="border border-gray-300 px-3 py-2 text-center">
+                              {editingRow?.tableIndex === tableIndex &&
+                              editingRow?.rowIndex === rowIndex ? (
+                                <div className="flex justify-center space-x-2">
+                                  <button
+                                    onClick={handleSave}
+                                    className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+                                    title="Save"
+                                  >
+                                    <FaSave />
+                                  </button>
+                                  <button
+                                    onClick={handleCancel}
+                                    className="bg-gray-500 text-white p-2 rounded-full hover:bg-gray-600"
+                                    title="Cancel"
+                                  >
+                                    <FaTimes />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() =>
+                                    handleEdit(tableIndex, rowIndex)
+                                  }
+                                  className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                                  title="Edit"
+                                >
+                                  <FaEdit />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* suggesion End  */}
 
           {/* Table Data */}
-          <div className="space-y-8">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-10 p-6 ">
+            <h1 className="text-4xl font-bold text-gray-800 mb-8 ">
+              Bids Sheet
+            </h1>
             {formdata.map((subTender) => {
               const totalAmount = calculateTotalAmount(
                 subTender.rows,
@@ -824,7 +934,7 @@ const AccessBidRoom = () => {
                 </div>
               );
             })}
-            <div className="relative flex flex-wrap  p-6 ">
+            <div className="relative flex flex-wrap mt-10  p-6 ">
               {/* Total Bid Amount */}
               <div className="bg-blue-600 text-white font-bold p-3 rounded-lg shadow-md hover:bg-blue-700 h-[50px] flex items-center transition-all duration-300 absolute left-2 top-2 transform -translate-y-1/2">
                 Total Bid Amount: ₹{totalBidAmount.toFixed(2)}

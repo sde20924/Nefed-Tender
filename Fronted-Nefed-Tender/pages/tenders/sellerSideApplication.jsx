@@ -3,6 +3,13 @@ import { callApiGet, callApiPost } from "../../utils/FetchApi";
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import { toast } from "react-toastify";
+import {
+  FaFileAlt,
+  FaUser,
+  FaBuilding,
+  FaCheck,
+  FaTimes,
+} from "react-icons/fa";
 
 const Modal = ({ isOpen, onClose, onSubmit }) => {
   const [reason, setReason] = useState("");
@@ -55,14 +62,16 @@ const SubmittedApplications = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [buyerDetails, setBuyerDetails] = useState();
+  const [buyeruploadedFilesData, setBuyeruploadedFilesData] = useState();
 
   // Function to safely access a string and handle undefined/null
   const safeString = (str) => (str ? str.toLowerCase() : "");
 
   const filteredApplications = applications.filter((application) => {
     return (
-      safeString(application.tender_title).includes(searchQuery.toLowerCase()) ||
+      safeString(application.tender_title).includes(
+        searchQuery.toLowerCase()
+      ) ||
       safeString(
         `${application.buyer_details.first_name} ${application.buyer_details.last_name}`
       ).includes(searchQuery.toLowerCase()) ||
@@ -71,12 +80,31 @@ const SubmittedApplications = () => {
       )
     );
   });
+  // .map((application) => {
+  //   // Get the first uploaded file for the current application
+  //   const uploadedFile = buyeruploadedFilesData.find(
+  //     (file) =>
+  //       file.tender_id === application.tender_id &&
+  //       file.user_id === application.user_id
+  //   );
+
+  //   return {
+  //     ...application,
+  //     uploadedFile, // Save only the first matched file
+  //   };
+  // });
+
+  // console.log("---", uploadedFiles);
 
   useEffect(() => {
     const fetchSubmittedApplications = async () => {
       try {
         const data = await callApiGet("submitted-tender-applications");
-
+        const idd = data.data.tender_id;
+        const uploadedFilesData = await callApiGet(
+          `tender/${data.data[0].tender_id}/files-status`
+        );
+        setBuyeruploadedFilesData(uploadedFilesData.data);
         setApplications(data.data || []);
         setLoading(false);
       } catch (err) {
@@ -88,7 +116,6 @@ const SubmittedApplications = () => {
     fetchSubmittedApplications();
   }, []);
 
-  console.log("application-Dataasd---", applications);
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -153,57 +180,112 @@ const SubmittedApplications = () => {
         </div>
 
         {/* Applications Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredApplications.length > 0 ? (
-            filteredApplications.map((application) => (
-              <div
-                key={application.tender_application_id}
-                className="bg-gradient-to-b from-white via-gray-100 to-gray-50 shadow-lg rounded-lg p-6 border border-gray-300 hover:shadow-xl transition-shadow duration-300"
-              >
-                {/* Tender Details */}
-                <h2 className="text-xl font-semibold mb-2 text-gray-800">
-                  {application.tender_title || "Unnamed Tender"}
-                </h2>
-                <h3 className="text-gray-700 mb-1">
-                  <span className="font-bold">Buyer Name:</span>{" "}
-                  {application.buyer_details?.first_name || "N/A"}{" "}
-                  {application.buyer_details?.last_name || ""}
-                </h3>
-                <h3 className="text-gray-700 mb-1">
-                  <span className="font-bold">Company:</span>{" "}
-                  {application.buyer_details?.company_name || "N/A"}
-                </h3>
-                <p className="text-lg font-medium mb-2 text-gray-600">
-                  <span className="font-bold">Status:</span>{" "}
-                  {application.status || "Unknown"}
-                </p>
+            filteredApplications.map((application,index) => {
 
-                {/* Action Buttons */}
-                <div className="flex justify-between items-center mt-4">
-                  <button
-                    onClick={() =>
-                      handleAction(
-                        application.tender_application_id,
-                        "accepted"
-                      )
-                    }
-                    className="bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-all duration-300"
-                  >
-                    Accept
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleReject(application.tender_application_id)
-                    }
-                    className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-all duration-300"
-                  >
-                    Reject
-                  </button>
+              // Find the uploaded file for the current application
+              const uploadedFile = buyeruploadedFilesData.find(
+                (file) =>
+                  file.tender_id === application.tender_id &&
+                  file.user_id === application.user_id
+              );
+
+              // Log debug information
+              // console.log("Application:", application);
+              console.log("Uploaded File:", uploadedFile, index);
+
+              return (
+                <div
+                  key={application.tender_application_id}
+                  className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between"
+                >
+                  {/* Header */}
+                  <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-bold text-gray-900 truncate">
+                      {application.tender_title || "Unnamed Tender"}
+                    </h2>
+                    <span
+                      className={`px-3 py-1 text-xs font-medium rounded-md shadow-sm ${
+                        application.status === "accepted"
+                          ? "bg-green-200 text-green-800"
+                          : application.status === "rejected"
+                            ? "bg-red-200 text-red-800"
+                            : "bg-yellow-200 text-yellow-800"
+                      }`}
+                    >
+                      {application.status || "Unknown"}
+                    </span>
+                  </div>
+
+                  {/* Buyer Details */}
+                  <div className="space-y-2 text-sm">
+                    <div className="flex items-center space-x-2">
+                      <FaUser className="text-indigo-500 w-5 h-5" />
+                      <span className="text-gray-800 truncate">
+                        <span className="font-semibold">Buyer:</span>{" "}
+                        {application.buyer_details?.first_name || "N/A"}{" "}
+                        {application.buyer_details?.last_name || ""}
+                      </span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <FaBuilding className="text-teal-500 w-5 h-5" />
+                      <span className="text-gray-800 truncate">
+                        <span className="font-semibold">Company:</span>{" "}
+                        {application.buyer_details?.company_name || "N/A"}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Uploaded File */}
+                  <div className="mt-3">
+                    {uploadedFile ? (
+                      <button
+                        onClick={() =>
+                          window.open(uploadedFile.doc_url, "_blank")
+                        }
+                        className="flex items-center justify-center bg-blue-100 text-blue-800 px-4 py-2 rounded-md text-sm hover:bg-blue-200 transition-all shadow-md"
+                      >
+                        <FaFileAlt className="mr-2 w-5 h-5" />
+                        View File
+                      </button>
+                    ) : (
+                      <div className="w-full flex items-center justify-center bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm shadow">
+                        <FaFileAlt className="mr-2 w-5 h-5" />
+                        No File Uploaded
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex justify-between items-center mt-4 space-x-2">
+                    <button
+                      onClick={() =>
+                        handleAction(
+                          application.tender_application_id,
+                          "accepted"
+                        )
+                      }
+                      className="flex items-center justify-center bg-green-100 text-green-800 px-4 py-2 rounded-md text-sm hover:bg-green-200 transition-all shadow-md"
+                    >
+                      <FaCheck className="mr-2 w-4 h-4" />
+                      Accept
+                    </button>
+                    <button
+                      onClick={() =>
+                        handleReject(application.tender_application_id)
+                      }
+                      className="flex items-center justify-center bg-red-100 text-red-800 px-4 py-2 rounded-md text-sm hover:bg-red-200 transition-all shadow-md"
+                    >
+                      <FaTimes className="mr-2 w-4 h-4" />
+                      Reject
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))
+              );
+            })
           ) : (
-            <p className="text-gray-500 text-center col-span-3">
+            <p className="text-gray-500 text-center col-span-4">
               No submitted applications found.
             </p>
           )}
