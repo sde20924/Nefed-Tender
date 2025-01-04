@@ -37,7 +37,7 @@ const { getBidDetails } = require("../../controllers/tender/getBidDetails");
 // Route to get all tenders 
 router.get('/tenders', getAllTendersController);
 router.get('/seller-tenders', verifyUser, getSellerTendersController);
-router.get('/tender/:id', getTenderDetailsController);
+router.get('/tender/:id',verifyUser, getTenderDetailsController);
 router.get('/tender-applications',verifyUser,getTenderApplicationsByUser);
 router.get('/submitted-tender-applications', verifyUser, getSubmittedTenderApplications);
 router.get('/tender/:id/files-status', getTenderFilesAndStatus );

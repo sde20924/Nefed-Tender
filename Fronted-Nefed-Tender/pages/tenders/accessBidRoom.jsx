@@ -28,47 +28,47 @@ const AccessBidRoom = () => {
     if (tenderId) {
       fetchTenderDetails();
       fetchBids();
-      fetchAuctionItems(); // Fetch auction items when tenderId is available
+      // fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
-  useEffect(() => {
-    const BidsDetails = async () => {
-      try {
-        const responce = await callApiGet(
-          `get-bid-details?tender_id=${tenderId}`
-        );
-        if (responce.success) {
-          setBidDetails(responce);
-        }
-      } catch (error) {
-        console.error(" Error Bids Details:", error.message);
-      }
-    };
-    BidsDetails();
-  }, [tenderId]);
+  // useEffect(() => {
+  //   const BidsDetails = async () => {
+  //     try {
+  //       const responce = await callApiGet(
+  //         `get-bid-details?tender_id=${tenderId}`
+  //       );
+  //       if (responce.success) {
+  //         setBidDetails(responce);
+  //       }
+  //     } catch (error) {
+  //       console.error(" Error Bids Details:", error.message);
+  //     }
+  //   };
+  //   BidsDetails();
+  // }, [tenderId]);
 
   // console.log("hsdsdf", bidDetails);
 
   // Fetch auction items
-  const fetchAuctionItems = async () => {
-    try {
-      const response = await callApiGet(`get-tender-auction-items/${tenderId}`);
+  // const fetchAuctionItems = async () => {
+  //   try {
+  //     const response = await callApiGet(`get-tender-auction-items/${tenderId}`);
 
-      // Check if auction_items array exists and is not empty
-      if (
-        response &&
-        response.auction_items &&
-        response.auction_items.length > 0
-      ) {
-        setAuctionItems(response.auction_items); // Set auction items data
-      } else {
-        toast.error("No auction items found.");
-      }
-    } catch (error) {
-      console.error("Error fetching auction items:", error.message);
-      toast.error("Error fetching auction items.");
-    }
-  };
+  //     // Check if auction_items array exists and is not empty
+  //     if (
+  //       response &&
+  //       response.auction_items &&
+  //       response.auction_items.length > 0
+  //     ) {
+  //       setAuctionItems(response.auction_items); // Set auction items data
+  //     } else {
+  //       toast.error("No auction items found.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching auction items:", error.message);
+  //     toast.error("Error fetching auction items.");
+  //   }
+  // };
 
   // Fetch tender details
   const fetchTenderDetails = async () => {
