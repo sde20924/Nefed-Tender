@@ -39,8 +39,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     editable_sheet,
     selected_buyers=[],
     accessPosition,
-    formula
-
+    formula,
+    save_as
 
   } = req.body;
     console.log("+++++++++++++++++------",req.body)
@@ -90,8 +90,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key, user_access, access_position,cal_formula
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?, ?)`,
+        tender_id, audi_key, user_access, access_position,cal_formula,save_as
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?)`,
 
       [
         user_id,
@@ -126,7 +126,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         audi_key,
         accessType,
         accessPosition,
-        formula // Insert `accessPosition` value
+        formula, // Insert `accessPosition` value
+        save_as // Insert `accessPosition` value
       ]
     );
     // Insert attachments into `tender_required_doc`
