@@ -39,6 +39,9 @@ const MyTender = () => {
             const tenderData = await callApiGet(
               `tender/${application.tender_id}`
             );
+            console.log("----------",application.tender_id);
+            console.log("------",tenderData);
+            
             calculateTimeLeft(
               tenderData.data.auct_start_time,
               tenderData.data.auct_end_time,

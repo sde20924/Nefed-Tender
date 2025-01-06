@@ -3,14 +3,13 @@ import * as XLSX from "xlsx";
 import { FaTrash } from "react-icons/fa";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
-
 export default function EditableSheet({
   headers,
   setHeaders,
   subTenders,
   setSubTenders,
   selectedCategory,
-  onFormulaChange
+  onFormulaChange,
 }) {
   // Add a new subtender
   console.log("headerrrr--", headers);
@@ -20,7 +19,8 @@ export default function EditableSheet({
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
   const [newColumnType, setNewColumnType] = useState("view");
   const [formula, setFormula] = useState("");
-  const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] = useState([]);
+  const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] =
+    useState([]);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
 
   const handleColumnTypeChange = (e) => {
@@ -31,17 +31,19 @@ export default function EditableSheet({
     // Get the button text
     const buttonText = e.currentTarget.textContent.replace(/\s+/g, "");
     console.log("Button text without spaces:", buttonText);
-    
+
     // Check if the button text is "Create Sheet" and the category is not selected
-    if (buttonText == "CreateSheet" && (selectedCategory === "" || selectedCategory === null)) {
+    if (
+      buttonText == "CreateSheet" &&
+      (selectedCategory === "" || selectedCategory === null)
+    ) {
       toast.success("Select the categories first");
       return; // Exit the function to prevent opening the modal
     }
-    
 
     setIsModalOpen(true); // Show modal
   };
-  
+
   const [showModal, setShowModal] = useState(false);
 
   // Function to handle input change for SubTender name
@@ -56,8 +58,8 @@ export default function EditableSheet({
         ...prev,
         { id: prev.length + 1, name: newSubTenderName, rows: [] },
       ]);
-      setIsModalOpen(false); 
-      setNewSubTenderName(""); 
+      setIsModalOpen(false);
+      setNewSubTenderName("");
       toast.success(`SubTender "${newSubTenderName}" added successfully.`);
     } else {
       toast.error("Please enter a valid SubTender name.");
@@ -66,20 +68,18 @@ export default function EditableSheet({
   //Formule
   const identifierSequence = ["P", "R", "Q"];
   const handleHeaderSelect = (header) => {
-  
-    const nextIdentifier = identifierSequence[selectedHeadersWithShortNames.length];
+    const nextIdentifier =
+      identifierSequence[selectedHeadersWithShortNames.length];
     if (nextIdentifier) {
       setFormula((prev) => `${prev}${nextIdentifier}`);
       setSelectedHeadersWithShortNames((prev) => [
         ...prev,
         { header: header.header, type: header.type, sortform: nextIdentifier },
       ]);
-      console.log("-=-=-==-=nextIdentifier",)
+      console.log("-=-=-==-=nextIdentifier");
       setHeaders((prev) =>
         prev.map((h) =>
-          h.header === header
-            ? { ...h, sortform: nextIdentifier }
-            : h
+          h.header === header ? { ...h, sortform: nextIdentifier } : h
         )
       );
     } else {
@@ -89,6 +89,9 @@ export default function EditableSheet({
   const handleOperationClick = (operation) => {
     setFormula((prev) => `${prev}${operation}`);
   };
+  const handleNumberClick = (number) => {
+    setFormula((prev) => `${prev}${number}`);
+  };
 
   const handleClearFormula = () => {
     setFormula("");
@@ -97,22 +100,22 @@ export default function EditableSheet({
   };
 
   const handleSaveFormula = (e) => {
-   if (e) e.preventDefault();
-    console.log("jdnjddn",headers)
-    setShowFormulaModal(false)
+    if (e) e.preventDefault();
+    console.log("jdnjddn", headers);
+    setShowFormulaModal(false);
     const enrichedHeaders = headers.map((header) => ({
       header: header.header,
       type: header.type,
-      sortform: header.sortform// Set sortform to null if not provided
+      sortform: header.sortform, // Set sortform to null if not provided
     }));
 
     const payload = {
       headers: enrichedHeaders,
       sub_tenders: subTenders,
-      formula:formula
+      formula: formula,
     };
-    if(formula==""){
-      toast.error("Formula Required")
+    if (formula == "") {
+      toast.error("Formula Required");
     }
 
     console.log("Sending payload from EditableSheet:", payload);
@@ -120,9 +123,6 @@ export default function EditableSheet({
       onFormulaChange(payload); // Pass payload back to AddTender
     }
   };
-
-
- 
 
   // Function to close the modal without adding SubTender
   const closeModal = () => {
@@ -157,7 +157,7 @@ export default function EditableSheet({
     setNewColumnName(e.target.value);
   };
 
-  // Add column logic 
+  // Add column logic
   const handleAddColumnConfirm = () => {
     if (newColumnName && newColumnType) {
       // Add the new column to the headers array
@@ -382,39 +382,78 @@ export default function EditableSheet({
   };
 
   // Parse uploaded sheet data into subtenders
-  const parseSheetData = (sheetData, headers) => {
-    const newSubTenders = [];
-    let currentSubTender = null;
+  // const parseSheetData = (sheetData, headers) => {
+  //   const newSubTenders = [];
+  //   let currentSubTender = null;
 
-    for (let i = 1; i < sheetData.length; i++) {
-      const row = sheetData[i];
-      const item = row[1]?.trim(); // Second column (Item)
-      const description = row[2]?.trim(); // Third column (Item Description)
+  //   for (let i = 1; i < sheetData.length; i++) {
+  //     const row = sheetData[i];
+  //     const item = row[1]?.trim(); // Second column (Item)
+  //     const description = row[2]?.trim(); // Third column (Item Description)
 
-      if (item && !description) {
-        // Start a new subtender
-        if (currentSubTender) {
-          newSubTenders.push(currentSubTender);
-        }
-        currentSubTender = {
-          id: newSubTenders.length + 1,
-          name: item,
-          rows: [],
-        };
-      } else if (description && currentSubTender) {
-        // Add row to the current subtender
-        const formattedRow = headers.map((_, index) => row[index] || "");
-        currentSubTender.rows.push(formattedRow);
-      }
-    }
+  //     if (item && !description) {
+  //       // Start a new subtender
+  //       if (currentSubTender) {
+  //         newSubTenders.push(currentSubTender);
+  //       }
+  //       currentSubTender = {
+  //         id: newSubTenders.length + 1,
+  //         name: item,
+  //         rows: [],
+  //       };
+  //     } else if (description && currentSubTender) {
+  //       // Add row to the current subtender
+  //       const formattedRow = headers.map((_, index) => row[index] || "");
+  //       currentSubTender.rows.push(formattedRow);
+  //     }
+  //   }
 
-    // Push the last subtender if any
-    if (currentSubTender) {
-      newSubTenders.push(currentSubTender);
-    }
+  //   // Push the last subtender if any
+  //   if (currentSubTender) {
+  //     newSubTenders.push(currentSubTender);
+  //   }
 
-    setSubTenders(newSubTenders);
-  };
+  //   setSubTenders(newSubTenders);
+  // };
+
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       const data = e.target.result;
+  //       const workbook = XLSX.read(data, { type: "binary" });
+  //       const sheetName = workbook.SheetNames[0];
+  //       const sheet = workbook.Sheets[sheetName];
+  //       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+  //       if (jsonData.length > 0) {
+  //         console.log("Sheet Data:", jsonData);
+
+  //         // Transform headers into the desired format
+  //         const transformedHeaders = jsonData[0].map((header) => ({
+  //           header: header || "Unknown Header", // Handle empty headers
+  //           type: "view", // Default type
+  //         }));
+
+  //         // Set transformed headers to state
+  //         setHeaders(transformedHeaders);
+
+  //         // Parse sheet data into subtenders
+  //         parseSheetData(jsonData, jsonData[0]);
+  //       } else {
+  //         alert("The uploaded file is empty.");
+  //       }
+  //     };
+
+  //     reader.readAsBinaryString(file);
+  //   }
+  // };
+
+  const [showHeaderModal, setShowHeaderModal] = useState(false);
+  const [uploadedHeaders, setUploadedHeaders] = useState([]);
+  const [headerTypes, setHeaderTypes] = useState([]);
+  const [sheetData, setSheetData] = useState([]); // Store sheet data for parsing later
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -428,21 +467,19 @@ export default function EditableSheet({
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
         if (jsonData.length > 0) {
-          console.log("Sheet Data:", jsonData);
-
-          // Transform headers into the desired format
-          const transformedHeaders = jsonData[0].map((header) => ({
-            header: header || "Unknown Header", // Handle empty headers
+          setSheetData(jsonData);
+          const transformedHeaders = jsonData[0].map((header, index) => ({
+            header: header || `Unknown Header ${index + 1}`,
             type: "view", // Default type
           }));
 
-          // Set transformed headers to state
-          setHeaders(transformedHeaders);
-
-          // Parse sheet data into subtenders
-          parseSheetData(jsonData, jsonData[0]);
+          setUploadedHeaders(transformedHeaders);
+          setHeaderTypes(
+            transformedHeaders.map(() => "view") // Default all types to "view"
+          );
+          setShowHeaderModal(true); // Show the modal for header configuration
         } else {
-          alert("The uploaded file is empty.");
+          toast.error("The uploaded file is empty.");
         }
       };
 
@@ -450,11 +487,60 @@ export default function EditableSheet({
     }
   };
 
+  const handleHeaderTypeChange = (index, type) => {
+    const updatedTypes = [...headerTypes];
+    updatedTypes[index] = type;
+    setHeaderTypes(updatedTypes);
+  };
+
+  const handleSaveHeaders = () => {
+    const configuredHeaders = uploadedHeaders.map((header, index) => ({
+      ...header,
+      type: headerTypes[index],
+    }));
+
+    setHeaders(configuredHeaders);
+    setShowHeaderModal(false); // Close the modal
+    toast.success("Headers configured successfully.");
+    parseSheetData(sheetData, configuredHeaders);
+  };
+
+  const parseSheetData = (data, headers) => {
+    const newSubTenders = [];
+    let currentSubTender = null;
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const item = row[1]?.trim(); // Second column (Item)
+      const description = row[2]?.trim(); // Third column (Item Description)
+
+      if (item && !description) {
+        if (currentSubTender) {
+          newSubTenders.push(currentSubTender);
+        }
+        currentSubTender = {
+          id: newSubTenders.length + 1,
+          name: item,
+          rows: [],
+        };
+      } else if (description && currentSubTender) {
+        const formattedRow = headers.map((_, index) => row[index] || "");
+        currentSubTender.rows.push(formattedRow);
+      }
+    }
+
+    if (currentSubTender) {
+      newSubTenders.push(currentSubTender);
+    }
+
+    setSubTenders(newSubTenders);
+  };
+
   // Download table as Excel
   const handleDownload = () => {
     const worksheetData = [];
 
-    worksheetData.push([...headers]); 
+    worksheetData.push([...headers]);
     subTenders.forEach((subTender) => {
       const subTenderHeaderRow = new Array(headers.length).fill("");
       subTenderHeaderRow[0] = subTender.id;
@@ -488,7 +574,7 @@ export default function EditableSheet({
         {subTenders.length > 0 && (
           <button
             type="button"
-            onClick={(e)=>openAddSubTenderModal(e)}
+            onClick={(e) => openAddSubTenderModal(e)}
             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
           >
             Add SubTender
@@ -534,18 +620,18 @@ export default function EditableSheet({
         {subTenders.length > 0 && (
           <div className=" flex gap-2">
             <div>
-      <button
-        type="button"
-        onClick={() => setShowFormulaModal(true)}
-        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-      >
-        Generate Formula
-      </button>
+              <button
+                type="button"
+                onClick={() => setShowFormulaModal(true)}
+                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+              >
+                Generate Formula
+              </button>
 
-      {showFormulaModal && (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
-             <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
+              {showFormulaModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+                    <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
                       <p>
                         <strong>Note:</strong> When creating formulas, follow
                         this structure:
@@ -571,84 +657,83 @@ export default function EditableSheet({
                         respective columns.
                       </p>
                     </div>
-            <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
-            
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Headers</h3>
-              <div className="flex flex-wrap gap-2">
-               {headers.map(({ header, type}, index ) => (
-                  <button
-                    key={index}
-                    onClick={() => handleHeaderSelect(header)}
-                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    {header}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Operations</h3>
-              <div className="flex space-x-2">
-                {[1,2,3,4,5,6,7,8,9,0].map((operation) => (
-                  <button
-                    key={operation}
-                    onClick={() => handleOperationClick(operation)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    {operation}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Operations</h3>
-              <div className="flex space-x-2">
-                {["+", "-", "*", "/", "="].map((operation) => (
-                  <button
-                    key={operation}
-                    onClick={() => handleOperationClick(operation)}
-                    className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
-                  >
-                    {operation}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <div className="mb-4">
-              <h3 className="font-bold mb-2">Formula</h3>
-             
-              <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
-  {formula || "Start creating your formula..."}
-</div>
+                    <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
 
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Headers</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {headers.map(({ header, type }, index) => (
+                          <button
+                            key={index}
+                            onClick={() => handleHeaderSelect(header)}
+                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
+                          >
+                            {header}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Operations</h3>
+                      <div className="flex space-x-2">
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((operation) => (
+                          <button
+                            key={operation}
+                            onClick={() => handleOperationClick(operation)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
+                          >
+                            {operation}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Operations</h3>
+                      <div className="flex space-x-2">
+                        {["+", "-", "*", "/", "="].map((operation) => (
+                          <button
+                            key={operation}
+                            onClick={() => handleOperationClick(operation)}
+                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
+                          >
+                            {operation}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div className="mb-4">
+                      <h3 className="font-bold mb-2">Formula</h3>
+
+                      <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
+                        {formula || "Start creating your formula..."}
+                      </div>
+                    </div>
+                    <div className="flex justify-between">
+                      <button
+                        onClick={handleClearFormula}
+                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+                      >
+                        Clear
+                      </button>
+                      <div className="space-x-2">
+                        <button
+                          onClick={() => setShowFormulaModal(false)}
+                          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          onClick={handleSaveFormula}
+                          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                        >
+                          Save Formula
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="flex justify-between">
-              <button
-                onClick={handleClearFormula}
-                className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
-              >
-                Clear
-              </button>
-              <div className="space-x-2">
-                <button
-                  onClick={() => setShowFormulaModal(false)}
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleSaveFormula}
-                  className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                >
-                  Save Formula
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
             <button
               type="button"
               onClick={handleAddColumn}
@@ -915,7 +1000,7 @@ export default function EditableSheet({
               onClick={() => handleAddRowToSubTender(subTender.id)}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
             >
-              <span className="mr-1">➕</span> Add Row
+              <span className="mr-1">:heavy_plus_sign:</span> Add Row
             </button>
           </div>
         </div>
@@ -970,7 +1055,7 @@ export default function EditableSheet({
                 <button
                   type="button"
                   // disabled ={selectedCategory!== "" && selectedCategory !== null ? false : true}
-                  onClick={(e)=>openAddSubTenderModal(e)}
+                  onClick={(e) => openAddSubTenderModal(e)}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg"
                 >
                   <i className="mr-2 fas fa-edit transition-all duration-200 ease-in-out transform hover:scale-110"></i>{" "}
