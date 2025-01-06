@@ -22,43 +22,8 @@ const AccessBidRoom = () => {
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
   const [bidDetails, setBidDetails] = useState();
-
-  const [suggestionData, setSuggestionData] = useState([
-    {
-      tableName: "Civil & MS Works",
-      items: [
-        {
-          item: "Brick Work",
-          suggestionAmount: 1200,
-          currentAmount: 1000,
-          difference: 200,
-        },
-        {
-          item: "Plaster Work",
-          suggestionAmount: 1500,
-          currentAmount: 1400,
-          difference: 100,
-        },
-      ],
-    },
-    {
-      tableName: "Glazing Works",
-      items: [
-        {
-          item: "Aluminium Partition",
-          suggestionAmount: 800,
-          currentAmount: 700,
-          difference: 100,
-        },
-        {
-          item: "Glass Door",
-          suggestionAmount: 3000,
-          currentAmount: 3100,
-          difference: -100,
-        },
-      ],
-    },
-  ]);
+  const [bidcount, setBidCount] = useState();
+  const [suggestionData, setSuggestionData] = useState([]);
 
   const [editingRow, setEditingRow] = useState({
     tableIndex: null,
@@ -72,6 +37,90 @@ const AccessBidRoom = () => {
     row[field] = field === "item" ? value : parseFloat(value);
     row.difference = row.suggestionAmount - row.currentAmount; // Update difference
     setSuggestionData(updatedData);
+  };
+  //Change rate
+  // ...
+  // This function gets called when you click the "Update" button in the suggestion table
+  const handleActionClick = (tableIndex, rowIndex) => {
+    const confirmed = window.confirm(
+      "Are you sure you want to update the Bids Sheet with the Suggested Amount?"
+    );
+    if (!confirmed) return;
+
+    // Clone the formdata so we can update it
+    const updatedFormData = [...formdata];
+
+    // The entire "Suggested Bids for Items" table
+    const { subtender_name } = suggestionData[tableIndex];
+    // e.g. "ss", "Glazing Works", etc.
+
+    // The row we clicked on in that table
+    const suggestionRow = suggestionData[tableIndex]?.items[rowIndex];
+    // e.g. { item_name: "item 1", suggested_price: "0.90", user_rate: "100" }
+
+    // If it doesn't exist or has no suggested_price, we do nothing
+    if (!suggestionRow || !suggestionRow.suggested_price) {
+      console.warn("No suggested_price found in this row.");
+      return;
+    }
+
+    // Extract item_name + suggested_price
+    const { item_name, suggested_price } = suggestionRow;
+
+    // 1) Find the correct Sub-Tender in formdata by matching .name
+    const correspondingSubTender = updatedFormData.find(
+      (subTender) => subTender.name === subtender_name
+    );
+    if (!correspondingSubTender) {
+      console.warn("No matching subtender found for:", subtender_name);
+      return;
+    }
+
+    // 2) Find the row in that subTender’s 'rows' that has this item_name
+    //    This depends on which column in 'rows' holds the Item name.
+    //    We'll assume 'cellIndex === 1' or 'cellIndex === 0' is the Item column.
+    //    If your first column is S.No and second column is "Item", adjust accordingly.
+    const itemColumnIndex = tender.headers.findIndex(
+      (header) => header.table_head === "Item"
+    );
+    if (itemColumnIndex === -1) {
+      console.warn(
+        "No 'Item' column found in headers; cannot match rows by name."
+      );
+      return;
+    }
+
+    // We'll find a row whose cell in itemColumnIndex has data === item_name
+    const correspondingRow = correspondingSubTender.rows.find((row) => {
+      return row[itemColumnIndex]?.data === item_name;
+    });
+    if (!correspondingRow) {
+      console.warn(
+        "No matching row found for item_name:",
+        item_name,
+        "in subtender:",
+        subtender_name
+      );
+      return;
+    }
+
+    // 3) Now find the "Rate" column index
+    const rateIndex = tender.headers.findIndex(
+      (header) => header.table_head === "Rate"
+    );
+    if (rateIndex === -1) {
+      console.warn("No 'Rate' column found in headers");
+      return;
+    }
+
+    // 4) Update that row’s "Rate" cell with suggested_price
+    correspondingRow[rateIndex].data = suggested_price;
+
+    // 5) Update the state with the new formData
+    setFormData(updatedFormData);
+
+    // 6) Recalculate total amounts
+    updateTotalBidAmount();
   };
 
   // Handle edit action
@@ -90,7 +139,7 @@ const AccessBidRoom = () => {
   };
   // ajsajksdnkajsnkjsnkajsd
 
-  console.log("343443---------", formdata);
+  // console.log("343443---------", formdata);
 
   useEffect(() => {
     if (tenderId) {
@@ -141,10 +190,11 @@ const AccessBidRoom = () => {
   // Fetch tender details
   const fetchTenderDetails = async () => {
     try {
-      const tenderData = await callApiGet(`tender/${tenderId}`); // Fetch tender details by ID
+      const tenderData = await callApiGet(`get-access-bid/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
       setFormData(tenderData.data.sub_tenders);
-      setSuggestionData(tenderData.data.suggested_prices)
+      setSuggestionData(tenderData.data.suggested_prices.suggestedPrices);
+      console.log("+_+_+_+_+_+_",suggestionData)
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -153,15 +203,17 @@ const AccessBidRoom = () => {
       console.error("Error fetching tender details:", error.message);
     }
   };
-   
+
   // Fetch bids for the specific tender
   const fetchBids = async () => {
     try {
-      const response = await callApiGet(`tender/bid/${tenderId}`); // Fetch bids by tender ID
+      const response = await callApiGet(`tender/bid/${tenderId}`);
+      const allBids = response.allBids; // Fetch bids by tender ID
       if (response.success) {
         setBids(response.allBids); // Set all bids data
+
         setLBidsUserId(response.lowestBid.user_id);
-        setLBid(response.lowestBid.bid_amount);
+        setLBid(response.lowestBid.bid_amount);    
       }
     } catch (error) {
       console.error("Error fetching bids:", error.message);
@@ -729,14 +781,14 @@ const AccessBidRoom = () => {
 
             {/* Grid container for tables */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {suggestionData.map((table, tableIndex) => (
+              {suggestionData?.map((table, tableIndex) => (
                 <div
                   key={tableIndex}
                   className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
                 >
                   <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
                     <h3 className="text-xl font-semibold text-blue-700">
-                    {table.subtender_name}
+                      {table.subtender_name}
                     </h3>
                   </div>
                   <div className="overflow-x-auto p-4">
@@ -768,14 +820,14 @@ const AccessBidRoom = () => {
                           >
                             {/* Item */}
                             <td className="border border-gray-300 px-3 py-2">
-                            {row.item_name}
+                              {row.item_name}
                             </td>
 
                             {/* Suggestion Amount */}
                             <td className="border border-gray-300 px-3 py-2">
                               {row.suggested_price
-                          ? `₹${row.suggested_price}`
-                          : "N/A"}
+                                ? `₹${row.suggested_price}`
+                                : "N/A"}
                             </td>
 
                             {/* Current Amount (Editable) */}
@@ -808,40 +860,19 @@ const AccessBidRoom = () => {
                                   : "text-green-500"
                               }`}
                             >
-                              ${row.user_rate-row.suggested_price}
+                              ${row.user_rate - row.suggested_price}
                             </td>
 
                             {/* Actions */}
                             <td className="border border-gray-300 px-3 py-2 text-center">
-                              {editingRow?.tableIndex === tableIndex &&
-                              editingRow?.rowIndex === rowIndex ? (
-                                <div className="flex justify-center space-x-2">
-                                  <button
-                                    onClick={handleSave}
-                                    className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
-                                    title="Save"
-                                  >
-                                    <FaSave />
-                                  </button>
-                                  <button
-                                    onClick={handleCancel}
-                                    className="bg-gray-500 text-white p-2 rounded-full hover:bg-gray-600"
-                                    title="Cancel"
-                                  >
-                                    <FaTimes />
-                                  </button>
-                                </div>
-                              ) : (
-                                <button
-                                  onClick={() =>
-                                    handleEdit(tableIndex, rowIndex)
-                                  }
-                                  className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
-                                  title="Edit"
-                                >
-                                  <FaEdit />
-                                </button>
-                              )}
+                              <button
+                                onClick={() =>
+                                  handleActionClick(tableIndex, rowIndex)
+                                }
+                                className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                              >
+                                Update
+                              </button>
                             </td>
                           </tr>
                         ))}

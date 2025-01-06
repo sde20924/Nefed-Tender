@@ -35,6 +35,7 @@ const MyTender = () => {
       try {
         const tendersData = await Promise.all(
           applications.map(async (application) => {
+            console.log("+__+_+_+_+",application)
             const tenderData = await callApiGet(
               `tender/${application.tender_id}`
             );

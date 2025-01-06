@@ -25,6 +25,7 @@ const { getTenderMiniSummary } = require('../../controllers/tender/getTenderMini
 const { getSellerList} = require('../../controllers/tender/getsellerList');
 const { getBuyerList} = require('../../controllers/tender/getBuyerList');
 const { getManagerList} = require('../../controllers/tender/getManagerList');
+const { getAccessBidWithSuggestedPrice } = require('../../controllers/tender/getAccessBidWithSuggestedPrice');
 
 const {getHomepageContent} = require("../../controllers/tender/getHomePageContent");
 const {updateHomepageContent} = require("../../controllers/tender/updateHomePageContent");
@@ -53,6 +54,7 @@ router.get('/get-manager-list',verifyUser,getManagerList);
 router.get('/get-home-page-content', getHomepageContent);
 router.get("/demo-excel-sheets",verifyUser, getAllDemoExcelSheetsController);
 router.get("/get-bid-details",verifyUser, getBidDetails);
+router.get('/get-access-bid/:id',verifyUser, getAccessBidWithSuggestedPrice);
 
 router.get('/get-tender-auction-items/:tender_id',verifyUser,getTenderAuctionItemsController);
 
