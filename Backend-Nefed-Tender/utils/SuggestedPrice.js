@@ -1,7 +1,24 @@
-const db = require('../config/config'); // Your DB config
+const db = require("../config/config"); // Your DB config
 
 const SuggestedPrice = async (tenderId, userId) => {
   try {
+    const uniqueBuyerCountQuery = `
+      SELECT COUNT(DISTINCT buyer_id) AS uniqueBuyers
+      FROM buyer_header_row_data
+      WHERE subtender_id IN (
+        SELECT subtender_id
+        FROM subtender
+        WHERE tender_id = ?
+      )
+    `;
+    const [uniqueBuyerResult] = await db.query(uniqueBuyerCountQuery, [tenderId]);
+    const uniqueBuyers = uniqueBuyerResult[0]?.uniqueBuyers || 0;
+    if (uniqueBuyers < 2) {
+      return {
+        success: false,
+        message: "Suggested data not available. Less than three unique buyers.",
+      };
+    }
     const rateHeaderSql = `
       SELECT header_id
       FROM tender_header
@@ -49,15 +66,10 @@ const SuggestedPrice = async (tenderId, userId) => {
     if (!rows.length) {
       throw new Error('No rows found for Item and Rate columns in seller_header_row_data.');
     }
+
     const subtenderMap = {};
     for (const row of rows) {
-      const {
-        subtender_id,
-        subtender_name,
-        rowNumber,
-        itemName,
-        rate,
-      } = row;
+      const { subtender_id, subtender_name, rowNumber, itemName, rate } = row;
 
       if (!subtenderMap[subtender_id]) {
         subtenderMap[subtender_id] = {
@@ -68,12 +80,9 @@ const SuggestedPrice = async (tenderId, userId) => {
       subtenderMap[subtender_id].items.push({
         row_number: rowNumber,
         item_name: itemName,
-        seller_rate: rate, 
+        seller_rate: rate,
       });
     }
-
-    // 5) For each (subtender, row_number), find buyers' rates from buyer_header_row_data
-    //    and compute suggested price, skipping if the user's rate is the lowest
     const suggestedPrices = [];
 
     for (const subtenderId in subtenderMap) {
@@ -83,11 +92,9 @@ const SuggestedPrice = async (tenderId, userId) => {
         items: [],
       };
 
-      // For each row in this subtender, gather buyer rates and compute
       for (const itemObj of st.items) {
         const { row_number, item_name } = itemObj;
 
-        // Query all buyer rates for (subtenderId, row_number, rateHeaderId)
         const userTotalAmountQuery = `
           SELECT
             buyer_id,
@@ -104,11 +111,9 @@ const SuggestedPrice = async (tenderId, userId) => {
         ]);
 
         if (!userTotals.length) {
-          // no buyers entered a rate => skip
           continue;
         }
 
-        // Determine lowestRate and the current user's rate
         let lowestRate = Infinity;
         let userRate = null;
 
@@ -121,32 +126,29 @@ const SuggestedPrice = async (tenderId, userId) => {
           }
         });
 
-        // If the user's rate is exactly the lowest rate, skip this item
         if (userRate !== null && userRate === lowestRate) {
-          // Do not push anything about this item into the results
           continue;
         }
 
-        // Otherwise, compute suggested price = 90% of lowestRate
         const suggestedPrice = lowestRate * 0.9;
-        // Show it only if user has no rate or userRate > suggestedPrice
         const showSuggestedPrice = userRate === null || userRate > suggestedPrice;
 
         subtenderResult.items.push({
-          item_name, // from the "Item" column
+          item_name,
           suggested_price: showSuggestedPrice ? suggestedPrice.toFixed(2) : null,
           user_rate: userRate,
         });
       }
 
-      // Push this subtender’s results if it has any items left
-      suggestedPrices.push(subtenderResult);
+      if (subtenderResult.items.length) {
+        suggestedPrices.push(subtenderResult);
+      }
     }
 
-    return suggestedPrices;
+    return { success: true, suggestedPrices };
   } catch (error) {
-    console.error('Error calculating suggested prices:', error.message);
-    throw new Error('Failed to calculate suggested prices.');
+    console.error("Error calculating suggested prices:", error.message);
+    return { success: false, message: "Failed to calculate suggested prices." };
   }
 };
 
