@@ -657,7 +657,6 @@ export default function EditableSheet({
                         respective columns.
                       </p>
                     </div>
-
                     <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
 
                     <div className="mb-4">
@@ -675,12 +674,12 @@ export default function EditableSheet({
                       </div>
                     </div>
                     <div className="mb-4">
-                      <h3 className="font-bold mb-2">Numbers</h3>
+                      <h3 className="font-bold mb-2">Operations</h3>
                       <div className="flex space-x-2">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((numbers) => (
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((operation) => (
                           <button
                             key={operation}
-                            onClick={() => handleNumberClick(numbers)}
+                            onClick={() => handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
                           >
                             {operation}
@@ -694,7 +693,7 @@ export default function EditableSheet({
                         {["+", "-", "*", "/", "="].map((operation) => (
                           <button
                             key={operation}
-                            onClick={handleOperationClick(operation)}
+                            onClick={() => handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
                           >
                             {operation}
@@ -1001,7 +1000,7 @@ export default function EditableSheet({
               onClick={() => handleAddRowToSubTender(subTender.id)}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
             >
-              <span className="mr-1">➕</span> Add Row
+              <span className="mr-1">:heavy_plus_sign:</span> Add Row
             </button>
           </div>
         </div>
@@ -1042,67 +1041,6 @@ export default function EditableSheet({
                   />
                 </label>
               </div>
-              {showHeaderModal && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-                  <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
-                    <h2 className="text-xl font-bold mb-4">
-                      Configure Headers
-                    </h2>
-                    <div className="space-y-4">
-                      {uploadedHeaders.map((header, index) => (
-                        <div
-                          key={index}
-                          className="flex items-center justify-between"
-                        >
-                          <span className="text-gray-700">{header.header}</span>
-                          <div className="flex space-x-4">
-                            <label className="flex items-center">
-                              <input
-                                type="radio"
-                                name={`header-type-${index}`}
-                                value="view"
-                                checked={headerTypes[index] === "view"}
-                                onChange={() =>
-                                  handleHeaderTypeChange(index, "view")
-                                }
-                                className="mr-2"
-                              />
-                              Seller
-                            </label>
-                            <label className="flex items-center">
-                              <input
-                                type="radio"
-                                name={`header-type-${index}`}
-                                value="edit"
-                                checked={headerTypes[index] === "edit"}
-                                onChange={() =>
-                                  handleHeaderTypeChange(index, "edit")
-                                }
-                                className="mr-2"
-                              />
-                              Buyer
-                            </label>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 flex justify-end space-x-4">
-                      <button
-                        onClick={() => setShowHeaderModal(false)}
-                        className="bg-gray-500 text-white py-2 px-4 rounded"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleSaveHeaders}
-                        className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
-                      >
-                        Save Headers
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Right Section - Customize Excel */}
