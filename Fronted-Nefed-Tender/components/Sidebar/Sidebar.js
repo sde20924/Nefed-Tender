@@ -203,18 +203,18 @@ export default function Sidebar() {
         route: "/managers",
         active: true,
       },
-        {
-          id: 4,
-          icon: "fas fa-file-contract",
-          name: "Tenders",
-          route: "/tenders",
-          active: true,
-          children: [
-            { id: 1, name: "My Tenders", route: "/tenders/my-tenders"},
-            { id: 2, name: "Explore Tender", route: "/tenders/explore-tenders" },
-            { id: 3, name: "My Applications", route: "/tenders/my-applications" },
-          ],
-        },
+      {
+        id: 4,
+        icon: "fas fa-file-contract",
+        name: "Tenders",
+        route: "/tenders",
+        active: true,
+        children: [
+          { id: 1, name: "My Tenders", route: "/tenders/my-tenders" },
+          { id: 2, name: "Explore Tender", route: "/tenders/explore-tenders" },
+          { id: 3, name: "My Applications", route: "/tenders/my-applications" },
+        ],
+      },
     ],
     seller: [
       {
@@ -273,8 +273,12 @@ export default function Sidebar() {
           { id: 4, name: "Bid Allotment", route: "/reports/bid-allotment" },
           { id: 5, name: "Bid Position", route: "/reports/bid-position" },
           { id: 6, name: "Mini Summary", route: "/reports/mini-summary" },
-          { id: 7 , name: "Tender Party Wise", route: "/reports/tender-party-wise" },
-          { id: 8 , name: "Tender Challan", route: "/reports/tender-challan" }
+          {
+            id: 7,
+            name: "Tender Party Wise",
+            route: "/reports/tender-party-wise",
+          },
+          { id: 8, name: "Tender Challan", route: "/reports/tender-challan" },
         ],
       },
       {
@@ -283,11 +287,23 @@ export default function Sidebar() {
         name: "Administrator",
         route: "/administrator/admin-Management",
         active: true,
-        children:[
-          {id :1 , name : "Admin Management", route:"/administrator/admin-Management"},
-          {id :2 , name : "User Management", route:"/administrator/user-Management"},
-          {id :3 , name : "Manager Management", route:"/administrator/manager-Management"}
-        ]
+        children: [
+          {
+            id: 1,
+            name: "Admin Management",
+            route: "/administrator/admin-Management",
+          },
+          {
+            id: 2,
+            name: "User Management",
+            route: "/administrator/user-Management",
+          },
+          {
+            id: 3,
+            name: "Manager Management",
+            route: "/administrator/manager-Management",
+          },
+        ],
       },
       {
         id: 7,
@@ -301,8 +317,31 @@ export default function Sidebar() {
             name: "Slider Group",
             route: "/content-management/slider-group",
           },
-          { id: 2, name: "Paragraph Content", route: "/content-management/paragraph-content"},
+          {
+            id: 2,
+            name: "Paragraph Content",
+            route: "/content-management/paragraph-content",
+          },
           { id: 3, name: "Pages", route: "/content-management/page" },
+        ],
+      },
+      {
+        id: 8,
+        icon: "fas fa-file-contract",
+        name: "Buyer",
+        route: "/sellers/buyers",
+        active: true,
+        children: [
+          {
+            id: 1,
+            name: "Buyers",
+            route: "/sellers/buyers",
+          },
+          {
+            id: 2,
+            name: "Add Buyer",
+            route: "/add/buyer",
+          },
         ],
       },
     ],

@@ -1,4 +1,8 @@
 const db = require("../../config/config");
+const { emitEvent } = require("../../socket/event/emit");
+const { userVerifyApi } = require("../../utils/external/api");
+const axios = require("axios");
+const { SuggestedPrice } = require("../../utils/SuggestedPrice");
 
 const saveBuyerHeaderRowData = async (req, res) => {
   const user_id = req.user.user_id; // User ID from authentication middleware
@@ -68,6 +72,72 @@ const saveBuyerHeaderRowData = async (req, res) => {
         status, // Status (default 'active')
       ]
     );
+
+    const [rows] = await db.query(
+      `SELECT user_id FROM manage_tender WHERE tender_id = ?`,
+      [tender_id]
+    );
+
+    //buyer Details
+    const token = req.headers["authorization"];
+
+    const buyerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "buyer",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    emitEvent(
+      "Tender",
+      {
+        message: `New Bid Added By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
+        buyer_id: req.user.user_id,
+        company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
+        tender_id: tender_id,
+        bid_amount: bid_amount,
+        action_type: "New-Bid",
+      },
+      "seller",
+      rows[0]?.user_id
+    );
+
+    const suggestedPrices = await SuggestedPrice(tender_id, user_id);
+
+    if (suggestedPrices.success) {
+      for (const suggestedData of suggestedPrices.suggestedPrices) {
+        for (const item of suggestedData.items) {
+          if (item.suggested_price === null) {
+            continue;
+          }
+
+          emitEvent(
+            "Tender",
+            {
+              message: `Suggested price for item "${item.item_name}" in ${suggestedData.subtender_name}: ${item.suggested_price}`,
+              buyer_id: req.user.user_id,
+              company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
+              tender_id: tender_id,
+              action_type: "Suggested-Price",
+            },
+            "buyer",
+            null,
+            req.user.user_id
+          );
+        }
+      }
+    }
 
     await db.query("COMMIT");
 
