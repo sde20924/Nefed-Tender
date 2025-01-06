@@ -86,12 +86,10 @@ export default function EditableSheet({
       console.warn("No more identifiers available for headers.");
     }
   };
-  const handleOperationClick = ( operation) => {
-
+  const handleOperationClick = (operation) => {
     setFormula((prev) => `${prev}${operation}`);
   };
-  const handleNumberClick = ( number) => {
-  
+  const handleNumberClick = (number) => {
     setFormula((prev) => `${prev}${number}`);
   };
 
@@ -384,39 +382,78 @@ export default function EditableSheet({
   };
 
   // Parse uploaded sheet data into subtenders
-  const parseSheetData = (sheetData, headers) => {
-    const newSubTenders = [];
-    let currentSubTender = null;
+  // const parseSheetData = (sheetData, headers) => {
+  //   const newSubTenders = [];
+  //   let currentSubTender = null;
 
-    for (let i = 1; i < sheetData.length; i++) {
-      const row = sheetData[i];
-      const item = row[1]?.trim(); // Second column (Item)
-      const description = row[2]?.trim(); // Third column (Item Description)
+  //   for (let i = 1; i < sheetData.length; i++) {
+  //     const row = sheetData[i];
+  //     const item = row[1]?.trim(); // Second column (Item)
+  //     const description = row[2]?.trim(); // Third column (Item Description)
 
-      if (item && !description) {
-        // Start a new subtender
-        if (currentSubTender) {
-          newSubTenders.push(currentSubTender);
-        }
-        currentSubTender = {
-          id: newSubTenders.length + 1,
-          name: item,
-          rows: [],
-        };
-      } else if (description && currentSubTender) {
-        // Add row to the current subtender
-        const formattedRow = headers.map((_, index) => row[index] || "");
-        currentSubTender.rows.push(formattedRow);
-      }
-    }
+  //     if (item && !description) {
+  //       // Start a new subtender
+  //       if (currentSubTender) {
+  //         newSubTenders.push(currentSubTender);
+  //       }
+  //       currentSubTender = {
+  //         id: newSubTenders.length + 1,
+  //         name: item,
+  //         rows: [],
+  //       };
+  //     } else if (description && currentSubTender) {
+  //       // Add row to the current subtender
+  //       const formattedRow = headers.map((_, index) => row[index] || "");
+  //       currentSubTender.rows.push(formattedRow);
+  //     }
+  //   }
 
-    // Push the last subtender if any
-    if (currentSubTender) {
-      newSubTenders.push(currentSubTender);
-    }
+  //   // Push the last subtender if any
+  //   if (currentSubTender) {
+  //     newSubTenders.push(currentSubTender);
+  //   }
 
-    setSubTenders(newSubTenders);
-  };
+  //   setSubTenders(newSubTenders);
+  // };
+
+  // const handleFileUpload = (event) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     const reader = new FileReader();
+  //     reader.onload = (e) => {
+  //       const data = e.target.result;
+  //       const workbook = XLSX.read(data, { type: "binary" });
+  //       const sheetName = workbook.SheetNames[0];
+  //       const sheet = workbook.Sheets[sheetName];
+  //       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+  //       if (jsonData.length > 0) {
+  //         console.log("Sheet Data:", jsonData);
+
+  //         // Transform headers into the desired format
+  //         const transformedHeaders = jsonData[0].map((header) => ({
+  //           header: header || "Unknown Header", // Handle empty headers
+  //           type: "view", // Default type
+  //         }));
+
+  //         // Set transformed headers to state
+  //         setHeaders(transformedHeaders);
+
+  //         // Parse sheet data into subtenders
+  //         parseSheetData(jsonData, jsonData[0]);
+  //       } else {
+  //         alert("The uploaded file is empty.");
+  //       }
+  //     };
+
+  //     reader.readAsBinaryString(file);
+  //   }
+  // };
+
+  const [showHeaderModal, setShowHeaderModal] = useState(false);
+  const [uploadedHeaders, setUploadedHeaders] = useState([]);
+  const [headerTypes, setHeaderTypes] = useState([]);
+  const [sheetData, setSheetData] = useState([]); // Store sheet data for parsing later
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -430,26 +467,73 @@ export default function EditableSheet({
         const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
 
         if (jsonData.length > 0) {
-          console.log("Sheet Data:", jsonData);
-
-          // Transform headers into the desired format
-          const transformedHeaders = jsonData[0].map((header) => ({
-            header: header || "Unknown Header", // Handle empty headers
+          setSheetData(jsonData);
+          const transformedHeaders = jsonData[0].map((header, index) => ({
+            header: header || `Unknown Header ${index + 1}`,
             type: "view", // Default type
           }));
 
-          // Set transformed headers to state
-          setHeaders(transformedHeaders);
-
-          // Parse sheet data into subtenders
-          parseSheetData(jsonData, jsonData[0]);
+          setUploadedHeaders(transformedHeaders);
+          setHeaderTypes(
+            transformedHeaders.map(() => "view") // Default all types to "view"
+          );
+          setShowHeaderModal(true); // Show the modal for header configuration
         } else {
-          alert("The uploaded file is empty.");
+          toast.error("The uploaded file is empty.");
         }
       };
 
       reader.readAsBinaryString(file);
     }
+  };
+
+  const handleHeaderTypeChange = (index, type) => {
+    const updatedTypes = [...headerTypes];
+    updatedTypes[index] = type;
+    setHeaderTypes(updatedTypes);
+  };
+
+  const handleSaveHeaders = () => {
+    const configuredHeaders = uploadedHeaders.map((header, index) => ({
+      ...header,
+      type: headerTypes[index],
+    }));
+
+    setHeaders(configuredHeaders);
+    setShowHeaderModal(false); // Close the modal
+    toast.success("Headers configured successfully.");
+    parseSheetData(sheetData, configuredHeaders);
+  };
+
+  const parseSheetData = (data, headers) => {
+    const newSubTenders = [];
+    let currentSubTender = null;
+
+    for (let i = 1; i < data.length; i++) {
+      const row = data[i];
+      const item = row[1]?.trim(); // Second column (Item)
+      const description = row[2]?.trim(); // Third column (Item Description)
+
+      if (item && !description) {
+        if (currentSubTender) {
+          newSubTenders.push(currentSubTender);
+        }
+        currentSubTender = {
+          id: newSubTenders.length + 1,
+          name: item,
+          rows: [],
+        };
+      } else if (description && currentSubTender) {
+        const formattedRow = headers.map((_, index) => row[index] || "");
+        currentSubTender.rows.push(formattedRow);
+      }
+    }
+
+    if (currentSubTender) {
+      newSubTenders.push(currentSubTender);
+    }
+
+    setSubTenders(newSubTenders);
   };
 
   // Download table as Excel
@@ -610,7 +694,7 @@ export default function EditableSheet({
                         {["+", "-", "*", "/", "="].map((operation) => (
                           <button
                             key={operation}
-                            onClick={ handleOperationClick(operation)}
+                            onClick={handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
                           >
                             {operation}
@@ -958,6 +1042,67 @@ export default function EditableSheet({
                   />
                 </label>
               </div>
+              {showHeaderModal && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+                    <h2 className="text-xl font-bold mb-4">
+                      Configure Headers
+                    </h2>
+                    <div className="space-y-4">
+                      {uploadedHeaders.map((header, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between"
+                        >
+                          <span className="text-gray-700">{header.header}</span>
+                          <div className="flex space-x-4">
+                            <label className="flex items-center">
+                              <input
+                                type="radio"
+                                name={`header-type-${index}`}
+                                value="view"
+                                checked={headerTypes[index] === "view"}
+                                onChange={() =>
+                                  handleHeaderTypeChange(index, "view")
+                                }
+                                className="mr-2"
+                              />
+                              Seller
+                            </label>
+                            <label className="flex items-center">
+                              <input
+                                type="radio"
+                                name={`header-type-${index}`}
+                                value="edit"
+                                checked={headerTypes[index] === "edit"}
+                                onChange={() =>
+                                  handleHeaderTypeChange(index, "edit")
+                                }
+                                className="mr-2"
+                              />
+                              Buyer
+                            </label>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex justify-end space-x-4">
+                      <button
+                        onClick={() => setShowHeaderModal(false)}
+                        className="bg-gray-500 text-white py-2 px-4 rounded"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleSaveHeaders}
+                        className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded"
+                      >
+                        Save Headers
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Right Section - Customize Excel */}

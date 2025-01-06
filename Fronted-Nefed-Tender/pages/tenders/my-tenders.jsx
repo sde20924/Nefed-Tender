@@ -35,9 +35,15 @@ const MyTender = () => {
       try {
         const tendersData = await Promise.all(
           applications.map(async (application) => {
+           
+            // console.log("----------",application);
+            
             const tenderData = await callApiGet(
               `tender/${application.tender_id}`
             );
+            console.log("----------",application.tender_id);
+            console.log("------",tenderData);
+            
             calculateTimeLeft(
               tenderData.data.auct_start_time,
               tenderData.data.auct_end_time,
