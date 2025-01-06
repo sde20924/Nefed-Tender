@@ -381,7 +381,7 @@ const AddTender = () => {
         const response = await callApiPost("create_new_tender", formData);
         console.log("Response:", response);
       }
-      toast.success(response.msg);
+      toast.success("Tender Created Sucessfully");
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit tender.");
