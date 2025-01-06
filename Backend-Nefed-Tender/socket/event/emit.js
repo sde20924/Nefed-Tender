@@ -11,12 +11,14 @@ const emitEvent = (eventName, data, userType, ids) => {
     if (userType && ids) {
       Object.keys(connectedUsers).forEach((users) => {
         const id = connectedUsers[users].socketId;
-        if (connectedUsers[users].id === ids) {
+        if (
+          connectedUsers[users].userType === userType &&
+          connectedUsers[users].id === ids
+        ) {
           io.to(id).emit(eventName, data);
         }
       });
     } else {
-      console.log("emit");
       Object.keys(connectedUsers).forEach((users) => {
         const id = connectedUsers[users].socketId;
         if (connectedUsers[users].userType === userType) {

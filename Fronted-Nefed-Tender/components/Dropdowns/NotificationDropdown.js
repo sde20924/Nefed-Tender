@@ -14,7 +14,7 @@ const NotificationDropdown = () => {
   useEffect(() => {
     if (socket) {
       socket.on("New-Tender/Public", handleTenderPublic);
-
+      socket.on("New-Tender/Private", handleTenderPublic);
       // return () => {
       //   socket.off("New-Tender/Public", handleTenderPublic);
       // };

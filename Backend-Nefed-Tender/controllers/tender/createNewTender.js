@@ -1,6 +1,8 @@
 const db = require("../../config/config");
 const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Async error handler middleware
 const { emitEvent } = require("../../socket/event/emit");
+const { userVerifyApi } = require("../../utils/external/api");
+const axios = require("axios");
 
 // Controller to create a new tender
 const createNewTenderController = asyncErrorHandler(async (req, res) => {
@@ -209,20 +211,53 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         );
       }
     }
-    if (accessType === "private") {
-      emitEvent(
-        "New-Tender/Private",
-        {
-          message: "New Tender Created",
+
+    const token = req.headers["authorization"];
+
+    const sellerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "seller",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
         },
-        "buyer"
-      );
+      }
+    );
+
+    if (
+      accessType === "private" &&
+      Array.isArray(selected_buyers) &&
+      selected_buyers.length > 0
+    ) {
+      for (const buyer_id of selected_buyers) {
+        emitEvent(
+          "New-Tender/Private",
+          {
+            message: "New Tender Created",
+            seller_id: req.user.user_id,
+            company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
+            tender_id: tender_id,
+          },
+          "buyer",
+          buyer_id
+        );
+      }
     } else {
       emitEvent(
         "New-Tender/Public",
         {
           message: "New Tender Created",
           seller_id: req.user.user_id,
+          company_name: sellerDetailsResponse?.data[0]?.company_name,
+          tender_id: tender_id,
         },
         "buyer"
       );
