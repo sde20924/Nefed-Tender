@@ -195,9 +195,9 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
     ) {
       for (const buyer_id of selected_buyers) {
         emitEvent(
-          "Edit-Tender/Private",
+          "Tender",
           {
-            message: "Tender Updated",
+            message: `Tender ${tender_title} Updated`,
             seller_id: req.user.user_id,
             company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
             tender_id: tender_id,
@@ -209,9 +209,9 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
       }
     } else {
       emitEvent(
-        "Edit-Tender/Public",
+        "Tender",
         {
-          message: "Tender Updated",
+          message: `Tender ${tender_title} Updated`,
           seller_id: req.user.user_id,
           company_name: sellerDetailsResponse?.data[0]?.company_name,
           tender_id: tender_id,

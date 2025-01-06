@@ -1,10 +1,14 @@
 const { getConnectedUsers } = require("../authenticate");
 const { getIO } = require("../connection");
 
-const emitEvent = (eventName, data, userType, ids) => {
+const emitEvent = (eventName, data, userType, ids, user_id = "") => {
   const io = getIO();
   if (io) {
     const connectedUsers = getConnectedUsers();
+
+    if (!connectedUsers || Object.keys(connectedUsers).length === 0) {
+      return;
+    }
     // if (!userType) {
     //   io.emit(eventName, data);
     // }
@@ -12,8 +16,8 @@ const emitEvent = (eventName, data, userType, ids) => {
       Object.keys(connectedUsers).forEach((users) => {
         const id = connectedUsers[users].socketId;
         if (
-          connectedUsers[users].userType === userType &&
-          connectedUsers[users].id === ids
+          connectedUsers[users].userType == userType &&
+          connectedUsers[users].id == ids
         ) {
           io.to(id).emit(eventName, data);
         }
@@ -21,7 +25,10 @@ const emitEvent = (eventName, data, userType, ids) => {
     } else {
       Object.keys(connectedUsers).forEach((users) => {
         const id = connectedUsers[users].socketId;
-        if (connectedUsers[users].userType === userType) {
+        if (
+          connectedUsers[users].userType === userType &&
+          connectedUsers[users].id != user_id
+        ) {
           io.to(id).emit(eventName, data);
         }
       });

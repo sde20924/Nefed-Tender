@@ -250,19 +250,20 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     );
 
     if (
-      accessType === "private" &&
+      accessType == "private" &&
       Array.isArray(selected_buyers) &&
       selected_buyers.length > 0
     ) {
       for (const buyer_id of selected_buyers) {
         emitEvent(
-          "New-Tender/Private",
+          "Tender",
           {
-            message: "New Tender Created",
+            message: "New Tender Added",
             seller_id: req.user.user_id,
             company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
             tender_id: tender_id,
             action_type: "New-Tender/Private",
+            route: "/tenders/explore-tenders/",
           },
           "buyer",
           buyer_id
@@ -270,13 +271,14 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
       }
     } else {
       emitEvent(
-        "New-Tender/Public",
+        "Tender",
         {
-          message: "New Tender Created",
+          message: "New Tender Added",
           seller_id: req.user.user_id,
           company_name: sellerDetailsResponse?.data[0]?.company_name,
           tender_id: tender_id,
           action_type: "New-Tender/Public",
+          route: "/tenders/explore-tenders/",
         },
         "buyer"
       );

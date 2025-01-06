@@ -2,6 +2,7 @@ const db = require("../../config/config");
 const { emitEvent } = require("../../socket/event/emit");
 const { userVerifyApi } = require("../../utils/external/api");
 const axios = require("axios");
+const { SuggestedPrice } = require("../../utils/SuggestedPrice");
 
 const saveBuyerHeaderRowData = async (req, res) => {
   const user_id = req.user.user_id; // User ID from authentication middleware
@@ -99,7 +100,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
     );
 
     emitEvent(
-      "New-Bid",
+      "Tender",
       {
         message: `New Bid Added By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
         buyer_id: req.user.user_id,
@@ -111,6 +112,32 @@ const saveBuyerHeaderRowData = async (req, res) => {
       "seller",
       rows[0]?.user_id
     );
+
+    const suggestedPrices = await SuggestedPrice(tender_id, user_id);
+
+    if (suggestedPrices.success) {
+      for (const suggestedData of suggestedPrices.suggestedPrices) {
+        for (const item of suggestedData.items) {
+          if (item.suggested_price === null) {
+            continue;
+          }
+
+          emitEvent(
+            "Tender",
+            {
+              message: `Suggested price for item "${item.item_name}" in ${suggestedData.subtender_name}: ${item.suggested_price}`,
+              buyer_id: req.user.user_id,
+              company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
+              tender_id: tender_id,
+              action_type: "Suggested-Price",
+            },
+            "buyer",
+            null,
+            req.user.user_id
+          );
+        }
+      }
+    }
 
     await db.query("COMMIT");
 

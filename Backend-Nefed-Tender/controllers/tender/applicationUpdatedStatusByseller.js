@@ -67,7 +67,7 @@ const updateTenderApplicationBySeller = async (req, res) => {
     );
 
     emitEvent(
-      "Application-status",
+      "Tender",
       {
         message: `Your Application ${action.toUpperCase()} By ${
           sellerDetailsResponse?.data?.data[0]?.company_name

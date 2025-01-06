@@ -22,6 +22,18 @@ export default function EditableSheet({
   const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] =
     useState([]);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [newColumnName, setNewColumnName] = useState("");
+  const [showDeleteModal, setShowDeleteModal] = useState(false); // Modal visibility state
+  const [rowToDelete, setRowToDelete] = useState(null); // Store the row information to be deleted
+  const [deleteTableModal, setDeleteTableModal] = useState(false); // To control modal visibility
+  const [subTenderToDelete, setSubTenderToDelete] = useState(null); // To store the SubTender that is being deleted
+  const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
+  const [selectedColumns, setSelectedColumns] = useState([]);
+  const [showHeaderModal, setShowHeaderModal] = useState(false);
+  const [uploadedHeaders, setUploadedHeaders] = useState([]);
+  const [headerTypes, setHeaderTypes] = useState([]);
+  const [sheetData, setSheetData] = useState([]); // Store sheet data for parsing later
 
   const handleColumnTypeChange = (e) => {
     setNewColumnType(e.target.value);
@@ -43,8 +55,6 @@ export default function EditableSheet({
 
     setIsModalOpen(true); // Show modal
   };
-
-  const [showModal, setShowModal] = useState(false);
 
   // Function to handle input change for SubTender name
   const handleSubTenderNameChange = (e) => {
@@ -147,7 +157,7 @@ export default function EditableSheet({
 
   // Add a new column to the table
   // Show Modal when adding a column
-  const [newColumnName, setNewColumnName] = useState("");
+
   const handleAddColumn = () => {
     setShowModal(true); // Open modal
   };
@@ -205,8 +215,6 @@ export default function EditableSheet({
     );
   };
 
-  // Delete a specific row within a subtender
-  // const handleDeleteRow = (subTenderId, rowIndex) => {
   //   if (window.confirm("Are you sure you want to delete this row?")) {
   //     setSubTenders((prev) =>
   //       prev.map((subTender) => {
@@ -228,8 +236,6 @@ export default function EditableSheet({
   //     );
   //   }
   // };
-  const [showDeleteModal, setShowDeleteModal] = useState(false); // Modal visibility state
-  const [rowToDelete, setRowToDelete] = useState(null); // Store the row information to be deleted
 
   // Handle row deletion logic
   const handleDeleteRow = (subTenderId, rowIndex) => {
@@ -276,9 +282,6 @@ export default function EditableSheet({
 
   // Delete an entire SubTender table
 
-  const [deleteTableModal, setDeleteTableModal] = useState(false); // To control modal visibility
-  const [subTenderToDelete, setSubTenderToDelete] = useState(null); // To store the SubTender that is being deleted
-
   const handleDeleteSubTender = (subTenderId) => {
     setSubTenderToDelete(subTenderId); // Store the SubTender ID to be deleted
     setDeleteTableModal(true); // Show the modal for confirmation
@@ -310,7 +313,6 @@ export default function EditableSheet({
     setDeleteTableModal(false); // Close the modal without deleting
   };
 
-  // Delete a specific column
   // const handleDeleteColumn = () => {
   //   const columnToDelete = prompt(
   //     `Enter the column name to delete:\n${headers.join(", ")}`
@@ -339,9 +341,6 @@ export default function EditableSheet({
 
   //   toast.success(`Column "${columnToDelete}" has been deleted.`);
   // };
-
-  const [showDeleteColumnModal, setShowDeleteColumnModal] = useState(false);
-  const [selectedColumns, setSelectedColumns] = useState([]);
 
   const handleDeleteColumn = () => {
     setShowDeleteColumnModal(true);
@@ -381,7 +380,6 @@ export default function EditableSheet({
     );
   };
 
-  // Parse uploaded sheet data into subtenders
   // const parseSheetData = (sheetData, headers) => {
   //   const newSubTenders = [];
   //   let currentSubTender = null;
@@ -450,11 +448,6 @@ export default function EditableSheet({
   //   }
   // };
 
-  const [showHeaderModal, setShowHeaderModal] = useState(false);
-  const [uploadedHeaders, setUploadedHeaders] = useState([]);
-  const [headerTypes, setHeaderTypes] = useState([]);
-  const [sheetData, setSheetData] = useState([]); // Store sheet data for parsing later
-
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
@@ -502,6 +495,8 @@ export default function EditableSheet({
     setHeaders(configuredHeaders);
     setShowHeaderModal(false); // Close the modal
     toast.success("Headers configured successfully.");
+    console.log("----", configuredHeaders);
+
     parseSheetData(sheetData, configuredHeaders);
   };
 
@@ -1000,11 +995,76 @@ export default function EditableSheet({
               onClick={() => handleAddRowToSubTender(subTender.id)}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
             >
-              <span className="mr-1">:heavy_plus_sign:</span> Add Row
+              Add Row
             </button>
           </div>
         </div>
       ))}
+      {/* pop-up for selecting the field for buyer */}
+      {showHeaderModal && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center p-4 justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl relative">
+            {/* Header Section */}
+            <div className="w-full bg-blue-500 text-white text-center py-4 rounded-t-lg">
+              <h2 className="text-lg font-bold">Select the columns for buyers where input is required</h2>
+            </div>
+
+            {/* Content Section */}
+            <div className="space-y-4 p-4 max-h-[60vh] overflow-y-auto">
+              {uploadedHeaders.map((header, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-2 border-b border-gray-200"
+                >
+                  <span className="text-gray-800 font-medium">
+                    {header.header}
+                  </span>
+                  <div className="flex space-x-4">
+                    <label className="flex items-center text-gray-700">
+                      <input
+                        type="radio"
+                        name={`header-type-${index}`}
+                        value="view"
+                        checked={headerTypes[index] === "view"}
+                        onChange={() => handleHeaderTypeChange(index, "view")}
+                        className="mr-2"
+                      />
+                      <span className="font-semibold">Seller</span>
+                    </label>
+                    <label className="flex items-center text-gray-700">
+                      <input
+                        type="radio"
+                        name={`header-type-${index}`}
+                        value="edit"
+                        checked={headerTypes[index] === "edit"}
+                        onChange={() => handleHeaderTypeChange(index, "edit")}
+                        className="mr-2"
+                      />
+                      <span className="font-semibold">Buyer</span>
+                    </label>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Action Buttons */}
+            <div className="w-full bg-gray-100 px-4 py-3 flex justify-end space-x-4 border-t border-gray-200">
+              <button
+                onClick={() => setShowHeaderModal(false)}
+                className="bg-gray-500 text-white font-bold py-2 px-6 rounded hover:bg-gray-600 transition-all"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveHeaders}
+                className="bg-blue-600 text-white font-bold py-2 px-6 rounded hover:bg-blue-600 transition-all"
+              >
+                Save Headers
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Download Button */}
       {subTenders.length > 0 ? (

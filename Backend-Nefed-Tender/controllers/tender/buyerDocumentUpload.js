@@ -91,7 +91,7 @@ const submitFileUrl = async (req, res) => {
     );
 
     emitEvent(
-      "New-Application",
+      "Tender",
       {
         message: `New Application Submitted By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
         buyer_id: req.user.user_id,
