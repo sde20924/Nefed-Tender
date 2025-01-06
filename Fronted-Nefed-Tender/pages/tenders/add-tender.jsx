@@ -75,7 +75,7 @@ const AddTender = () => {
     const nextDay = new Date(today);
     nextDay.setDate(today.getDate() + 5); // Add 1 day to today's date
     return nextDay;
-  }  );
+  });
   const [timeExtension, setTimeExtension] = useState(2);
   const [extensionBeforeEndtime, setExtensionBeforeEndtime] = useState(2);
   const [minDecrementValue, setMinDecrementValue] = useState(2);
@@ -100,7 +100,8 @@ const AddTender = () => {
   const [subTenders, setSubTenders] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
-
+  const [accessPosition,setAccessPosition] = useState("yes")
+  const [generatedFormula, setGeneratedFormula] = useState("");
   const handleDescriptionChange = (value) => {
     setDescription(value);
   };
@@ -161,6 +162,10 @@ const AddTender = () => {
       ...attachments,
       { key: "", extension: "", maxFileSize: "", label: "" },
     ]);
+  };
+  const handleFormulaChange = (payload) => {
+    setHeaders(payload.headers); 
+    setGeneratedFormula(payload.formula); 
   };
 
   const handleRemoveAttachment = (index) => {
@@ -275,14 +280,19 @@ const AddTender = () => {
       const selectedData = categories.find(
         (category) => category.demo_tender_sheet_id === selectedCategory
       );
+
       console.log("Selected Category Data:", selectedData);
 
       if (selectedData) {
-        const headerNames = selectedData.headers.map(
-          (header) => header.header_display_name
-        ); // Extract only header_display_name
-        setHeaders(headerNames); // Update headers with header_display_name only
-        console.log("Headers Updated:", headerNames);
+        // Map headers to extract header_display_name and type
+        const headers = selectedData.headers.map((header) => ({
+          header: header.header_display_name,
+          type: header.type,
+        }));
+
+        // Separate header names and types for individual use if needed
+
+        setHeaders(headers); // Set headers with both display name and type
       } else {
         setHeaders([]); // Clear headers if no match found
         console.log(
@@ -311,7 +321,7 @@ const AddTender = () => {
   };
 
   // Handle Submit
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, tenderOption) => {
     e.preventDefault();
 
     // Generate a random tender_id using current time
@@ -323,18 +333,17 @@ const AddTender = () => {
       tender_slug: slug, // URL-friendly version of the title
       tender_desc: description, // Description of the tender
       tender_cat: "testing", // Default to 'testing' if not applicable
-      tender_opt: isPublished, // Tender option, e.g., publish status
+      tender_opt: isPublished,
+      save_as: tenderOption, // Tender option, e.g., draft or publish
       emd_amt: emdAmount, // EMD Amount
       emt_lvl_amt: emdLevelAmount, // EMD Level Amount
       attachments: attachments, // attachments if needed
       custom_form: JSON.stringify(formFields), // Stringify custom form fields if needed
       currency, // Currency type
       start_price: startingPrice, // Starting price for the tender
-      // qty: quantity, // Quantity
       dest_port: destinationPort, // Destination port
       bag_size: bagSize, // Size of the bag
       bag_type: bagType, // Type of the bag
-      // measurement_unit: measurmentUnit, // Measurement unit
       app_start_time: Math.floor(new Date(applicationStart).getTime() / 1000), // Application start time as Unix timestamp
       app_end_time: Math.floor(new Date(applicationEnd).getTime() / 1000), // Application end time as Unix timestamp
       auct_start_time: Math.floor(new Date(auctionStart).getTime() / 1000), // Auction start time as Unix timestamp
@@ -354,24 +363,28 @@ const AddTender = () => {
       accessType: accessType, // Set to null if not applicable
       tender_id: tender_id, // Generate a random tender ID based on the current timestamp if not provided
       audi_key: null, // Set to null if not applicable
-      // auct_field: auctionFields,
       editable_sheet: {
         headers, // Headers from EditableSheet
         sub_tenders: subTenders, // SubTender data with rows
       },
       selected_buyers: selectedBuyers,
+      accessPosition : accessPosition,
+      formula: generatedFormula
     };
-
-    console.log("form data here 1", formData);
-    console.log("bsdbdhbd]]]]]]", selectedBuyers);
+    
+    console.log("Form data:", formData);
+    
     try {
-      const response = await callApiPost("create_new_tender", formData);
-      console.log("responses: ", response);
+      if(generatedFormula==""){
+        toast.error("Formula Required For Calculate Total Coast")
+      }else{     
+        const response = await callApiPost("create_new_tender", formData);
+        console.log("Response:", response);
+      }
       toast.success(response.msg);
-      // router.push("/tender");
     } catch (error) {
       console.error("Error submitting form:", error);
-      toast.error("Failed to create tender.");
+      toast.error("Failed to submit tender.");
     }
   };
 
@@ -442,6 +455,8 @@ const AddTender = () => {
                 setAccessType={setAccessType}
                 accessType={accessType}
                 auctionType={auctionType}
+                accessPosition={accessPosition}
+                setAccessPosition={setAccessPosition}
                 onSelectedBuyersChange={() => handleSelectedBuyersChange}
               />
             </div>
@@ -510,8 +525,16 @@ const AddTender = () => {
           {/* Sticky Submit Button */}
           <div className="fixed bottom-8 right-4 p-4">
             <button
+              type="button"
+              className="bg-blue-600 mx-4 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={(e) => handleSubmit(e, "draft")}
+            >
+              Save
+            </button>
+            <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              onClick={(e) => handleSubmit(e, "publish")}
             >
               Create
             </button>
@@ -523,6 +546,7 @@ const AddTender = () => {
             subTenders={subTenders}
             setSubTenders={setSubTenders}
             selectedCategory={selectedCategory}
+            onFormulaChange={handleFormulaChange}
           />
         </form>
         {/* Sticky Submit Button */}

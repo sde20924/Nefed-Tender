@@ -41,8 +41,11 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     audi_key = null,
     editable_sheet,
     selected_buyers = [],
+    accessPosition,
+    formula,
+    save_as,
   } = req.body;
-  console.log("+++++++++++++++++", selected_buyers);
+  console.log("+++++++++++++++++------", req.body);
   // Validation to ensure required fields are provided
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
@@ -91,8 +94,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key,user_access
-      ) VALUES (?, ?, ?, ?, ?, ?,?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        tender_id, audi_key, user_access, access_position,cal_formula,save_as
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`,
+
       [
         user_id,
         tender_title,
@@ -125,6 +129,9 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         tender_id,
         audi_key,
         accessType,
+        accessPosition,
+        formula, // Insert `accessPosition` value
+        save_as, // Insert `accessPosition` value
       ]
     );
     // Insert attachments into `tender_required_doc`
@@ -142,26 +149,35 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
     // Insert headers into `tender_header` table and get the header_id
     for (let i = 0; i < headers.length; i++) {
-      const headerName = headers[i];
-      const [headerResult] = await db.query(
-        `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
-        [tender_id, headerName, i + 1]
-      );
-      const headerId = headerResult.insertId; // Get the header_id for the inserted header
+      const { header, type, sortform } = headers[i];
 
+      // Insert the tender_header row
+      const [headerResult] = await db.query(
+        `INSERT INTO tender_header 
+           (tender_id, table_head, type, \`order\`, cal_col) 
+         VALUES (?, ?, ?, ?, ?)`,
+        [tender_id, header, type, i + 1, sortform]
+      );
+      const headerId = headerResult.insertId; // The header_id for this column
+
+      // Now insert data for each Sub-Tender
       for (const subTender of sub_tenders) {
         const { name, rows } = subTender;
 
-        // Check if the subtender exists, insert if not
-        let [subTenderResult] = await db.query(
-          `SELECT subtender_id FROM subtender WHERE subtender_name = ? AND tender_id = ?`,
+        // Make sure subtender row exists
+        const [subTenderResult] = await db.query(
+          `SELECT subtender_id 
+             FROM subtender 
+            WHERE subtender_name = ? 
+              AND tender_id      = ?`,
           [name, tender_id]
         );
 
         let subtenderId;
         if (subTenderResult.length === 0) {
           const [newSubTender] = await db.query(
-            `INSERT INTO subtender (subtender_name,tender_id) VALUES (?,?)`,
+            `INSERT INTO subtender (subtender_name, tender_id)
+             VALUES (?, ?)`,
             [name, tender_id]
           );
           subtenderId = newSubTender.insertId;
@@ -169,34 +185,35 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
           subtenderId = subTenderResult[0].subtender_id;
         }
 
-        // Insert rows into `seller_header_row_data` table
+        // Insert each row’s data for this column
         for (const [rowIndex, row] of rows.entries()) {
-          for (let j = 0; j < row.length; j++) {
-            const cellData = row[j];
-            await db.query(
-              `INSERT INTO seller_header_row_data (
-                header_id, 
-                row_data, 
-                subtender_id, 
-                seller_id, 
-                \`order\`, 
-                type, 
-                row_number
-              ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-              [
-                headerId,
-                cellData,
-                subtenderId,
-                user_id,
-                j + 1,
-                cellData === "" || cellData === null ? "edit" : "view",
-                rowIndex + 1,
-              ]
-            );
-          }
+          // row[i] corresponds to the cell data for this column
+          const cellData = row[i] ?? "";
+
+          await db.query(
+            `INSERT INTO seller_header_row_data (
+               header_id, 
+               row_data, 
+               subtender_id, 
+               seller_id, 
+               \`order\`, 
+               type, 
+               row_number
+             ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            [
+              headerId, // The column's header_id
+              cellData, // Actual cell data
+              subtenderId, // The subtender we are inserting for
+              user_id,
+              i + 1, // "order" could be column index or up to you
+              type, // <-- Use the header's type (e.g. 'edit' or 'view')
+              rowIndex + 1, // row_number
+            ]
+          );
         }
       }
     }
+
     // If accessType is private, insert selected buyers into `Tender_access`
     if (
       accessType === "private" &&
@@ -245,6 +262,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
             seller_id: req.user.user_id,
             company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
             tender_id: tender_id,
+            action_type: "New-Tender/Private",
           },
           "buyer",
           buyer_id
@@ -258,6 +276,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
           seller_id: req.user.user_id,
           company_name: sellerDetailsResponse?.data[0]?.company_name,
           tender_id: tender_id,
+          action_type: "New-Tender/Public",
         },
         "buyer"
       );

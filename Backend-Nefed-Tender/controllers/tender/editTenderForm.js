@@ -1,5 +1,8 @@
 const db = require("../../config/config"); // Database connection
 const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // Async error handler middleware
+const { emitEvent } = require("../../socket/event/emit");
+const { userVerifyApi } = require("../../utils/external/api");
+const axios = require("axios");
 
 const updateTenderDetails = asyncErrorHandler(async (req, res) => {
   const { id: tender_id } = req.params;
@@ -37,6 +40,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
     audi_key = null,
     headers,
     sub_tender,
+    accessPosition,
   } = req.body;
 
   try {
@@ -59,7 +63,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
         auct_start_time = ?, auct_end_time = ?, time_frame_ext = ?, extended_at = ?, 
         amt_of_ext = ?, aut_auct_ext_bfr_end_time = ?, min_decr_bid_val = ?, timer_ext_val = ?, 
         qty_split_criteria = ?, counter_offr_accept_timer = ?, img_url = ?, auction_type = ?, user_access
- = ?, audi_key = ?
+ = ?, audi_key = ?, access_position = ?
       WHERE tender_id = ?
     `;
     const tenderValues = [
@@ -93,6 +97,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
       accessType,
       audi_key,
       tender_id,
+      accessPosition,
     ];
     await db.query(updateTenderQuery, tenderValues);
 
@@ -114,15 +119,15 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
       tender_id,
     ]);
     for (const { header_id, table_head, order } of headers) {
-        await db.query(
-          `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
-          [tender_id, table_head, order]
-        );
-      }
+      await db.query(
+        `INSERT INTO tender_header (tender_id, table_head, \`order\`) VALUES (?, ?, ?)`,
+        [tender_id, table_head, order]
+      );
+    }
 
     // Update sub_tender and related rows in `seller_header_row_data`
     await db.query(`DELETE FROM subtender WHERE tender_id = ?`, [tender_id]);
-    for (const {id, name, rows } of sub_tender) {
+    for (const { id, name, rows } of sub_tender) {
       const [newSubTender] = await db.query(
         `INSERT INTO subtender (tender_id, subtender_name) VALUES (?, ?)`,
         [tender_id, name]
@@ -161,6 +166,59 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
           [buyer_id, tender_id]
         );
       }
+    }
+
+    const token = req.headers["authorization"];
+
+    const sellerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "seller",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    if (
+      accessType === "private" &&
+      Array.isArray(selected_buyers) &&
+      selected_buyers.length > 0
+    ) {
+      for (const buyer_id of selected_buyers) {
+        emitEvent(
+          "Edit-Tender/Private",
+          {
+            message: "Tender Updated",
+            seller_id: req.user.user_id,
+            company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
+            tender_id: tender_id,
+            action_type: "Edit-Tender/Private",
+          },
+          "buyer",
+          buyer_id
+        );
+      }
+    } else {
+      emitEvent(
+        "Edit-Tender/Public",
+        {
+          message: "Tender Updated",
+          seller_id: req.user.user_id,
+          company_name: sellerDetailsResponse?.data[0]?.company_name,
+          tender_id: tender_id,
+          action_type: "Edit-Tender/Public",
+        },
+        "buyer"
+      );
     }
 
     // Commit the transaction

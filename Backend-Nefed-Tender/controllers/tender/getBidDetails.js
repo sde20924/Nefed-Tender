@@ -56,14 +56,8 @@ const getBidDetails = async (req, res) => {
     let position;
     if (rank === 1) {
       position = "L1";
-    } else if (rank === 2) {
-      position = "L2";
-    } else if (rank === 3) {
-      position = "L3";
-    } else if (rank === 4) {
-      position = "L4";
     } else {
-      position = `Not in top 4`;
+      position = `Not L1`;
     }
 
     // Respond with the bid details and status

@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import React, { useState, useEffect } from "react";
 import { callApiGet, callApiPost } from "@/utils/FetchApi";
 import { ToastContainer, toast } from "react-toastify";
-import { FaTimes } from "react-icons/fa";
+import { FaTimes, FaEdit, FaSave } from "react-icons/fa";
 
 const AccessBidRoom = () => {
   const router = useRouter();
@@ -22,51 +22,121 @@ const AccessBidRoom = () => {
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
   const [bidDetails, setBidDetails] = useState();
+
+  const [suggestionData, setSuggestionData] = useState([
+    {
+      tableName: "Civil & MS Works",
+      items: [
+        {
+          item: "Brick Work",
+          suggestionAmount: 1200,
+          currentAmount: 1000,
+          difference: 200,
+        },
+        {
+          item: "Plaster Work",
+          suggestionAmount: 1500,
+          currentAmount: 1400,
+          difference: 100,
+        },
+      ],
+    },
+    {
+      tableName: "Glazing Works",
+      items: [
+        {
+          item: "Aluminium Partition",
+          suggestionAmount: 800,
+          currentAmount: 700,
+          difference: 100,
+        },
+        {
+          item: "Glass Door",
+          suggestionAmount: 3000,
+          currentAmount: 3100,
+          difference: -100,
+        },
+      ],
+    },
+  ]);
+
+  const [editingRow, setEditingRow] = useState({
+    tableIndex: null,
+    rowIndex: null,
+  });
+
+  // Handle input changes for editable fields
+  const handleInputChange = (tableIndex, rowIndex, field, value) => {
+    const updatedData = [...suggestionData];
+    const row = updatedData[tableIndex].items[rowIndex];
+    row[field] = field === "item" ? value : parseFloat(value);
+    row.difference = row.suggestionAmount - row.currentAmount; // Update difference
+    setSuggestionData(updatedData);
+  };
+
+  // Handle edit action
+  const handleEdit = (tableIndex, rowIndex) => {
+    setEditingRow({ tableIndex, rowIndex });
+  };
+
+  // Handle save action
+  const handleSave = () => {
+    setEditingRow({ tableIndex: null, rowIndex: null });
+  };
+
+  // Handle cancel action
+  const handleCancel = () => {
+    setEditingRow({ tableIndex: null, rowIndex: null });
+  };
+  // ajsajksdnkajsnkjsnkajsd
+
+  console.log("343443---------", formdata);
+
   useEffect(() => {
     if (tenderId) {
       fetchTenderDetails();
       fetchBids();
-      fetchAuctionItems(); // Fetch auction items when tenderId is available
+      // fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
-  useEffect(() => {
-    const BidsDetails = async () => {
-      try {
-        const responce = await callApiGet(
-          `get-bid-details?tender_id=${tenderId}`
-        );
-        if (responce.success) {
-          setBidDetails(responce);
-        }
-      } catch (error) {
-        console.error(" Error Bids Details:", error.message);
-      }
-    };
-    BidsDetails();
-  }, [tenderId]);
+  // useEffect(() => {
+  //   const BidsDetails = async () => {
+  //     try {
+  //       const responce = await callApiGet(
+  //         `get-bid-details?tender_id=${tenderId}`
+  //       );
+  //       if (responce.success) {
+  //         setBidDetails(responce);
+  //       }
+  //     } catch (error) {
+  //       console.error(" Error Bids Details:", error.message);
+  //     }
+  //   };
+  //   BidsDetails();
+  // }, [tenderId]);
 
   // console.log("hsdsdf", bidDetails);
 
   // Fetch auction items
-  const fetchAuctionItems = async () => {
-    try {
-      const response = await callApiGet(`get-tender-auction-items/${tenderId}`);
+  // const fetchAuctionItems = async () => {
+  //   try {
+  //     const response = await callApiGet(`get-tender-auction-items/${tenderId}`);
 
-      // Check if auction_items array exists and is not empty
-      if (
-        response &&
-        response.auction_items &&
-        response.auction_items.length > 0
-      ) {
-        setAuctionItems(response.auction_items); // Set auction items data
-      } else {
-        toast.error("No auction items found.");
-      }
-    } catch (error) {
-      console.error("Error fetching auction items:", error.message);
-      toast.error("Error fetching auction items.");
-    }
-  };
+  //     // Check if auction_items array exists and is not empty
+  //     if (
+  //       response &&
+  //       response.auction_items &&
+  //       response.auction_items.length > 0
+  //     ) {
+  //       setAuctionItems(response.auction_items); // Set auction items data
+  //     } else {
+  //       toast.error("No auction items found.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Error fetching auction items:", error.message);
+  //     toast.error("Error fetching auction items.");
+  //   }
+  // };
 
   // Fetch tender details
   const fetchTenderDetails = async () => {
@@ -74,6 +144,7 @@ const AccessBidRoom = () => {
       const tenderData = await callApiGet(`tender/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
       setFormData(tenderData.data.sub_tenders);
+      setSuggestionData(tenderData.data.suggested_prices)
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -82,7 +153,7 @@ const AccessBidRoom = () => {
       console.error("Error fetching tender details:", error.message);
     }
   };
-
+   
   // Fetch bids for the specific tender
   const fetchBids = async () => {
     try {
@@ -441,6 +512,53 @@ const AccessBidRoom = () => {
         title={"Bid Room"}
       />
 
+      <div className="fixed top-[80px] right-2 z-25 space-y-3">
+        {showPopup && (
+          <div className="w-64 p-3 bg-white border border-gray-300 rounded-lg shadow-md">
+            {/* Card Content */}
+            <div className="flex flex-col items-start">
+              <h1 className="text-base font-bold text-gray-800">
+                Auction is Live!
+              </h1>
+            </div>
+          </div>
+        )}
+
+        {bidDetails?.data?.position && (
+          <div className="w-64 p-3 bg-white border border-gray-300 rounded-lg shadow-md">
+            {/* Card Content */}
+            <div className="flex flex-col items-start">
+              {bidDetails.data.position === "L1" ? (
+                <h1 className="text-base font-bold text-green-700">
+                  🎉 Position: L1
+                </h1>
+              ) : (
+                <div>
+                  <h1 className="text-base font-bold text-yellow-600">
+                    Aim for L1!
+                  </h1>
+                  <p className="text-sm text-gray-600">
+                    Reduce your bid to reach L1
+                  </p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {showPopup && (
+          <div className="w-64 p-3 bg-white border border-gray-300 rounded-lg shadow-md">
+            {/* Card Content */}
+            <div className="flex flex-col items-start">
+              <p className="text-sm text-gray-600">
+                Time Left:{" "}
+                <span className="text-green-600 font-bold">{timeLeft}</span>
+              </p>
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className="flex mx-auto p-4 w-full">
         <div className="w-full mx-8 bg-white">
           <div className="text-lg p-4">
@@ -450,49 +568,8 @@ const AccessBidRoom = () => {
           </div>
 
           {/* Auction Live Pop-up */}
-          {showPopup && (
-            <div className="fixed top-[120px] sm:top-20  right-4 z-50 w-60 md:w-80 p-2 bg-gradient-to-r from-green-200 via-green-100 to-green-50 border border-green-300 text-green-400 rounded-lg shadow-xl animate-slide-in">
-              {/* Close Button */}
-              <button
-                className="absolute top-2 right-2 text-gray-500 hover:text-gray-800 focus:outline-none"
-                onClick={closePopup}
-                aria-label="Close Popup"
-              >
-                <FaTimes className="w-5 h-5" />
-              </button>
-
-              {/* Pop-up Content */}
-              <div className="text-center mb-4 animate-pulse">
-                <h1 className="sm:text-2xl text-xl font-bold">
-                  Auction is Live!
-                </h1>
-              </div>
-
-              <div className="text-center">
-                <span className="font-bold sm:text-md text-sm text-green-400">
-                  Time Left: {timeLeft}
-                </span>
-              </div>
-            </div>
-          )}
 
           {/* Tailwind CSS Animations */}
-          <style jsx>{`
-            @keyframes slide-in {
-              0% {
-                transform: translateX(100%);
-                opacity: 0;
-              }
-              100% {
-                transform: translateX(0);
-                opacity: 1;
-              }
-            }
-
-            .animate-slide-in {
-              animation: slide-in 0.5s ease-out;
-            }
-          `}</style>
 
           {renderPositionBox()}
 
@@ -582,7 +659,6 @@ const AccessBidRoom = () => {
                 {bidDetails ? (
                   <div className="flex justify-between items-center">
                     <p className="text-gray-600 font-medium">{`Bid Amount: $${bidDetails.data.latestUserBid.bid_amount}`}</p>
-                    <p className="text-gray-600 font-medium">{`Position: ${bidDetails.data.position}`}</p>
                   </div>
                 ) : (
                   <p className="text-center text-gray-400">Loading...</p>
@@ -644,8 +720,146 @@ const AccessBidRoom = () => {
             </div>
           </div>
 
+          {/* sugession Table  */}
+
+          <div className="p-4 bg-gray-50">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6">
+              Suggested Bids for Items
+            </h2>
+
+            {/* Grid container for tables */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {suggestionData.map((table, tableIndex) => (
+                <div
+                  key={tableIndex}
+                  className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
+                >
+                  <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
+                    <h3 className="text-xl font-semibold text-blue-700">
+                    {table.subtender_name}
+                    </h3>
+                  </div>
+                  <div className="overflow-x-auto p-4">
+                    <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                      <thead className="bg-blue-100">
+                        <tr>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Item
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Suggestion Amount
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Current Amount
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                            Difference
+                          </th>
+                          <th className="border border-gray-300 px-3 py-2 text-center text-blue-800 font-medium">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {table.items?.map((row, rowIndex) => (
+                          <tr
+                            key={rowIndex}
+                            className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 transition-all duration-200"
+                          >
+                            {/* Item */}
+                            <td className="border border-gray-300 px-3 py-2">
+                            {row.item_name}
+                            </td>
+
+                            {/* Suggestion Amount */}
+                            <td className="border border-gray-300 px-3 py-2">
+                              {row.suggested_price
+                          ? `₹${row.suggested_price}`
+                          : "N/A"}
+                            </td>
+
+                            {/* Current Amount (Editable) */}
+                            <td className="border border-gray-300 px-3 py-2">
+                              {editingRow?.tableIndex === tableIndex &&
+                              editingRow?.rowIndex === rowIndex ? (
+                                <input
+                                  type="number"
+                                  value={row.currentAmount}
+                                  onChange={(e) =>
+                                    handleInputChange(
+                                      tableIndex,
+                                      rowIndex,
+                                      "currentAmount",
+                                      e.target.value
+                                    )
+                                  }
+                                  className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
+                                />
+                              ) : (
+                                `${row.user_rate ? `₹${row.user_rate}` : "N/A"}`
+                              )}
+                            </td>
+
+                            {/* Difference */}
+                            <td
+                              className={`border border-gray-300 px-3 py-2 font-medium ${
+                                row.difference < 0
+                                  ? "text-red-500"
+                                  : "text-green-500"
+                              }`}
+                            >
+                              ${row.user_rate-row.suggested_price}
+                            </td>
+
+                            {/* Actions */}
+                            <td className="border border-gray-300 px-3 py-2 text-center">
+                              {editingRow?.tableIndex === tableIndex &&
+                              editingRow?.rowIndex === rowIndex ? (
+                                <div className="flex justify-center space-x-2">
+                                  <button
+                                    onClick={handleSave}
+                                    className="bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"
+                                    title="Save"
+                                  >
+                                    <FaSave />
+                                  </button>
+                                  <button
+                                    onClick={handleCancel}
+                                    className="bg-gray-500 text-white p-2 rounded-full hover:bg-gray-600"
+                                    title="Cancel"
+                                  >
+                                    <FaTimes />
+                                  </button>
+                                </div>
+                              ) : (
+                                <button
+                                  onClick={() =>
+                                    handleEdit(tableIndex, rowIndex)
+                                  }
+                                  className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                                  title="Edit"
+                                >
+                                  <FaEdit />
+                                </button>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* suggesion End  */}
+
           {/* Table Data */}
-          <div className="space-y-8">
+          <div className="bg-gradient-to-br from-gray-50 to-gray-10 p-6 ">
+            <h1 className="text-4xl font-bold text-gray-800 mb-8 ">
+              Bids Sheet
+            </h1>
             {formdata.map((subTender) => {
               const totalAmount = calculateTotalAmount(
                 subTender.rows,
@@ -724,7 +938,7 @@ const AccessBidRoom = () => {
                 </div>
               );
             })}
-            <div className="relative flex flex-wrap  p-6 ">
+            <div className="relative flex flex-wrap mt-10  p-6 ">
               {/* Total Bid Amount */}
               <div className="bg-blue-600 text-white font-bold p-3 rounded-lg shadow-md hover:bg-blue-700 h-[50px] flex items-center transition-all duration-300 absolute left-2 top-2 transform -translate-y-1/2">
                 Total Bid Amount: ₹{totalBidAmount.toFixed(2)}

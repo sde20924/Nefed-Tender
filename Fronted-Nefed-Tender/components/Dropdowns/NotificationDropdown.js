@@ -15,6 +15,11 @@ const NotificationDropdown = () => {
     if (socket) {
       socket.on("New-Tender/Public", handleTenderPublic);
       socket.on("New-Tender/Private", handleTenderPublic);
+      socket.on("Edit-Tender/Public", handleTenderPublic);
+      socket.on("Edit-Tender/Private", handleTenderPublic);
+      socket.on("New-Application", handleTenderPublic);
+      socket.on("Application-status", handleTenderPublic);
+      socket.on("New-Bid", handleTenderPublic);
       // return () => {
       //   socket.off("New-Tender/Public", handleTenderPublic);
       // };

@@ -76,7 +76,7 @@ export default function EditTable({
 
   // Add column logic
   const handleAddColumnConfirm = () => {
-    if (newColumnName.trim()) {
+    if (newColumnName.trim() && newColumnType) {
       // Create a new header object
       const newHeader = {
         header_id:
@@ -85,7 +85,10 @@ export default function EditTable({
         order: headers.length + 1,
       };
 
-      setHeaders((prev) => [...prev, newHeader]);
+      setHeaders((prev) => [
+        ...prev,
+        { name: newColumnName, type: newColumnType }, // Store as objects with name and type
+      ]);
       setSubTenders((prev) =>
         prev.map((subTender) => ({
           ...subTender,
@@ -93,6 +96,7 @@ export default function EditTable({
         }))
       );
       setNewColumnName("");
+      setNewColumnType("view");
       setShowModal(false); // Close modal after adding column
       toast.success(`Column "${newColumnName}" added successfully.`);
     } else {

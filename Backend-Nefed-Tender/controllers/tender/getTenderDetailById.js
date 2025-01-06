@@ -1,9 +1,20 @@
 const db = require('../../config/config'); // Database configuration
 const asyncErrorHandler = require('../../utils/asyncErrorHandler'); // Async error handler middleware
+const { SuggestedPrice } = require('../../utils/SuggestedPrice');
 
 const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
     try {
         const tenderId = req.params.id; // Extract tender ID from request parameters
+        const { user_id } = req.user;
+
+        // Check if the buyer has participated in the tender
+        const bidParticipationQuery = `
+            SELECT COUNT(*) AS bid_count
+            FROM tender_bid_room
+            WHERE tender_id = ? AND user_id = ?
+        `;
+        const [bidParticipationResult] = await db.query(bidParticipationQuery, [tenderId, user_id]);
+        const hasParticipated = bidParticipationResult[0].bid_count > 0;
 
         // Fetch tender details from the manage_tender table
         const tenderDetailsQuery = `
@@ -20,15 +31,15 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         `;
         const [tenderDetailsResult] = await db.query(tenderDetailsQuery, [tenderId]);
 
-
         if (tenderDetailsResult.length === 0) {
             return res.status(404).json({
                 msg: 'Tender not found',
                 success: false,
             });
         }
-         // Parse tender details
-         let tenderDetails = {
+
+        // Parse tender details
+        let tenderDetails = {
             tender_title: tenderDetailsResult[0].tender_title,
             tender_slug: tenderDetailsResult[0].tender_slug,
             tender_desc: tenderDetailsResult[0].tender_desc,
@@ -58,32 +69,57 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             auction_type: tenderDetailsResult[0].auction_type,
             tender_id: tenderDetailsResult[0].tender_id,
             audi_key: tenderDetailsResult[0].audi_key,
+            access_position: tenderDetailsResult[0].access_position,
         };
-             //      Parse attachments
-             tenderDetails = {
-                ...tenderDetails, // Base tender details from the first row
-                tenderDocuments: tenderDetailsResult.map(row => ({
-                  doc_key: row.doc_key,
-                  tender_doc_id: row.tender_doc_id,
-                  doc_label: row.doc_label,
-                  doc_ext: row.doc_ext,
-                  doc_size: row.doc_size,
-                })).filter(doc => doc.doc_key) // Filter out any rows without documents
-              }
+        tenderDetails = {
+            ...tenderDetails, // Base tender details from the first row
+            tenderDocuments: tenderDetailsResult.map(row => ({
+              doc_key: row.doc_key,
+              tender_doc_id: row.tender_doc_id,
+              doc_label: row.doc_label,
+              doc_ext: row.doc_ext,
+              doc_size: row.doc_size,
+            })).filter(doc => doc.doc_key) // Filter out any rows without documents
+          }
 
 
+        // Fetch headers and identify those with type "edit"
         const headersQuery = `
             SELECT 
                 header_id, 
                 table_head, 
-                \`order\`
+                \`order\`,
+                type
             FROM tender_header
             WHERE tender_id = ?
             ORDER BY \`order\`
         `;
         const [headers] = await db.query(headersQuery, [tenderId]);
-        tenderDetails.headers = headers;
-        // Fetch subtenders and all possible rows, including empty ones
+
+        // Fetch the latest data for "edit" type headers from buyer_header_row_data
+        const editableHeaderIds = headers.filter(h => h.type === "edit").map(h => h.header_id);
+        let headerRowData = [];
+
+        if (editableHeaderIds.length > 0) {
+            const editableHeaderDataQuery = `
+                SELECT 
+                    DISTINCT header_id, 
+                    row_data, 
+                    row_number, 
+                    subtender_id
+                FROM buyer_header_row_data AS bhrd
+                JOIN (
+                    SELECT 
+                        MAX(row_data_id) AS latest_id
+                    FROM buyer_header_row_data
+                    WHERE header_id IN (?) AND buyer_id = ?
+                    GROUP BY header_id, row_number, subtender_id
+                ) AS latest ON bhrd.row_data_id = latest.latest_id
+            `;
+            [headerRowData] = await db.query(editableHeaderDataQuery, [editableHeaderIds, user_id]);
+        }
+
+        // Fetch subtenders and group rows
         const headersWithSubTendersQuery = `
             SELECT 
                 s.subtender_id,
@@ -101,7 +137,6 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         `;
         const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
 
-        // Parse subtenders and group rows by row_number
         const subTendersArray = [];
         const subTenderMap = new Map();
 
@@ -121,33 +156,37 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
 
             const subTender = subTenderMap.get(subTenderId);
 
-            // Ensure all rows, even empty ones, are included
             const rowGroup = subTender.rows[row.row_number - 1] || [];
             rowGroup[row.order - 1] = {
                 data: row.row_data || "", // Use empty string for missing data
                 type: row.type || "edit", // Default to editable for missing rows
             };
+
+            // Override data for editable headers if available
+            const matchingHeaderData = headerRowData.find(
+                d => d.header_id === row.header_id && d.row_number === row.row_number && d.subtender_id === row.subtender_id
+            );
+
+            if (matchingHeaderData) {
+                rowGroup[row.order - 1].data = matchingHeaderData.row_data;
+            }
+
             subTender.rows[row.row_number - 1] = rowGroup;
         });
 
+        tenderDetails.headers = headers;
         tenderDetails.sub_tenders = subTendersArray;
-           // Fetch selected buyers for private tenders
-        if (tenderDetails.accessType === 'private') {
-            const selectedBuyersQuery = `
-                SELECT buyer_id
-                FROM tender_access
-                WHERE tender_id = ?
-            `;
-            const [selectedBuyers] = await db.query(selectedBuyersQuery, [tenderId]);
-            tenderDetails.selected_buyers = selectedBuyers.map(buyer => buyer.buyer_id);
-        }
 
-        // Return the result
-        res.status(200).json({
-            msg: 'Tender details fetched successfully',
-            success: true,
-            data: tenderDetails,
-        });
+         // Calculate suggested prices
+         const suggestedPrices = await SuggestedPrice(tenderId,user_id)
+         tenderDetails.headers = headers;
+         tenderDetails.sub_tenders = subTendersArray;
+         tenderDetails.suggested_prices = suggestedPrices;
+         res.status(200).json({
+             msg: 'Tender details fetched successfully',
+             success: true,
+             data: tenderDetails,
+         });
     } catch (error) {
         console.error('Error fetching tender details:', error.message);
         res.status(500).json({

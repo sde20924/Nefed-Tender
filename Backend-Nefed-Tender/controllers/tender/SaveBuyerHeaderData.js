@@ -1,4 +1,7 @@
 const db = require("../../config/config");
+const { emitEvent } = require("../../socket/event/emit");
+const { userVerifyApi } = require("../../utils/external/api");
+const axios = require("axios");
 
 const saveBuyerHeaderRowData = async (req, res) => {
   const user_id = req.user.user_id; // User ID from authentication middleware
@@ -14,7 +17,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
   try {
     await db.query("START TRANSACTION");
 
-    // Save editable rows in buyer_header_row_data
+    // Save editable rows in buyer_header_row_dat
     for (const subTender of formdata) {
       const { id: subtender_id, rows } = subTender;
 
@@ -67,6 +70,46 @@ const saveBuyerHeaderRowData = async (req, res) => {
         bid_amount, // Bid amount
         status, // Status (default 'active')
       ]
+    );
+
+    const [rows] = await db.query(
+      `SELECT user_id FROM manage_tender WHERE tender_id = ?`,
+      [tender_id]
+    );
+
+    //buyer Details
+    const token = req.headers["authorization"];
+
+    const buyerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "buyer",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    emitEvent(
+      "New-Bid",
+      {
+        message: `New Bid Added By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
+        buyer_id: req.user.user_id,
+        company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
+        tender_id: tender_id,
+        bid_amount: bid_amount,
+        action_type: "New-Bid",
+      },
+      "seller",
+      rows[0]?.user_id
     );
 
     await db.query("COMMIT");
