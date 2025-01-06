@@ -988,7 +988,7 @@ const AccessBidRoom = () => {
                               >
                                 {cell.type === "edit" ? (
                                   <input
-                                    type="text"
+                                    type="number"
                                     value={cell.data ?? ""}
                                     onChange={(e) =>
                                       handleInputChangeTable(
