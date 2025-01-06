@@ -3,6 +3,7 @@ import { callApiGet, callApiPost } from "../../utils/FetchApi";
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import { toast } from "react-toastify";
+import {  FaEnvelope } from "react-icons/fa";
 import {
   FaFileAlt,
   FaUser,
@@ -62,7 +63,7 @@ const SubmittedApplications = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const [buyeruploadedFilesData, setBuyeruploadedFilesData] = useState();
+  const [buyersUploadedDoc, setBuyersUplodedDocs] = useState([]);
 
   // Function to safely access a string and handle undefined/null
   const safeString = (str) => (str ? str.toLowerCase() : "");
@@ -80,34 +81,23 @@ const SubmittedApplications = () => {
       )
     );
   });
-  // .map((application) => {
-  //   // Get the first uploaded file for the current application
-  //   const uploadedFile = buyeruploadedFilesData.find(
-  //     (file) =>
-  //       file.tender_id === application.tender_id &&
-  //       file.user_id === application.user_id
-  //   );
-
-  //   return {
-  //     ...application,
-  //     uploadedFile, // Save only the first matched file
-  //   };
-  // });
-
-  // console.log("---", uploadedFiles);
 
   useEffect(() => {
     const fetchSubmittedApplications = async () => {
       try {
         const data = await callApiGet("submitted-tender-applications");
-        const idd = data.data.tender_id;
-        const uploadedFilesData = await callApiGet(
-          `tender/${data.data[0].tender_id}/files-status`
-        );
-        setBuyeruploadedFilesData(uploadedFilesData.data);
+
+        // Set applications
         setApplications(data.data || []);
+
+        // Extract and flatten file_details from all applications
+        const uploadedDocs = data.data.flatMap((app) => app.file_details || []);
+        setBuyersUplodedDocs(uploadedDocs);
+
+        console.log("--- Buyers Uploaded Docs ---", uploadedDocs);
         setLoading(false);
       } catch (err) {
+        console.error("Error fetching applications:", err);
         setError(err.message);
         setLoading(false);
       }
@@ -115,7 +105,6 @@ const SubmittedApplications = () => {
 
     fetchSubmittedApplications();
   }, []);
-
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -182,18 +171,8 @@ const SubmittedApplications = () => {
         {/* Applications Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
           {filteredApplications.length > 0 ? (
-            filteredApplications.map((application,index) => {
-
+            filteredApplications.map((application, index) => {
               // Find the uploaded file for the current application
-              const uploadedFile = buyeruploadedFilesData.find(
-                (file) =>
-                  file.tender_id === application.tender_id &&
-                  file.user_id === application.user_id
-              );
-
-              // Log debug information
-              // console.log("Application:", application);
-              console.log("Uploaded File:", uploadedFile, index);
 
               return (
                 <div
@@ -201,7 +180,7 @@ const SubmittedApplications = () => {
                   className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between"
                 >
                   {/* Header */}
-                  <div className="flex justify-between items-center mb-4">
+                  <div className="flex justify-between items-start mb-4">
                     <h2 className="text-lg font-bold text-gray-900 truncate">
                       {application.tender_title || "Unnamed Tender"}
                     </h2>
@@ -220,6 +199,7 @@ const SubmittedApplications = () => {
 
                   {/* Buyer Details */}
                   <div className="space-y-2 text-sm">
+                    {/* Buyer Details */}
                     <div className="flex items-center space-x-2">
                       <FaUser className="text-indigo-500 w-5 h-5" />
                       <span className="text-gray-800 truncate">
@@ -235,26 +215,45 @@ const SubmittedApplications = () => {
                         {application.buyer_details?.company_name || "N/A"}
                       </span>
                     </div>
-                  </div>
+                    <div className="flex items-center space-x-2">
+                      <FaEnvelope className="text-red-500 w-5 h-5" />
+                      <span className="text-gray-800 truncate">
+                        <span className="font-semibold">Email:</span>{" "}
+                        {application.buyer_details?.email || "N/A"}
+                      </span>
+                    </div>
 
-                  {/* Uploaded File */}
-                  <div className="mt-3">
-                    {uploadedFile ? (
-                      <button
-                        onClick={() =>
-                          window.open(uploadedFile.doc_url, "_blank")
-                        }
-                        className="flex items-center justify-center bg-blue-100 text-blue-800 px-4 py-2 rounded-md text-sm hover:bg-blue-200 transition-all shadow-md"
-                      >
-                        <FaFileAlt className="mr-2 w-5 h-5" />
-                        View File
-                      </button>
-                    ) : (
-                      <div className="w-full flex items-center justify-center bg-gray-100 text-gray-700 px-4 py-2 rounded-lg text-sm shadow">
-                        <FaFileAlt className="mr-2 w-5 h-5" />
-                        No File Uploaded
-                      </div>
-                    )}
+                    {/* Uploaded Files */}
+                    <div className="mt-4">
+                      <h4 className="font-semibold text-gray-800">
+                        Uploaded Files:
+                      </h4>
+                      <ul className="space-y-2">
+                        {application.file_details?.length > 0 ? (
+                          application.file_details.map((file) => (
+                            <li
+                              key={file.tender_user_doc_id}
+                              className="flex items-center space-x-2"
+                            >
+                              <FaFileAlt className="text-blue-500 w-5 h-5" />
+                              <a
+                                href={file.doc_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-indigo-600 underline truncate"
+                              >
+                                {`Document ${file.tender_user_doc_id}`}
+                              </a>
+                              <span className="text-gray-600 text-xs">
+                                ({file.application_status || "Unknown Status"})
+                              </span>
+                            </li>
+                          ))
+                        ) : (
+                          <li className="text-gray-500">No files uploaded</li>
+                        )}
+                      </ul>
+                    </div>
                   </div>
 
                   {/* Action Buttons */}
