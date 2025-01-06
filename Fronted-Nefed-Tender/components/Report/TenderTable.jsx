@@ -39,6 +39,7 @@ const TenderTable = ({ data }) => {
       </tr>
     );
   };
+
   const renderBuyerSpecificHeaders = () => {
     return (
       <tr>
@@ -55,43 +56,79 @@ const TenderTable = ({ data }) => {
       </tr>
     );
   };
+
   const renderRows = (subTenderId, rows) => {
-    return rows.map((row, rowIndex) => (
-      <tr
-        key={rowIndex}
-        className={`${rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}
-      >
-        {row.map(
-          (cell, cellIndex) =>
-            cell?.type === "view" && (
-              <td
-                key={cellIndex}
-                className="px-4 py-2 border border-gray-300 text-center"
-              >
-                {cell?.row_data || "-"}
-              </td>
-            )
-        )}
-        {Object.values(groupedHeadersByBuyers).map((buyerGroup) =>
-          buyerGroup.headers.map((header) => {
-            const buyerSubTender = buyersData[buyerGroup.buyer_id]?.[subTenderId];
-            const buyerRow = buyerSubTender?.rows[rowIndex] || [];
-            const matchingCell = buyerRow.find(
-              (cell) => cell?.header_id === header.header_id
-            );
-            return (
-              <td
-                key={`${rowIndex}-${header.header_id}-${buyerGroup.buyer_id}`}
-                className="px-4 py-2 border border-gray-300 text-center"
-              >
-                {matchingCell?.row_data || "-"}
-              </td>
-            );
-          })
-        )}
-      </tr>
-    ));
+    return rows.map((row, rowIndex) => {
+      // Collect all buyer-specific values for the row
+      const buyerValues = Object.values(groupedHeadersByBuyers).map((buyerGroup) => {
+        return buyerGroup.headers.map((header) => {
+          const buyerSubTender = buyersData[buyerGroup.buyer_id]?.[subTenderId];
+          const buyerRow = buyerSubTender?.rows[rowIndex] || [];
+          const matchingCell = buyerRow.find(
+            (cell) => cell?.header_id === header.header_id
+          );
+          return {
+            buyerId: buyerGroup.buyer_id,
+            headerId: header.header_id,
+            value: parseFloat(matchingCell?.row_data) || Infinity,
+          };
+        });
+      });
+
+      // Flatten and find the minimum value
+      const flatBuyerValues = buyerValues.flat();
+      const minValues = flatBuyerValues.reduce((acc, cell) => {
+        if (!acc[cell.headerId] || cell.value < acc[cell.headerId].value) {
+          acc[cell.headerId] = cell;
+        }
+        return acc;
+      }, {});
+
+      return (
+        <tr
+          key={rowIndex}
+          className={`${rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}
+        >
+          {row.map(
+            (cell, cellIndex) =>
+              cell?.type === "view" && (
+                <td
+                  key={cellIndex}
+                  className="px-4 py-2 border border-gray-300 text-center"
+                >
+                  {cell?.row_data || "-"}
+                </td>
+              )
+          )}
+          {Object.values(groupedHeadersByBuyers).map((buyerGroup) =>
+            buyerGroup.headers.map((header) => {
+              const buyerSubTender = buyersData[buyerGroup.buyer_id]?.[subTenderId];
+              const buyerRow = buyerSubTender?.rows[rowIndex] || [];
+              const matchingCell = buyerRow.find(
+                (cell) => cell?.header_id === header.header_id
+              );
+              const isLowest =
+                minValues[header.header_id]?.buyerId === buyerGroup.buyer_id &&
+                minValues[header.header_id]?.value ===
+                  parseFloat(matchingCell?.row_data);
+
+              return (
+                <td
+                  key={`${rowIndex}-${header.header_id}-${buyerGroup.buyer_id}`}
+                  className={`px-4 py-2 border border-gray-300 text-center ${
+                    isLowest ? "bg-green-200 font-bold" : ""
+                  }`}
+                >
+                  {matchingCell?.row_data || "-"}
+                </td>
+              );
+            })
+          )}
+        </tr>
+      );
+    });
   };
+
   return (
     <div className="p-6 bg-gray-100 min-h-screen">
       <h1 className="text-2xl font-bold mb-6">

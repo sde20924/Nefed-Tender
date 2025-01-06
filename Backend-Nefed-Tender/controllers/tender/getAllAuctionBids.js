@@ -7,7 +7,9 @@ const getAllAuctionBids = async (req, res) => {
     const { tender_id } = req.params;
 
     if (!tender_id) {
-      return res.status(400).json({ success: false, message: "Tender ID is required." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Tender ID is required." });
     }
 
     // Fetch headers
@@ -111,7 +113,9 @@ const getAllAuctionBids = async (req, res) => {
         if (!existingEntry) {
           headersChangedByBuyers.push({
             header_id: buyer_header_id,
-            header_name: headers.find((header) => header.header_id === buyer_header_id)?.table_head || "",
+            header_name:
+              headers.find((header) => header.header_id === buyer_header_id)
+                ?.table_head || "",
             buyer_id: buyer_id,
             buyer_name: `Buyer ${buyer_id}`, // Placeholder, replace with actual buyer name if available
           });
@@ -190,7 +194,7 @@ const getAllAuctionBids = async (req, res) => {
       (header) => !buyerSpecificHeaders.has(header.header_id)
     );
 
-    // Fetch bids and user details
+    // **Modified Bids Query to Fetch Latest Bid per User**
     const bidsQuery = `
       SELECT 
           tbr.bid_id,
@@ -207,14 +211,14 @@ const getAllAuctionBids = async (req, res) => {
       INNER JOIN (
           SELECT 
               user_id, 
-              MIN(bid_amount) AS lowest_bid_amount
+              MAX(created_at) AS latest_created_at
           FROM 
               tender_bid_room
           WHERE 
               tender_id = ?
           GROUP BY 
               user_id
-      ) lb ON tbr.user_id = lb.user_id AND tbr.bid_amount = lb.lowest_bid_amount
+      ) lb ON tbr.user_id = lb.user_id AND tbr.created_at = lb.latest_created_at
       INNER JOIN 
           manage_tender mt ON tbr.tender_id = mt.tender_id
       WHERE 
@@ -224,7 +228,8 @@ const getAllAuctionBids = async (req, res) => {
 
     const userIds = bids.map((bid) => bid.user_id);
     const externalApiPayload = {
-      required_keys: "first_name,last_name,gst_number,user_id,email,phone_number,company_name",
+      required_keys:
+        "first_name,last_name,gst_number,user_id,email,phone_number,company_name",
       user_ids: userIds.map((user_id) => ({ type: "buyer", user_id })),
     };
     const token = req.headers["authorization"];
@@ -242,7 +247,9 @@ const getAllAuctionBids = async (req, res) => {
 
     const userDetails = externalApiResponse.data;
     const allBidsWithUserDetails = bids.map((bid) => {
-      const userDetail = userDetails.data.find((user) => user.user_id === bid.user_id);
+      const userDetail = userDetails.data.find(
+        (user) => user.user_id === bid.user_id
+      );
       return {
         ...bid,
         user_details: userDetail || {}, // Attach user details if available
@@ -250,11 +257,14 @@ const getAllAuctionBids = async (req, res) => {
     });
 
     Object.values(groupedHeadersByBuyers).forEach((header) => {
-      const userDetail = userDetails.data.find((user) => user.user_id === header.buyer_id);
+      const userDetail = userDetails.data.find(
+        (user) => user.user_id === header.buyer_id
+      );
       if (userDetail) {
         header.buyer_name = `${userDetail.first_name} ${userDetail.last_name}`;
       }
     });
+
     // Success response
     res.status(200).json({
       success: true,
@@ -271,7 +281,9 @@ const getAllAuctionBids = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching bids:", error);
-    res.status(500).json({ success: false, message: "Server error. Please try again later." });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error. Please try again later." });
   }
 };
 
