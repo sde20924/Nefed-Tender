@@ -11,7 +11,6 @@ const getAllAuctionBids = async (req, res) => {
         .status(400)
         .json({ success: false, message: "Tender ID is required." });
     }
-
     // Fetch headers
     const headersQuery = `
       SELECT 
@@ -23,6 +22,7 @@ const getAllAuctionBids = async (req, res) => {
       ORDER BY \`order\`
     `;
     const [headers] = await db.query(headersQuery, [tender_id]);
+    console.log("-=-=-=-=-=yha aa tk aa rha h")
 
     // Fetch subtenders and rows (including buyer and seller data)
     const subtendersQuery = `
@@ -212,8 +212,8 @@ console.log("-=-=-=-=-=-=subtenderResults",subtenderResults)
           tbr.status AS bid_status,
           tbr.created_at,
           mt.auct_start_time,
-          mt.auct_end_time,
-          mt.emd_amt
+          mt.auct_end_time
+ 
       FROM 
           tender_bid_room tbr 
       INNER JOIN (

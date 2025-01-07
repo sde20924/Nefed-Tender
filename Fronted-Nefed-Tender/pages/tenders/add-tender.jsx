@@ -373,7 +373,7 @@ const AddTender = () => {
       accessPosition: accessPosition,
       ShowItems:ShowItems,
       formula: generatedFormula,
-      selectedCategory:selectedCategory
+      category:selectedCategory
     };
 
     try {
@@ -389,8 +389,11 @@ const AddTender = () => {
 
       }
       const response = await callApiPost("create_new_tender", formData);
-      console.log("Response:", response);
-      toast.success("Tender Created Sucessfully");
+      if(response.status===201){
+
+        console.log("Response:", response);
+        toast.success("Tender Created Sucessfully");
+      }
 
     } catch (error) {
       console.error("Error submitting form:", error);
