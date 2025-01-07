@@ -91,7 +91,7 @@ const NotificationDropdown = () => {
         ref={popoverDropdownRef}
         className={
           (dropdownPopoverShow ? "block " : "hidden ") +
-          "bg-white text-base z-50 float-left py-2 list-none text-left rounded shadow-lg min-w-48 w-[250px] text-center  max-h-60 overflow-y-auto"
+          "bg-white text-base z-50 float-left py-2 list-none text-left rounded shadow-lg min-w-48 w-[250px]   max-h-60 overflow-y-auto"
         }
         style={{
           scrollbarWidth: "thin",
@@ -112,7 +112,7 @@ const NotificationDropdown = () => {
           return (
             <div
               key={index}
-              className="block px-2 py-4 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200 cursor-pointer flex  items-center"
+              className="block px-2 py-4 text-sm text-gray-700 hover:bg-gray-100 border-b border-gray-200 cursor-pointer flex text-left items-center"
               onClick={() =>
                 notificationClick(index, notify?.route || "/dashboard")
               }

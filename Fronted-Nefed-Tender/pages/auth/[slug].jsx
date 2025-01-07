@@ -5,7 +5,6 @@ import * as Yup from "yup";
 import Auth from "@/layouts/Auth";
 import { useRouter } from "next/router";
 import { authApi } from "@/utils/FetchApi";
-Auth;
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { setSocket } from "@/store/slices/socketSlice";

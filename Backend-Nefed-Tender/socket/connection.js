@@ -3,7 +3,7 @@ const { authSocketMiddleware, getConnectedUsers } = require("./authenticate");
 const path = require("path");
 
 let io;
-// origin: ["http://localhost:3000"],
+
 const initializeSocket = (server) => {
   io = socketIO(server, {
     path: "/socket.io",
