@@ -68,7 +68,7 @@ const ExploreTender = () => {
   };
 
   // Update time left for a specific tender
-  const updateTenderTimeLeft = (tenderId, auctEndTime) => {   
+  const updateTenderTimeLeft = (tenderId, auctEndTime) => {
     const newTimeLeft = calculateTimeLeft(tenderId, auctEndTime);
 
     // Update the time left state without removing the tender card
@@ -89,21 +89,45 @@ const ExploreTender = () => {
         subTitle={"Available tenders, set visibility etc."}
         title={"Available tenders"}
       />
-      <div className="container mx-auto p-4">
-        <h1 className="text-2xl font-bold mb-4 text-lightBlue-500">
-          Active Tenders
-        </h1>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="container mx-auto p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {tenders?.map((tender) => (
             <div
               key={tender.tender_id}
-              className="bg-white p-4 rounded-lg shadow-md max-w-sm mb-8"
+              className="bg-white p-6 rounded-2xl shadow-lg hover:shadow-xl transition-all border border-gray-200 flex flex-col justify-between"
             >
-              <h2 className="text-xl font-semibold mb-4">
-                {tender.tender_title}
-              </h2>
-              <p className="text-sm text-gray-500 flex items-center mt-2 mb-6">
-                <i className="far fa-calendar-alt mr-2"></i>
+              {/* Header Section */}
+              <div className="flex justify-between items-start mb-4">
+                <h2 className="text-lg font-bold text-gray-800 leading-snug">
+                  {tender.tender_title}
+                </h2>
+                <div className="flex items-center space-x-2 bg-red-100 text-red-600 text-sm px-3 py-1 rounded-full">
+                  <i className="fas fa-clock"></i>
+                  <span>Closing At</span>
+                  <span className="font-bold">
+                    {timeLeft[tender.tender_id] || "00:00:00"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Description */}
+              {tender.tender_desc ? (
+                <p
+                  className="text-gray-600 mb-4 leading-relaxed"
+                  dangerouslySetInnerHTML={{
+                    __html:
+                      tender.tender_desc.length > 150
+                        ? tender.tender_desc.slice(0, 150) + "..."
+                        : tender.tender_desc,
+                  }}
+                ></p>
+              ) : (
+                <p className="text-gray-500 mb-4">No description available.</p>
+              )}
+
+              {/* Auction Timing */}
+              <p className="text-sm text-gray-500 flex items-center mb-1">
+                <i className="far fa-calendar-alt text-blue-500 mr-2"></i>
                 Open Till:{" "}
                 {new Date(tender.app_end_time * 1000).toLocaleString("en-GB", {
                   year: "numeric",
@@ -114,19 +138,23 @@ const ExploreTender = () => {
                   hour12: true,
                 })}
               </p>
-              <div className="bg-yellow-100 rounded-lg p-2 mt-2 flex items-center justify-between mb-4">
-                <i className="fas fa-clock text-yellow-400 mr-2"></i>
-                <span className="text-sm font-medium">Closing At</span>
-                <span className="font-bold">
-                  {timeLeft[tender.tender_id] || "00:00:00"}
-                </span>
+              <div className="flex justify-between items-center mt-4">
+                <h3 className="text-sm font-medium text-gray-700">
+                  Starting Price:{" "}
+                  <span className="text-blue-600 font-bold">
+                    {tender.start_price}
+                  </span>
+                </h3>
+
+                {/* Apply Now Button */}
+
+                <button
+                  onClick={() => handleApplyNow(tender.tender_id)}
+                  className="px-5 py-2 rounded-lg text-sm font-semibold shadow-md transition-all bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                >
+                  Apply Now
+                </button>
               </div>
-              <button
-                onClick={() => handleApplyNow(tender.tender_id)}
-                className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg mt-4 w-full"
-              >
-                Apply Now
-              </button>
             </div>
           ))}
         </div>

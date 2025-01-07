@@ -201,8 +201,8 @@ const EditTenderForm = () => {
       tender_cat: "testing", // Default to 'testing' if not applicable
       tender_opt: tenderData.isPublished, // Tender option, e.g., publish status
       emd_amt: tenderData.emdAmount, // EMD Amount
-      emt_lvl_amt: tenderData.emdLevelAmount, // EMD Level Amount
-      attachments: tenderData.attachments, // Attachments if needed
+      // emt_lvl_amt: tenderData.emdLevelAmount, // EMD Level Amount
+      // attachments: tenderData.attachments, // Attachments if needed
       custom_form: JSON.stringify(tenderData.customForm), // Stringify custom form fields if needed
       currency: tenderData.currency, // Currency type
       start_price: tenderData.startingPrice, // Starting price for the tender

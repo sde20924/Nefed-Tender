@@ -64,10 +64,13 @@ const Attachments = ({ attachments, handleAddAttachment, handleRemoveAttachment,
                 <option value="" disabled>
                   Select Extension
                 </option>
-                <option value="jpg">
-                  image/png,image/jpg,image/jpeg
+                <option value="png">
+                  PNG
                 </option>
-                <option value="png">application/pdf</option>
+                <option value="jpeg">
+                  JPEG
+                </option>
+                <option value="pdf">PDF</option>
               </select>
             </div>
 

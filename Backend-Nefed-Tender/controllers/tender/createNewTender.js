@@ -13,8 +13,6 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     tender_desc,
     tender_cat = "testing",
     tender_opt,
-    emd_amt,
-    emt_lvl_amt,
     attachments,
     custom_form,
     currency,
@@ -44,13 +42,16 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     accessPosition,
     formula,
     save_as,
+    ShowItems
+, 
+    category
   } = req.body;
   console.log("+++++++++++++++++------", req.body);
   // Validation to ensure required fields are provided
   const missingFields = [];
   if (!tender_title) missingFields.push("tender_title");
-  if (!emd_amt) missingFields.push("emd_amt");
-  if (!emt_lvl_amt) missingFields.push("emt_lvl_amt");
+  // if (!emd_amt) missingFields.push("emd_amt");
+  // if (!emt_lvl_amt) missingFields.push("emt_lvl_amt");
   if (!currency) missingFields.push("currency");
   // if (!dest_port) missingFields.push("dest_port");
   // if (!bag_size) missingFields.push("bag_size");
@@ -89,14 +90,13 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     const [newTender] = await db.query(
       `INSERT INTO manage_tender (
         user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt,
-        emd_amt, emt_lvl_amt, custom_form, currency, start_price, dest_port,
+        custom_form, currency, start_price, dest_port,
         bag_size, bag_type, app_start_time, app_end_time,
         auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
         aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
         qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key, user_access, access_position,cal_formula,save_as
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?,?,?)`,
-
+        tender_id, audi_key, user_access, access_position, cal_formula, save_as, show_items, category
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         user_id,
         tender_title,
@@ -104,8 +104,6 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         tender_desc,
         tender_cat,
         tender_opt,
-        emd_amt,
-        emt_lvl_amt,
         JSON.stringify(parsedCustomForm),
         currency,
         start_price,
@@ -130,10 +128,13 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         audi_key,
         accessType,
         accessPosition,
-        formula, // Insert `accessPosition` value
-        save_as, // Insert `accessPosition` value
+        formula,
+        save_as,
+        ShowItems,
+        category,
       ]
     );
+    
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
       const { key, label, extension, maxFileSize } = attachment;

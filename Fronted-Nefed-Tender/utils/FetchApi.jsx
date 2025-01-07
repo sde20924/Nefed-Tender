@@ -9,7 +9,7 @@ const callApiBase = async ({
   method = "GET",
   body,
   headers = {},
-  baseUrl = BASE_URL_LOCAL,
+  baseUrl = "http://localhost:8002/",
 }) => {
   try {
     const options = {

@@ -108,7 +108,7 @@ const AuctionBids = () => {
                 </tr>
               </thead>
               <tbody>
-                {!loadingBids && bids.length === 0 && (
+                {!loadingBids && (
                   <tr>
                     <td colSpan="11" className="text-center py-4 text-gray-500">
                       No data record found.{" "}
