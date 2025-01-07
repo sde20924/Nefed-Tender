@@ -3,7 +3,7 @@ import { callApiGet, callApiPost } from "../../utils/FetchApi";
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import { toast } from "react-toastify";
-import {  FaEnvelope } from "react-icons/fa";
+import { FaEnvelope } from "react-icons/fa";
 import {
   FaFileAlt,
   FaUser,
@@ -11,6 +11,7 @@ import {
   FaCheck,
   FaTimes,
 } from "react-icons/fa";
+import TenderCategories from "@/components/add-tander/TenderCategories";
 
 const Modal = ({ isOpen, onClose, onSubmit }) => {
   const [reason, setReason] = useState("");
@@ -64,6 +65,8 @@ const SubmittedApplications = () => {
   const [selectedApplicationId, setSelectedApplicationId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [buyersUploadedDoc, setBuyersUplodedDocs] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // Function to safely access a string and handle undefined/null
   const safeString = (str) => (str ? str.toLowerCase() : "");
@@ -89,12 +92,6 @@ const SubmittedApplications = () => {
 
         // Set applications
         setApplications(data.data || []);
-
-        // Extract and flatten file_details from all applications
-        const uploadedDocs = data.data.flatMap((app) => app.file_details || []);
-        setBuyersUplodedDocs(uploadedDocs);
-
-        console.log("--- Buyers Uploaded Docs ---", uploadedDocs);
         setLoading(false);
       } catch (err) {
         console.error("Error fetching applications:", err);
@@ -105,6 +102,8 @@ const SubmittedApplications = () => {
 
     fetchSubmittedApplications();
   }, []);
+  console.log("---",selectedCategory);
+  
 
   if (loading) return <p>Loading...</p>;
   if (error) return <p>Error: {error}</p>;
@@ -159,6 +158,12 @@ const SubmittedApplications = () => {
       <div className="container mx-auto p-4">
         {/* Section Header */}
         <div className="mb-6 flex flex-col md:flex-row justify-between items-center">
+          <TenderCategories
+            categories={categories}
+            setCategories={setCategories}
+            selectedCategory={selectedCategory}
+            setSelectedCategory={setSelectedCategory}
+          />
           <input
             type="text"
             placeholder="Search by Tender Name, Buyer Name, or Company"
@@ -177,7 +182,7 @@ const SubmittedApplications = () => {
               return (
                 <div
                   key={application.tender_application_id}
-                  className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between"
+                  className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col "
                 >
                   {/* Header */}
                   <div className="flex justify-between items-start mb-4">
