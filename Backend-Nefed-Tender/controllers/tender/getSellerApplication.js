@@ -47,6 +47,20 @@ const getSubmittedTenderApplications = async (req, res) => {
         });
     }
 
+    // Fetch file details for each tender and map them
+    const fileDetailsMap = new Map();
+
+    for (const tenderId of tenderIds) {
+      const fileDetailsQuery = `
+        SELECT tud.*, ta.status AS application_status
+        FROM tender_user_doc tud
+        LEFT JOIN tender_application ta ON tud.tender_id = ta.tender_id
+        WHERE tud.tender_id = ?;
+      `;
+      const [fileDetails] = await db.execute(fileDetailsQuery, [tenderId]);
+      fileDetailsMap.set(tenderId, fileDetails || []);
+    }
+
     // Prepare user IDs for external API payload
     const userIds = [
       ...new Set(applicationsResult.map((application) => application.user_id)),
@@ -54,7 +68,7 @@ const getSubmittedTenderApplications = async (req, res) => {
     console.log("User IDs for external API:", userIds);
 
     const externalApiPayload = {
-      required_keys: "first_name,last_name,company_name,user_id",
+      required_keys: "first_name,last_name,company_name,user_id, email",
       user_ids: userIds.map((user_id) => ({
         type: "buyer",
         user_id,
@@ -89,15 +103,18 @@ const getSubmittedTenderApplications = async (req, res) => {
       externalApiResponse.data.data.map((buyer) => [buyer.user_id, buyer])
     );
 
-    // Add respective buyer details to each application in applicationsResult
+    // Add respective buyer details and file details to each application
     applicationsResult.forEach((application) => {
       application.buyer_details =
         buyerDetailsMap.get(application.user_id) || null;
+      application.file_details =
+        fileDetailsMap.get(application.tender_id) || [];
     });
+
     applicationsResult.sort((a, b) => {
       const dateA = new Date(a.submitted_at || 0); // Default to 0 if `submitted_at` is missing
       const dateB = new Date(b.submitted_at || 0);
-      return  dateA -dateB; // Sort in descending order (latest submission first)
+      return dateA - dateB; // Sort in descending order (latest submission first)
     });
 
     // Return the result
@@ -118,6 +135,7 @@ const getSubmittedTenderApplications = async (req, res) => {
     });
   }
 };
+
 
 module.exports = {
   getSubmittedTenderApplications,

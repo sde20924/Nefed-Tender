@@ -35,13 +35,13 @@ const MyTender = () => {
       try {
         const tendersData = await Promise.all(
           applications.map(async (application) => {
-            console.log("+__+_+_+_+",application)
+            console.log("+__+_+_+_+", application);
             const tenderData = await callApiGet(
               `tender/${application.tender_id}`
             );
-            console.log("----------",application.tender_id);
-            console.log("------",tenderData);
-            
+            console.log("----------", application);
+            console.log("------", tenderData);
+
             calculateTimeLeft(
               tenderData.data.auct_start_time,
               tenderData.data.auct_end_time,
@@ -142,29 +142,8 @@ const MyTender = () => {
         title={"My tenders"}
       />
 
-      <div className="container mx-auto p-4">
-        {/* Navigation tabs */}
-        <div className="mb-6 flex space-x-4 border-b">
-          <button
-            className={`pb-2 text-lg ${
-              activeTab === "active" ? "border-blue-500 border-b-2 text-blue-500" : "text-gray-500"
-            }`}
-            onClick={() => setActiveTab("active")}
-          >
-            Active Auctions
-          </button>
-          <button
-            className={`pb-2 text-lg ${
-              activeTab === "expired" ? "border-blue-500 border-b-2 text-blue-500" : "text-gray-500"
-            }`}
-            onClick={() => setActiveTab("expired")}
-          >
-            Expired Auctions
-          </button>
-        </div>
-
-        {/* Tender Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="container mx-auto p-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredApplications?.length > 0 ? (
             filteredApplications.map((application) => {
               const tender = tenderDetails[application.tender_id];
@@ -173,46 +152,93 @@ const MyTender = () => {
               return (
                 <div
                   key={application.tender_application_id}
-                  className="bg-white shadow-md rounded-lg p-6 mb-4 border border-gray-200"
+                  className="bg-white shadow-lg rounded-2xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                 >
                   {tender && (
-                    <>
-                      <h2 className="text-lg font-semibold mb-2">
-                        {tender.tender_title}
-                      </h2>
-                      <div className="flex items-center text-gray-500 mb-2">
-                        <i className="fas fa-calendar-alt mr-2"></i>
-                        <span className="whitespace-nowrap">
-                          {new Date(tender.auct_start_time * 1000).toLocaleString()} -{" "}
-                          {new Date(tender.auct_end_time * 1000).toLocaleString()}
+                    <div className="relative">
+                      {/* Title and Timer */}
+                      <div className="flex justify-between items-center mb-4">
+                        <h2 className="text-xl font-semibold text-gray-800 leading-tight">
+                          {tender.tender_title}
+                        </h2>
+                        {timeInfo?.label !== "Expired" && (
+                          <div
+                            className={`flex items-center text-xs px-3 py-1 rounded-full font-medium ${
+                              timeInfo.label === "Starting At"
+                                ? "bg-green-100 text-green-600"
+                                : "bg-red-100 text-red-600"
+                            }`}
+                          >
+                            <i
+                              className={`fas fa-clock mr-2 ${
+                                timeInfo.label === "Starting At"
+                                  ? "text-green-500"
+                                  : "text-red-500"
+                              }`}
+                            ></i>
+                            <span>{timeInfo.label}</span>
+                            <span className="font-bold ml-1">
+                              {timeInfo.time}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Description */}
+                      {tender.tender_desc ? (
+                        <p
+                          className="text-gray-600 mb-4 leading-relaxed"
+                          dangerouslySetInnerHTML={{
+                            __html:
+                              tender.tender_desc.length > 150
+                                ? tender.tender_desc.slice(0, 150) + "..."
+                                : tender.tender_desc,
+                          }}
+                        ></p>
+                      ) : (
+                        <p className="text-gray-500 mb-4">
+                          No description available.
+                        </p>
+                      )}
+
+                      {/* Auction Timing */}
+                      <div className="flex items-center text-sm text-gray-500 ">
+                        <i className="fas fa-calendar-alt text-blue-500 mr-2"></i>
+                        <span>
+                          {new Date(
+                            tender.auct_start_time * 1000
+                          ).toLocaleString()}{" "}
+                          -{" "}
+                          {new Date(
+                            tender.auct_end_time * 1000
+                          ).toLocaleString()}
                         </span>
                       </div>
-                      <div className="flex items-center text-gray-500 mb-2">
-                        <i className="fas fa-box mr-2"></i>
-                        <span>{tender.qty} Qty</span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-2">Round 1</p>
-
-                      {/* Countdown Timer - only show if the auction is not expired */}
-                      {timeInfo?.label !== "Expired" && (
-                        <div className="bg-red-100 border border-red-300 text-red-700 p-2 rounded-lg mb-4 flex justify-between items-center">
-                          <span className="flex items-center">
-                            <i className="fas fa-clock mr-2"></i>
-                            {timeInfo ? timeInfo.label : "Starting At"}
-                          </span>
-                          <span className="font-bold text-lg">
-                            {timeInfo ? timeInfo.time : "Expired"}
-                          </span>
-                        </div>
-                      )}
-                    </>
+                    </div>
                   )}
 
-                  {/* Access Bid Room Button */}
-                  <div className="flex justify-center mt-4">
+                  {/* Footer Section */}
+                  <div className="flex justify-between items-center mt-4">
+                    {/* Starting Price */}
+                    <h3 className="text-sm font-medium text-gray-700">
+                      Starting Price:{" "}
+                      <span className="text-blue-600 font-bold">
+                        {tender.start_price}
+                      </span>
+                    </h3>
+
+                    {/* Access Bid Room Button */}
                     <button
-                      onClick={() => handleViewDetails(application.tender_id)}
-                      className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600"
+                      onClick={() =>
+                        timeInfo.label !== "Starting At" &&
+                        handleViewDetails(application.tender_id)
+                      }
+                      disabled={timeInfo.label === "Starting At"}
+                      className={`px-5 py-2 rounded-lg text-sm font-semibold shadow-md transition-all ${
+                        timeInfo.label === "Starting At"
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                      }`}
                     >
                       Access Bid Room
                     </button>
@@ -221,7 +247,7 @@ const MyTender = () => {
               );
             })
           ) : (
-            <p className="text-gray-500">
+            <p className="text-gray-500 text-center col-span-full">
               {activeTab === "active"
                 ? "No active auctions found."
                 : "No expired auctions found."}
