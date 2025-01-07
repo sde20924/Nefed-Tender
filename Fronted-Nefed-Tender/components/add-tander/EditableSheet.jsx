@@ -93,7 +93,7 @@ export default function EditableSheet({
           h.header === header ? { ...h, sortform: nextIdentifier } : h
         )
       );
-      console.log("dloffdkfkfdk+_+_",header)
+      console.log("dloffdkfkfdk+_+_", header);
     } else {
       console.warn("No more identifiers available for headers.");
     }
@@ -918,7 +918,7 @@ export default function EditableSheet({
             <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
               <thead className="bg-blue-100 text-gray-700">
                 <tr>
-                  {headers.map(({ header, type }, index) => (
+                  {headers.map(({ header,type }, index) => (
                     <th
                       key={index}
                       className="border border-gray-300 px-4 py-2 font-bold"
@@ -937,35 +937,41 @@ export default function EditableSheet({
                     key={rowIndex}
                     className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
                   >
-                    {row.map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
-                        contentEditable
-                        suppressContentEditableWarning
-                        style={{
-                          wordWrap: "break-word", // Ensure text wrapping
-                          whiteSpace: "pre-wrap", // Preserve spaces and wrap text
-                        }}
-                        onBlur={(e) =>
-                          handleCellEdit(
-                            subTender.id,
-                            rowIndex,
-                            cellIndex,
-                            e.target.innerText
-                          )
-                        }
-                      >
-                        {cell}
-                      </td>
-                    ))}
+                    {row.map((cell, cellIndex) => {
+                      const isEditable = headers[cellIndex]?.type === "view"; 
+                      return (
+                        <td
+                          key={cellIndex}
+                          className="border border-gray-300 px-4 py-2 break-words max-w-[200px] lg:max-w-[450px]"
+                          contentEditable={isEditable} 
+                          suppressContentEditableWarning
+                          style={{
+                            wordWrap: "break-word",
+                            whiteSpace: "pre-wrap",
+                            backgroundColor: isEditable ? "white" : "#f9f9f9", // Highlight editable cells
+                          }}
+                          onBlur={(e) => {
+                            if (isEditable) {
+                              handleCellEdit(
+                                subTender.id,
+                                rowIndex,
+                                cellIndex,
+                                e.target.innerText
+                              );
+                            }
+                          }}
+                        >
+                          {cell}
+                        </td>
+                      );
+                    })}
                     <td className="text-center align-middle border border-gray-300 px-4 py-2">
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(subTender.id, rowIndex)}
                         className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center m-auto items-center space-x-1 transition-all duration-200"
                       >
-                        <FaTrash className="w-4 h-4 " />
+                        <FaTrash className="w-4 h-4" />
                       </button>
                       {showDeleteModal && (
                         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
@@ -1014,7 +1020,9 @@ export default function EditableSheet({
           <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl relative">
             {/* Header Section */}
             <div className="w-full bg-blue-500 text-white text-center py-4 rounded-t-lg">
-              <h2 className="text-lg font-bold">Select the columns for buyers where input is required</h2>
+              <h2 className="text-lg font-bold">
+                Select the columns for buyers where input is required
+              </h2>
             </div>
 
             {/* Content Section */}
@@ -1087,9 +1095,7 @@ export default function EditableSheet({
         </div>
       ) : (
         <div className="container mx-auto p-6 gap-6">
-          {/* Combined Section for Upload and Create Excel */}
           <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
-            {/* Left Section - Upload Excel */}
             <div className="w-full md:w-[48%] p-8 rounded-lg bg-white shadow-xl transform transition-all duration-300 ease-in-out hover:scale-105">
               <p className="text-lg text-blue-700 font-semibold mb-2">
                 Upload your Excel sheet
@@ -1134,8 +1140,6 @@ export default function EditableSheet({
           </div>
         </div>
       )}
-
-      {/* ToastContainer for notifications */}
     </div>
   );
 }

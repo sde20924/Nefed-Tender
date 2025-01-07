@@ -389,6 +389,7 @@ const AddTender = () => {
 
       }
       const response = await callApiPost("create_new_tender", formData);
+      console.log("{}{}{}{}{}}}{}",response.status)
       if(response.status===201){
 
         console.log("Response:", response);
