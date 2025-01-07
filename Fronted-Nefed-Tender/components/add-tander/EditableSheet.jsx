@@ -77,6 +77,7 @@ export default function EditableSheet({
   };
   //Formule
   const identifierSequence = ["P", "R", "Q"];
+
   const handleHeaderSelect = (header) => {
     const nextIdentifier =
       identifierSequence[selectedHeadersWithShortNames.length];
@@ -92,6 +93,7 @@ export default function EditableSheet({
           h.header === header ? { ...h, sortform: nextIdentifier } : h
         )
       );
+      console.log("dloffdkfkfdk+_+_",header)
     } else {
       console.warn("No more identifiers available for headers.");
     }
@@ -659,6 +661,7 @@ export default function EditableSheet({
                       <div className="flex flex-wrap gap-2">
                         {headers.map(({ header, type }, index) => (
                           <button
+                          type="button"
                             key={index}
                             onClick={() => handleHeaderSelect(header)}
                             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
@@ -673,6 +676,7 @@ export default function EditableSheet({
                       <div className="flex space-x-2">
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((operation) => (
                           <button
+                          type="button"
                             key={operation}
                             onClick={() => handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
@@ -687,6 +691,7 @@ export default function EditableSheet({
                       <div className="flex space-x-2">
                         {["+", "-", "*", "/", "="].map((operation) => (
                           <button
+                          type="button"
                             key={operation}
                             onClick={() => handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
@@ -705,6 +710,7 @@ export default function EditableSheet({
                     </div>
                     <div className="flex justify-between">
                       <button
+                      type="button"
                         onClick={handleClearFormula}
                         className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
                       >
@@ -712,12 +718,14 @@ export default function EditableSheet({
                       </button>
                       <div className="space-x-2">
                         <button
+                        type="button"
                           onClick={() => setShowFormulaModal(false)}
                           className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
                         >
                           Cancel
                         </button>
                         <button
+                        type="button"
                           onClick={handleSaveFormula}
                           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
                         >

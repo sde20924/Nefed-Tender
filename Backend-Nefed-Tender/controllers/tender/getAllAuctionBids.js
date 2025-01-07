@@ -27,31 +27,39 @@ const getAllAuctionBids = async (req, res) => {
     // Fetch subtenders and rows (including buyer and seller data)
     const subtendersQuery = `
       SELECT 
-          s.subtender_id,
-          s.subtender_name,
-          sh.header_id AS seller_header_id,
-          sh.row_data AS seller_row_data,
-          sh.type AS seller_type,
-          sh.order AS seller_order,
-          sh.row_number AS seller_row_number,
-          bh.header_id AS buyer_header_id,
-          bh.row_data AS buyer_row_data,
-          bh.buyer_id AS buyer_id,
-          bh.row_number AS buyer_row_number,
-          bh.order AS buyer_order
-      FROM subtender s
-      LEFT JOIN seller_header_row_data sh 
-          ON s.subtender_id = sh.subtender_id
-      LEFT JOIN buyer_header_row_data bh 
-          ON s.subtender_id = bh.subtender_id 
-          AND sh.header_id = bh.header_id 
-          AND sh.row_number = bh.row_number 
-          AND sh.order = bh.order
-      WHERE s.tender_id = ?
-      ORDER BY s.subtender_id, sh.row_number, sh.order
+    s.subtender_id,
+    s.subtender_name,
+    sh.header_id AS seller_header_id,
+    sh.row_data AS seller_row_data,
+    sh.type AS seller_type,
+    sh.order AS seller_order,
+    sh.row_number AS seller_row_number,
+    bh.header_id AS buyer_header_id,
+    bh.row_data AS buyer_row_data,
+    bh.buyer_id AS buyer_id,
+    bh.row_number AS buyer_row_number,
+    bh.order AS buyer_order
+FROM subtender s
+LEFT JOIN seller_header_row_data sh 
+    ON s.subtender_id = sh.subtender_id
+LEFT JOIN buyer_header_row_data bh 
+    ON s.subtender_id = bh.subtender_id 
+    AND sh.header_id = bh.header_id 
+    AND sh.row_number = bh.row_number 
+    AND sh.order = bh.order
+    AND bh.row_data_id = (
+        SELECT MAX(row_data_id) 
+        FROM buyer_header_row_data 
+        WHERE subtender_id = s.subtender_id 
+        AND row_number = sh.row_number
+        AND header_id=sh.header_id
+        AND buyer_id=bh.buyer_id
+    )
+WHERE s.tender_id = ?
+ORDER BY s.subtender_id, sh.row_number, sh.order;
     `;
     const [subtenderResults] = await db.query(subtendersQuery, [tender_id]);
-
+console.log("-=-=-=-=-=-=subtenderResults",subtenderResults)
     const subtenderData = {};
     const buyerDataMap = new Map();
     const headersChangedByBuyers = [];
