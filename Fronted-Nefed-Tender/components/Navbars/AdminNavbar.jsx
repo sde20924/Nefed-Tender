@@ -3,6 +3,7 @@ import React from "react";
 import UserDropdown from "@/components/Dropdowns/UserDropdown";
 import Link from "next/link";
 import { useRouter } from "next/router";
+import NotificationDropdown from "../Dropdowns/NotificationDropdown";
 
 export default function Navbar() {
   const router = useRouter();
@@ -45,6 +46,7 @@ export default function Navbar() {
           </form> */}
           {/* User */}
           <ul className="gap-4 flex-col md:flex-row list-none items-center hidden md:flex">
+            <NotificationDropdown />
             <UserDropdown />
             <button
               onClick={handleReloginClick}

@@ -26,6 +26,7 @@ export default function TenderCategories({
         const response = await callApiGet("demo-excel-sheets");
         // Assuming the API returns an array of categories
         setCategories(response.data);
+        console.log("+__+_+_+data",response.data)
       } catch (err) {
         setError(err.message || "An error occurred while fetching categories.");
       } finally {

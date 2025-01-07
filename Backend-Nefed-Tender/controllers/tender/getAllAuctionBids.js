@@ -7,9 +7,10 @@ const getAllAuctionBids = async (req, res) => {
     const { tender_id } = req.params;
 
     if (!tender_id) {
-      return res.status(400).json({ success: false, message: "Tender ID is required." });
+      return res
+        .status(400)
+        .json({ success: false, message: "Tender ID is required." });
     }
-
     // Fetch headers
     const headersQuery = `
       SELECT 
@@ -21,35 +22,44 @@ const getAllAuctionBids = async (req, res) => {
       ORDER BY \`order\`
     `;
     const [headers] = await db.query(headersQuery, [tender_id]);
+    console.log("-=-=-=-=-=yha aa tk aa rha h")
 
     // Fetch subtenders and rows (including buyer and seller data)
     const subtendersQuery = `
       SELECT 
-          s.subtender_id,
-          s.subtender_name,
-          sh.header_id AS seller_header_id,
-          sh.row_data AS seller_row_data,
-          sh.type AS seller_type,
-          sh.order AS seller_order,
-          sh.row_number AS seller_row_number,
-          bh.header_id AS buyer_header_id,
-          bh.row_data AS buyer_row_data,
-          bh.buyer_id AS buyer_id,
-          bh.row_number AS buyer_row_number,
-          bh.order AS buyer_order
-      FROM subtender s
-      LEFT JOIN seller_header_row_data sh 
-          ON s.subtender_id = sh.subtender_id
-      LEFT JOIN buyer_header_row_data bh 
-          ON s.subtender_id = bh.subtender_id 
-          AND sh.header_id = bh.header_id 
-          AND sh.row_number = bh.row_number 
-          AND sh.order = bh.order
-      WHERE s.tender_id = ?
-      ORDER BY s.subtender_id, sh.row_number, sh.order
+    s.subtender_id,
+    s.subtender_name,
+    sh.header_id AS seller_header_id,
+    sh.row_data AS seller_row_data,
+    sh.type AS seller_type,
+    sh.order AS seller_order,
+    sh.row_number AS seller_row_number,
+    bh.header_id AS buyer_header_id,
+    bh.row_data AS buyer_row_data,
+    bh.buyer_id AS buyer_id,
+    bh.row_number AS buyer_row_number,
+    bh.order AS buyer_order
+FROM subtender s
+LEFT JOIN seller_header_row_data sh 
+    ON s.subtender_id = sh.subtender_id
+LEFT JOIN buyer_header_row_data bh 
+    ON s.subtender_id = bh.subtender_id 
+    AND sh.header_id = bh.header_id 
+    AND sh.row_number = bh.row_number 
+    AND sh.order = bh.order
+    AND bh.row_data_id = (
+        SELECT MAX(row_data_id) 
+        FROM buyer_header_row_data 
+        WHERE subtender_id = s.subtender_id 
+        AND row_number = sh.row_number
+        AND header_id=sh.header_id
+        AND buyer_id=bh.buyer_id
+    )
+WHERE s.tender_id = ?
+ORDER BY s.subtender_id, sh.row_number, sh.order;
     `;
     const [subtenderResults] = await db.query(subtendersQuery, [tender_id]);
-
+console.log("-=-=-=-=-=-=subtenderResults",subtenderResults)
     const subtenderData = {};
     const buyerDataMap = new Map();
     const headersChangedByBuyers = [];
@@ -111,7 +121,9 @@ const getAllAuctionBids = async (req, res) => {
         if (!existingEntry) {
           headersChangedByBuyers.push({
             header_id: buyer_header_id,
-            header_name: headers.find((header) => header.header_id === buyer_header_id)?.table_head || "",
+            header_name:
+              headers.find((header) => header.header_id === buyer_header_id)
+                ?.table_head || "",
             buyer_id: buyer_id,
             buyer_name: `Buyer ${buyer_id}`, // Placeholder, replace with actual buyer name if available
           });
@@ -190,7 +202,7 @@ const getAllAuctionBids = async (req, res) => {
       (header) => !buyerSpecificHeaders.has(header.header_id)
     );
 
-    // Fetch bids and user details
+    // **Modified Bids Query to Fetch Latest Bid per User**
     const bidsQuery = `
       SELECT 
           tbr.bid_id,
@@ -200,21 +212,21 @@ const getAllAuctionBids = async (req, res) => {
           tbr.status AS bid_status,
           tbr.created_at,
           mt.auct_start_time,
-          mt.auct_end_time,
-          mt.emd_amt
+          mt.auct_end_time
+ 
       FROM 
           tender_bid_room tbr 
       INNER JOIN (
           SELECT 
               user_id, 
-              MIN(bid_amount) AS lowest_bid_amount
+              MAX(created_at) AS latest_created_at
           FROM 
               tender_bid_room
           WHERE 
               tender_id = ?
           GROUP BY 
               user_id
-      ) lb ON tbr.user_id = lb.user_id AND tbr.bid_amount = lb.lowest_bid_amount
+      ) lb ON tbr.user_id = lb.user_id AND tbr.created_at = lb.latest_created_at
       INNER JOIN 
           manage_tender mt ON tbr.tender_id = mt.tender_id
       WHERE 
@@ -224,7 +236,8 @@ const getAllAuctionBids = async (req, res) => {
 
     const userIds = bids.map((bid) => bid.user_id);
     const externalApiPayload = {
-      required_keys: "first_name,last_name,gst_number,user_id,email,phone_number,company_name",
+      required_keys:
+        "first_name,last_name,gst_number,user_id,email,phone_number,company_name",
       user_ids: userIds.map((user_id) => ({ type: "buyer", user_id })),
     };
     const token = req.headers["authorization"];
@@ -242,7 +255,9 @@ const getAllAuctionBids = async (req, res) => {
 
     const userDetails = externalApiResponse.data;
     const allBidsWithUserDetails = bids.map((bid) => {
-      const userDetail = userDetails.data.find((user) => user.user_id === bid.user_id);
+      const userDetail = userDetails.data.find(
+        (user) => user.user_id === bid.user_id
+      );
       return {
         ...bid,
         user_details: userDetail || {}, // Attach user details if available
@@ -250,11 +265,14 @@ const getAllAuctionBids = async (req, res) => {
     });
 
     Object.values(groupedHeadersByBuyers).forEach((header) => {
-      const userDetail = userDetails.data.find((user) => user.user_id === header.buyer_id);
+      const userDetail = userDetails.data.find(
+        (user) => user.user_id === header.buyer_id
+      );
       if (userDetail) {
         header.buyer_name = `${userDetail.first_name} ${userDetail.last_name}`;
       }
     });
+
     // Success response
     res.status(200).json({
       success: true,
@@ -271,7 +289,9 @@ const getAllAuctionBids = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching bids:", error);
-    res.status(500).json({ success: false, message: "Server error. Please try again later." });
+    res
+      .status(500)
+      .json({ success: false, message: "Server error. Please try again later." });
   }
 };
 

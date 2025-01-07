@@ -49,6 +49,7 @@ const AddTender = () => {
   const [emdLevelAmount, setEmdLevelAmount] = useState("");
   const [auctionType, setAuctionType] = useState("reverse");
   const [accessType, setAccessType] = useState("public");
+  const [ShowItems, setShowItems] = useState("yes");
   // Tender Details Form
   const [currency, setCurrency] = useState("INR(₹)");
   const [startingPrice, setStartingPrice] = useState(100000);
@@ -100,7 +101,7 @@ const AddTender = () => {
   const [subTenders, setSubTenders] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [accessPosition,setAccessPosition] = useState("yes")
+  const [accessPosition, setAccessPosition] = useState("yes");
   const [generatedFormula, setGeneratedFormula] = useState("");
   const handleDescriptionChange = (value) => {
     setDescription(value);
@@ -164,8 +165,8 @@ const AddTender = () => {
     ]);
   };
   const handleFormulaChange = (payload) => {
-    setHeaders(payload.headers); 
-    setGeneratedFormula(payload.formula); 
+    setHeaders(payload.headers);
+    setGeneratedFormula(payload.formula);
   };
 
   const handleRemoveAttachment = (index) => {
@@ -279,8 +280,8 @@ const AddTender = () => {
     if (selectedCategory) {
       const selectedData = categories.find(
         (category) => category.demo_tender_sheet_id === selectedCategory
-      );
-
+      ); 
+      console.log("jdujhdujn+_+_+",selectedCategory)
       console.log("Selected Category Data:", selectedData);
 
       if (selectedData) {
@@ -323,6 +324,7 @@ const AddTender = () => {
   // Handle Submit
   const handleSubmit = async (e, tenderOption) => {
     e.preventDefault();
+    console.log("fjrfhnf",tenderOption)
 
     // Generate a random tender_id using current time
     const tender_id = `tender_${new Date().getTime()}`; // Prefixing with 'tender_' to ensure uniqueness
@@ -335,8 +337,8 @@ const AddTender = () => {
       tender_cat: "testing", // Default to 'testing' if not applicable
       tender_opt: isPublished,
       save_as: tenderOption, // Tender option, e.g., draft or publish
-      emd_amt: emdAmount, // EMD Amount
-      emt_lvl_amt: emdLevelAmount, // EMD Level Amount
+      // emd_amt: emdAmount, // EMD Amount
+      // emt_lvl_amt: emdLevelAmount, // EMD Level Amount
       attachments: attachments, // attachments if needed
       custom_form: JSON.stringify(formFields), // Stringify custom form fields if needed
       currency, // Currency type
@@ -368,20 +370,31 @@ const AddTender = () => {
         sub_tenders: subTenders, // SubTender data with rows
       },
       selected_buyers: selectedBuyers,
-      accessPosition : accessPosition,
-      formula: generatedFormula
+      accessPosition: accessPosition,
+      ShowItems:ShowItems,
+      formula: generatedFormula,
+      category:selectedCategory
     };
-    
-    console.log("Form data:", formData);
-    
+
     try {
-      if(generatedFormula==""){
-        toast.error("Formula Required For Calculate Total Coast")
-      }else{     
+      if (tenderOption === "publish" && generatedFormula == "") {
+        toast.error("Formula Required For Calculate Total Coast");
+        return
+      }
+      if (tenderOption === "draft") {
         const response = await callApiPost("create_new_tender", formData);
         console.log("Response:", response);
+        toast.success("Tender Saved Sucessfully");
+        return
+
       }
-      toast.success("Tender Created Sucessfully");
+      const response = await callApiPost("create_new_tender", formData);
+      if(response.status===201){
+
+        console.log("Response:", response);
+        toast.success("Tender Created Sucessfully");
+      }
+
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit tender.");
@@ -402,7 +415,7 @@ const AddTender = () => {
 
       <div className="container mx-auto px-4 py-6">
         <form
-          onSubmit={handleSubmit}
+         
           className="bg-white shadow-lg rounded-md p-6 md:p-10 mb-6"
         >
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-2 p-6 rounded-md">
@@ -434,12 +447,12 @@ const AddTender = () => {
               />
 
               {/* EMD Details */}
-              <EMDDetails
+              {/* <EMDDetails
                 emdAmount={emdAmount}
                 setEmdAmount={setEmdAmount}
                 emdLevelAmount={emdLevelAmount}
                 setEmdLevelAmount={setEmdLevelAmount}
-              />
+              /> */}
 
               {/* Attachments */}
               <Attachments
@@ -457,6 +470,8 @@ const AddTender = () => {
                 auctionType={auctionType}
                 accessPosition={accessPosition}
                 setAccessPosition={setAccessPosition}
+                ShowItems={ShowItems}
+                setShowItems={setShowItems}
                 onSelectedBuyersChange={() => handleSelectedBuyersChange}
               />
             </div>

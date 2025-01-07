@@ -12,8 +12,9 @@ const SuggestedPrice = async (tenderId, userId) => {
       )
     `;
     const [uniqueBuyerResult] = await db.query(uniqueBuyerCountQuery, [tenderId]);
+    console.log("+_+_+_+_+_",uniqueBuyerResult)
     const uniqueBuyers = uniqueBuyerResult[0]?.uniqueBuyers || 0;
-    if (uniqueBuyers < 2) {
+    if (uniqueBuyers < 2 ) {
       return {
         success: false,
         message: "Suggested data not available. Less than three unique buyers.",
