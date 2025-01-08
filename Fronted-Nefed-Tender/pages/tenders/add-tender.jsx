@@ -19,6 +19,7 @@ import AuctionItems from "@/components/add-tander/AuctionItems";
 import CustomFormBuilder from "@/components/add-tander/CustomForm";
 import FullDetails from "@/components/add-tander/FullDetails";
 import TenderCategories from "@/components/add-tander/TenderCategories";
+import Loader from "@/components/loader";
 
 // Importing newly created components
 
@@ -57,6 +58,7 @@ const AddTender = () => {
   const [destinationPort, setDestinationPort] = useState("");
   const [bagSize, setBagSize] = useState("");
   const [bagType, setBagType] = useState("");
+  const [loading, setLoading] = useState(false);
   // const [measurmentUnit, setMeasurmentUnit] = useState("");
   const [auctionStart, setAuctionStart] = useState(() => {
     const today = new Date();
@@ -377,6 +379,7 @@ const AddTender = () => {
     };
 
     try {
+      setLoading(true);
       if (tenderOption === "publish" && generatedFormula == "") {
         toast.error("Formula Required For Calculate Total Coast");
         return
@@ -385,13 +388,14 @@ const AddTender = () => {
         const response = await callApiPost("create_new_tender", formData);
         console.log("Response:", response);
         toast.success("Tender Saved Sucessfully");
+        setLoading(false);
         return
 
       }
       const response = await callApiPost("create_new_tender", formData);
       console.log("{}{}{}{}{}}}{}",response.status)
       if(response.status===201){
-
+       
         console.log("Response:", response);
         toast.success("Tender Created Sucessfully");
       }
@@ -399,6 +403,8 @@ const AddTender = () => {
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit tender.");
+    }finally {
+      setLoading(false); // Hide loader
     }
   };
 
@@ -408,6 +414,7 @@ const AddTender = () => {
   };
   return (
     <>
+    {loading && <Loader />}
       <HeaderTitle
         padding={"p-4"}
         subTitle={"Add new tenders, set visibility etc."}

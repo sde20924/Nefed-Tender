@@ -4,7 +4,8 @@ const asyncErrorHandler = require('../../utils/asyncErrorHandler'); // Async err
 const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
     try {
         const tenderId = req.params.id; // Extract tender ID from request parameters
-
+        const {login_as} = req.user
+        
         // Fetch tender details from the manage_tender table
         const tenderDetailsQuery = `
             SELECT 
@@ -59,6 +60,8 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             tender_id: tenderDetailsResult[0].tender_id,
             audi_key: tenderDetailsResult[0].audi_key,
             access_position: tenderDetailsResult[0].access_position,
+            show_items:tenderDetailsResult[0].show_items,
+            category:tenderDetailsResult[0].category
         };
              //      Parse attachments
              tenderDetails = {
@@ -72,7 +75,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
                 })).filter(doc => doc.doc_key) // Filter out any rows without documents
               }
 
-
+       
         const headersQuery = `
             SELECT 
                 header_id, 
@@ -85,22 +88,24 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         const [headers] = await db.query(headersQuery, [tenderId]);
         tenderDetails.headers = headers;
         // Fetch subtenders and all possible rows, including empty ones
-        const headersWithSubTendersQuery = `
-            SELECT 
-                s.subtender_id,
-                s.subtender_name,
-                r.row_data_id,
-                r.header_id,
-                r.row_data,
-                r.type,
-                r.order,
-                r.row_number
-            FROM subtender s
-            LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
-            WHERE s.tender_id = ?
-            ORDER BY s.subtender_id, r.row_number, r.order
-        `;
-        const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
+        if (login_as === "buyer" && tenderDetails.show_items === "yes") {
+            const headersWithSubTendersQuery = `
+                SELECT 
+                    s.subtender_id,
+                    s.subtender_name,
+                    r.row_data_id,
+                    r.header_id,
+                    r.row_data,
+                    r.type,
+                    r.order,
+                    r.row_number
+                FROM subtender s
+                LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
+                WHERE s.tender_id = ?
+                ORDER BY s.subtender_id, r.row_number, r.order
+            `;
+            const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
+        
 
         // Parse subtenders and group rows by row_number
         const subTendersArray = [];
@@ -132,6 +137,9 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         });
 
         tenderDetails.sub_tenders = subTendersArray;
+    }else{
+        tenderDetails.sub_tenders = [];
+    }
            // Fetch selected buyers for private tenders
         if (tenderDetails.accessType === 'private') {
             const selectedBuyersQuery = `

@@ -31,8 +31,8 @@ const saveBuyerHeaderRowData = async (req, res) => {
           // Only process cells with type "edit" and non-null, non-empty data
           if (
             cell.type === "edit" &&
-            cell.data !== null &&
-            cell.data.trim() !== ""
+            cell.data !== null 
+            
           ) {
             const header_id = headers[cellIndex]?.header_id;
 

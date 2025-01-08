@@ -1,7 +1,6 @@
 const db = require('../../config/config'); // Database configuration
 const asyncErrorHandler = require('../../utils/asyncErrorHandler'); // Async error handler middleware
 const { SuggestedPrice } = require('../../utils/SuggestedPrice');
-
 const getAccessBidWithSuggestedPrice = asyncErrorHandler(async (req, res) => {
     try {
         const tenderId = req.params.id; // Extract tender ID from request parameters
@@ -80,8 +79,7 @@ const getAccessBidWithSuggestedPrice = asyncErrorHandler(async (req, res) => {
               doc_ext: row.doc_ext,
               doc_size: row.doc_size,
             })).filter(doc => doc.doc_key) // Filter out any rows without documents
-          }
-
+        }
 
         // Fetch headers and identify those with type "edit"
         const headersQuery = `
@@ -177,16 +175,56 @@ const getAccessBidWithSuggestedPrice = asyncErrorHandler(async (req, res) => {
         tenderDetails.headers = headers;
         tenderDetails.sub_tenders = subTendersArray;
 
-         // Calculate suggested prices
-         const suggestedPrices = await SuggestedPrice(tenderId,user_id)
-         tenderDetails.headers = headers;
-         tenderDetails.sub_tenders = subTendersArray;
-         tenderDetails.suggested_prices = suggestedPrices;
-         res.status(200).json({
-             msg: 'Tender details fetched successfully',
-             success: true,
-             data: tenderDetails,
-         });
+        // Calculate suggested prices
+        const suggestedPrices = await SuggestedPrice(tenderId, user_id);
+        tenderDetails.headers = headers;
+        tenderDetails.sub_tenders = subTendersArray;
+        tenderDetails.suggested_prices = suggestedPrices;        
+       
+
+        // **New Section: Fetch Latest Bid Details**
+        const latestBidQuery = `
+            SELECT 
+                bid_id,
+                tender_id,
+                bid_amount,
+                created_at,
+                status
+            FROM tender_bid_room
+            WHERE tender_id = ? AND user_id = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+        `;
+        const [latestBidResult] = await db.query(latestBidQuery, [tenderId, user_id]);
+
+  
+        const latestBid = latestBidResult.length > 0
+            ? {
+                  bid_id: latestBidResult[0].bid_id,
+                  tender_id: latestBidResult[0].tender_id,
+                  bid_amount: latestBidResult[0].bid_amount,
+                  created_at: latestBidResult[0].created_at,
+                  status: latestBidResult[0].status,
+              }
+            : {
+                  bid_id: null,
+                  tender_id: tenderId,
+                  bid_amount: 0, // Default bid amount for non-participating users
+                  created_at: null,
+                  status: "no participation",
+              };
+
+
+        // Add latest bid to tenderDetails
+        tenderDetails.latest_bid = latestBid;
+
+        // **Optional: If you want to include all bids or additional bid information, you can modify accordingly**
+
+        res.status(200).json({
+            msg: 'Tender details fetched successfully',
+            success: true,
+            data: tenderDetails,
+        });
     } catch (error) {
         console.error('Error fetching tender details:', error.message);
         res.status(500).json({
@@ -196,7 +234,6 @@ const getAccessBidWithSuggestedPrice = asyncErrorHandler(async (req, res) => {
         });
     }
 });
-
 module.exports = {
     getAccessBidWithSuggestedPrice,
 };

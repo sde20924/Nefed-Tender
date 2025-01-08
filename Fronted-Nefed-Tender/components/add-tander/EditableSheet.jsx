@@ -113,14 +113,24 @@ export default function EditableSheet({
 
   const handleSaveFormula = (e) => {
     if (e) e.preventDefault();
-    console.log("jdnjddn", headers);
     setShowFormulaModal(false);
+    if (formula === "") {
+      toast.error("Formula Required");
+      return;
+    }
     const enrichedHeaders = headers.map((header) => ({
       header: header.header,
       type: header.type,
       sortform: header.sortform, // Set sortform to null if not provided
     }));
+    const updatedSubTenders = subTenders.map((subTender, index) => {
+      if (index === 0) {
+        return { ...subTender, formula };
+      }
+      return subTender;
+    });
 
+    setSubTenders(updatedSubTenders);
     const payload = {
       headers: enrichedHeaders,
       sub_tenders: subTenders,
@@ -663,7 +673,7 @@ export default function EditableSheet({
                           <button
                           type="button"
                             key={index}
-                            onClick={() => handleHeaderSelect(header)}
+                            onClick={() => handleHeaderSelect(header,type)}
                             className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
                           >
                             {header}
