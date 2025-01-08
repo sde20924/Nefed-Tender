@@ -5,7 +5,6 @@ import * as Yup from "yup";
 import Auth from "@/layouts/Auth";
 import { useRouter } from "next/router";
 import { authApi } from "@/utils/FetchApi";
-Auth;
 import { toast } from "react-toastify";
 import { io } from "socket.io-client";
 import { setSocket } from "@/store/slices/socketSlice";
@@ -129,7 +128,7 @@ export default function Login() {
         localStorage.setItem("data", JSON.stringify(data));
         localStorage.setItem("login_as", data?.login_as);
         //socket connection
-        const socketInstance = io("http://localhost:8002", {
+        const socketInstance = io("https://api.tender.shippingbaba.com", {
           query: { token: data.token },
           transports: ["websocket"],
         });

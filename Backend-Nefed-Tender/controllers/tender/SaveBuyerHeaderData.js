@@ -18,15 +18,65 @@ const saveBuyerHeaderRowData = async (req, res) => {
   try {
     await db.query("START TRANSACTION");
 
+    //buyer Details
+    const headerIdsSet = new Set();
+    const token = req.headers["authorization"];
+
+    const buyerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "buyer",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    let headersChangedByBuyers = {
+      [user_id]: {
+        buyer_id: user_id,
+        buyer_name:
+          buyerDetailsResponse?.data?.data[0]?.first_name +
+          " " +
+          buyerDetailsResponse?.data?.data[0]?.last_name,
+        headers: [],
+      },
+    };
+
+    let subTenderByBuyer = {
+      [user_id]: {},
+    };
+
     // Save editable rows in buyer_header_row_dat
     for (const subTender of formdata) {
-      const { id: subtender_id, rows } = subTender;
+      const { id: subtender_id, name: subTender_name, rows } = subTender;
+
+      subTenderByBuyer[user_id][subtender_id] = {
+        id: subtender_id,
+        name: subTender_name,
+        rows: [],
+      };
 
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const row = rows[rowIndex];
+        const rowData = [];
 
         for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
           const cell = row[cellIndex];
+          const header = headers[cellIndex];
+          const header_id = header?.header_id;
+
+          if (cell.type !== "edit") {
+            rowData.push(null);
+          }
 
           // Only process cells with type "edit" and non-null, non-empty data
           if (
@@ -34,13 +84,32 @@ const saveBuyerHeaderRowData = async (req, res) => {
             cell.data !== null 
             
           ) {
-            const header_id = headers[cellIndex]?.header_id;
-
             if (!header_id) {
               console.error(`Header ID not found for cell index ${cellIndex}`);
               continue;
             }
 
+            // Add header information to headersChangedByBuyers
+            if (!headerIdsSet.has(header_id)) {
+              headersChangedByBuyers[user_id].headers.push({
+                header_id,
+                header_name: header.table_head,
+                buyer_id: user_id,
+              });
+              headerIdsSet.add(header_id); // Add the header_id to the Set
+            }
+
+            // Add row information to subTenderByBuyer
+            rowData.push({
+              header_id,
+              row_data: cell.data,
+              type: "edit",
+              buyer_id: user_id,
+              row_number: rowIndex + 1,
+              order: cellIndex + 1,
+            });
+
+            subTenderByBuyer[user_id][subtender_id].rows.push(rowData);
             // Insert data into the buyer_header_row_data table
             await db.query(
               `INSERT INTO buyer_header_row_data 
@@ -73,30 +142,23 @@ const saveBuyerHeaderRowData = async (req, res) => {
       ]
     );
 
+    /*########## Socket Start #########  */
+
     const [rows] = await db.query(
       `SELECT user_id FROM manage_tender WHERE tender_id = ?`,
       [tender_id]
     );
 
-    //buyer Details
-    const token = req.headers["authorization"];
-
-    const buyerDetailsResponse = await axios.post(
-      userVerifyApi + "taqw-yvsu",
+    emitEvent(
+      "Auction-Bid-Report",
       {
-        required_keys: "*",
-        user_ids: [
-          {
-            type: "buyer",
-            user_id: req.user?.user_id,
-          },
-        ],
+        headers: headersChangedByBuyers[user_id],
+        subTender: subTenderByBuyer[user_id],
+        action_type: "Auction-Bid-Report",
+        buyer_id: user_id,
       },
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
+      "seller",
+      rows[0]?.user_id
     );
 
     emitEvent(
@@ -112,6 +174,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
       "seller",
       rows[0]?.user_id
     );
+    /*########## Socket End #########  */
 
     const suggestedPrices = await SuggestedPrice(tender_id, user_id);
 

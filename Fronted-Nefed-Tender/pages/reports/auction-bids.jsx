@@ -1,11 +1,15 @@
+import React, { useEffect } from "react";
+
 import HeaderTitle from "@/components/HeaderTitle/HeaderTitle";
 import UserDashboard from "@/layouts/UserDashboard";
 import TenderSelect from "@/components/TenderSelectList/TenderSelect"; // Import TenderSelect component
 import { callApiGet } from "@/utils/FetchApi";
 import { useState } from "react";
 import TenderTable from "@/components/Report/TenderTable";
+import { useSelector } from "react-redux";
 
 const AuctionBids = () => {
+  const socket = useSelector((state) => state.socket.socket_instance);
   const [selectedTender, setSelectedTender] = useState("");
   const [bids, setBids] = useState([]);
   const [loadingBids, setLoadingBids] = useState(false);
@@ -18,13 +22,12 @@ const AuctionBids = () => {
     try {
       const response = await callApiGet(
         `tender-Auction-bids/${selectedTender}`
-        
       );
 
       setEditableSheet(response.data);
       if (response && response.success) {
         setBids(response.data.allBids);
-        setTenderData(response.data)
+        setTenderData(response.data);
         setError("");
       } else {
         throw new Error("No bids found or failed to load bids");
@@ -46,6 +49,32 @@ const AuctionBids = () => {
       await fetchAuctionBids(tenderId);
     }
   };
+
+  // useEffect(() => {
+  //   if (socket) {
+  //     const handleReport = (data) => {
+  //       setTenderData((prevData) => ({
+  //         ...prevData,
+  //         headersChangedByBuyers: {
+  //           ...prevData.headersChangedByBuyers,
+  //           [data.buyer_id]: data.headers,
+  //         },
+  //         subTendersByBuyer: {
+  //           ...prevData.subTendersByBuyer,
+  //           [data.buyer_id]: data.subTender,
+  //         },
+  //       }));
+  //     };
+
+  //     socket.on("Auction-Bid-Report", handleReport);
+
+  //     return () => {
+  //       socket.off("Auction-Bid-Report", handleReport);
+  //     };
+  //   }
+  // }, [socket]);
+
+  // console.log(tenderData);
 
   return (
     <>
@@ -76,9 +105,7 @@ const AuctionBids = () => {
             Loading auction bids...
           </p>
         )}
-        {error && (
-          <p className="text-center text-red-500">No Bids Found</p>
-        )}
+        {error && <p className="text-center text-red-500">No Bids Found</p>}
 
         <div className="overflow-x-auto mt-4">
           <div className="p-4 bg-gray-50 rounded-md shadow-md">
@@ -189,12 +216,10 @@ const AuctionBids = () => {
       {/* Editable Sub-Tenders Section */}
       <div className="space-y-8">
         {iseditableSheet?.sub_tenders?.map((subTender) => (
-          
           <div
             key={subTender.id}
             className="border border-gray-300 p-4 rounded"
           >
-            
             <h2 className="text-lg font-bold mb-4">{subTender.name}</h2>
             <div className="overflow-x-auto">
               <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
@@ -234,12 +259,9 @@ const AuctionBids = () => {
               </table>
             </div>
           </div>
-          
         ))}
       </div>
-      {!loadingBids && tenderData && (
-          <TenderTable data={tenderData} />
-        )}
+      {!loadingBids && tenderData && <TenderTable data={tenderData} />}
     </>
   );
 };
