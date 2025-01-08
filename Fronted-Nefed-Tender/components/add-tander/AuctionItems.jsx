@@ -9,11 +9,13 @@ const AuctionItems = ({
   setAccessType,
   accessType,
   auctionType,
-  onSelectedBuyersChange,
+  // onSelectedBuyersChange,
   accessPosition,
   setAccessPosition,
   ShowItems,
-  setShowItems
+  setShowItems,
+  selectedBuyers,
+  setSelectedBuyers
 }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
@@ -36,7 +38,7 @@ const AuctionItems = ({
 
   const [buyersList, setBuyersList] = useState([]);
   const [filteredBuyers, setFilteredBuyers] = useState([]);
-  const [selectedBuyers, setSelectedBuyers] = useState([]);
+  // const [selectedBuyers, setSelectedBuyers] = useState([]);
 
   // call apis to get the data
   useEffect(() => {
@@ -56,9 +58,7 @@ const AuctionItems = ({
     fetchBuyers();
   }, [accessType]);
 
-  useEffect(() => {
-    onSelectedBuyersChange(selectedBuyers);
-  }, [selectedBuyers, onSelectedBuyersChange]);
+  
   const handleAccessChange = (type) => {
     setAccessType(type);
     if (type === "private") {
@@ -68,6 +68,9 @@ const AuctionItems = ({
       setShowPopup(false);
     }
   };
+  console.log("--######---",selectedBuyers);
+  
+  
   const handleSearchBuyer = (input) => {
     setBuyerEmail(input);
 
