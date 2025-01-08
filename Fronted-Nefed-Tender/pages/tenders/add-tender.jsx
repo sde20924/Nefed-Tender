@@ -327,12 +327,7 @@ const AddTender = () => {
   // Handle Submit
   const handleSubmit = async (e, tenderOption) => {
     e.preventDefault();
-    console.log("fjrfhnf",tenderOption)
-
-    // Generate a random tender_id using current time
     const tender_id = `tender_${new Date().getTime()}`; // Prefixing with 'tender_' to ensure uniqueness
-
-    // Prepare form data to send to backend
     const formData = {
       tender_title: name, // Title of the tender
       tender_slug: slug, // URL-friendly version of the title
@@ -378,6 +373,27 @@ const AddTender = () => {
       formula: generatedFormula,
       category:selectedCategory
     };
+    const requiredFields = [
+      "tender_title",
+      "tender_slug",
+      "tender_desc",
+      "currency",
+      "start_price",
+      "dest_port",
+      "bag_size",
+      "bag_type",
+      "app_start_time",
+      "app_end_time",
+      "auct_start_time",
+      "auct_end_time",
+    ];
+  
+    for (const field of requiredFields) {
+      if (!formData[field] || formData[field] === "") {
+        toast.error(`Field "${field}" is required.`);
+        return; // Exit if a required field is missing
+      }
+    }
 
     try {
       setLoading(true);
@@ -385,27 +401,25 @@ const AddTender = () => {
         toast.error("Formula Required For Calculate Total Coast");
         return
       }
+      
+      const response = await callApiPost("create_new_tender", formData);
+        if(response.status===201){
+        toast.success("Tender Created Sucessfully");
+      }else {
+        toast.error("Failed to create tender. Please try again.");
+      }
       if (tenderOption === "draft") {
         const response = await callApiPost("create_new_tender", formData);
         console.log("Response:", response);
         toast.success("Tender Saved Sucessfully");
         setLoading(false);
         return
-
       }
-      const response = await callApiPost("create_new_tender", formData);
-      console.log("{}{}{}{}{}}}{}",response.status)
-      if(response.status===201){
-       
-        console.log("Response:", response);
-        toast.success("Tender Created Sucessfully");
-      }
-
-    } catch (error) {
+    }catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit tender.");
     }finally {
-      setLoading(false); // Hide loader
+      setLoading(false); 
     }
   };
 
@@ -430,7 +444,7 @@ const AddTender = () => {
       />
 
       <div className="container mx-auto px-4 py-6">
-        <form
+        <form onSubmit={handleSubmit}
          
           className="bg-white shadow-lg rounded-md p-6 md:p-10 mb-6"
         >
