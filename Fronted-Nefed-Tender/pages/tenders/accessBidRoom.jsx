@@ -222,7 +222,7 @@ const AccessBidRoom = () => {
         
       console.log(
         "len++++++",
-        tenderData.data.suggested_prices.suggestedPrices
+        tender
       );
       checkAuctionStatus(
         tenderData.data.auct_start_time,
@@ -1111,6 +1111,10 @@ const AccessBidRoom = () => {
                 </button>
               </div>
             </div>
+          </div>
+          <div>
+            <h3>Bid's summary</h3>
+
           </div>
         </div>
       </div>
