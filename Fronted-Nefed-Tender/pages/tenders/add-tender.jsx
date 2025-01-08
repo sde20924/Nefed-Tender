@@ -19,7 +19,7 @@ import AuctionItems from "@/components/add-tander/AuctionItems";
 import CustomFormBuilder from "@/components/add-tander/CustomForm";
 import FullDetails from "@/components/add-tander/FullDetails";
 import TenderCategories from "@/components/add-tander/TenderCategories";
-import Loader from "@/components/loader";
+import Loader from "@/components/Loader";
 
 // Importing newly created components
 
