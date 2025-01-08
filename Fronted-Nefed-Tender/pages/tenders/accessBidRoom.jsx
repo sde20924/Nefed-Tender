@@ -171,21 +171,21 @@ const AccessBidRoom = () => {
       // fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
-  // useEffect(() => {
-  //   const BidsDetails = async () => {
-  //     try {
-  //       const responce = await callApiGet(
-  //         `get-bid-details?tender_id=${tenderId}`
-  //       );
-  //       if (responce.success) {
-  //         setBidDetails(responce);
-  //       }
-  //     } catch (error) {
-  //       console.error(" Error Bids Details:", error.message);
-  //     }
-  //   };
-  //   BidsDetails();
-  // }, [tenderId]);
+  useEffect(() => {
+    const BidsDetails = async () => {
+      try {
+        const responce = await callApiGet(
+          `get-bid-details?tender_id=${tenderId}`
+        );
+        if (responce.success) {
+          setBidDetails(responce);
+        }
+      } catch (error) {
+        console.error(" Error Bids Details:", error.message);
+      }
+    };
+    BidsDetails();
+  }, [tenderId]);
 
   // console.log("hsdsdf", bidDetails);
 
@@ -236,18 +236,18 @@ const AccessBidRoom = () => {
 
   // Fetch bids for the specific tender
   const fetchBids = async () => {
-    try {
-      const response = await callApiGet(`tender/bid/${tenderId}`);
-      const allBids = response.allBids; // Fetch bids by tender ID
-      if (response.success) {
-        setBids(response.allBids); // Set all bids data
+    // try {
+    //   // const response = await callApiGet(`tender/bid/${tenderId}`);
+    //   const allBids = response.allBids; // Fetch bids by tender ID
+    //   if (response.success) {
+    //     setBids(response.allBids); // Set all bids data
 
-        setLBidsUserId(response.lowestBid.user_id);
-        setLBid(response.lowestBid.bid_amount);
-      }
-    } catch (error) {
-      console.error("Error fetching bids:", error.message);
-    }
+    //     // setLBidsUserId(response.lowestBid.user_id);
+    //     // setLBid(response.lowestBid.bid_amount);
+    //   }
+    // } catch (error) {
+    //   console.error("Error fetching bids:", error.message);
+    // }
   };
 
   // useEffect(() => {
@@ -433,20 +433,20 @@ const AccessBidRoom = () => {
     const isL1 = lBidUserId === loggedInUserId;
 
     // If the auction has ended and the user is L1
-    if (auctionEnded && isL1) {
-      return (
-        <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 text-center">
-          <div className="flex justify-center items-center mb-4">
-            <i className="fas fa-check-circle text-green-700 text-3xl"></i>
-          </div>
-          <p className="font-semibold text-lg">
-            Congratulations! You have successfully secured a quantity of{" "}
-            {tender.qty_split_criteria} MT at the rate of ₹
-            {Number(lBid).toFixed(2)} CIF to {tender.dest_port}.
-          </p>
-        </div>
-      );
-    }
+    // if (auctionEnded && isL1) {
+    //   return (
+    //     <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 text-center">
+    //       <div className="flex justify-center items-center mb-4">
+    //         <i className="fas fa-check-circle text-green-700 text-3xl"></i>
+    //       </div>
+    //       <p className="font-semibold text-lg">
+    //         Congratulations! You have successfully secured a quantity of{" "}
+    //         {tender.qty_split_criteria} MT at the rate of ₹
+    //         {Number(lBid).toFixed(2)} CIF to {tender.dest_port}.
+    //       </p>
+    //     </div>
+    //   );
+    // }
 
     // If the auction is live
     return (
@@ -805,18 +805,9 @@ const AccessBidRoom = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
-                <h5 className="text-xl font-bold mb-3 text-center text-green-800">
-                  Current Bid Details
-                </h5>
-                {bidDetails ? (
-                  <div className="flex justify-between items-center">
-                    <p className="text-gray-600 font-medium">{`Bid Amount: $${bidDetails.data.latestUserBid.bid_amount}`}</p>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-400">Loading...</p>
-                )}
-              </div>
+              {/* <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+                <h5 className="text-xl font-bold mb-3 text-center text-green-800"></h5>
+              </div> */}
             </div>
 
             {/* Right Side Card */}
@@ -834,12 +825,6 @@ const AccessBidRoom = () => {
                 <div className="flex justify-between mb-4">
                   <span className="font-medium text-gray-700">Currency:</span>
                   <span className="text-gray-800">{tender.currency}</span>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <span className="font-medium text-gray-700">
-                    Destination Port:
-                  </span>
-                  <span className="text-gray-800">{tender.dest_port}</span>
                 </div>
                 <div className="flex justify-between mb-4">
                   <span className="font-medium text-gray-700">

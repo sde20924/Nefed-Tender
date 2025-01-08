@@ -39,6 +39,8 @@ export default function TenderCategories({
 
   // Handler for category selection
   const handleCategoryChange = (e) => {
+    console.log("-------",e);
+    
     setSelectedCategory(e.target.value);
     // You can perform additional actions here when a category is selected
     console.log("Selected Category:", e.target.value);
@@ -72,7 +74,7 @@ export default function TenderCategories({
               htmlFor="tender-categories"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Select a Category:
+              {/* Select a Category: */}
             </label>
             <select
               id="tender-categories"
