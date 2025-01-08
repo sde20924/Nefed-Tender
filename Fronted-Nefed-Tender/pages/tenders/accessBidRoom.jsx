@@ -42,83 +42,86 @@ const AccessBidRoom = () => {
   //Change rate
   // ...
   // This function gets called when you click the "Update" button in the suggestion table
- const handleActionClick = (tableIndex, rowIndex) => {
-  console.log("Table Index:", tableIndex);
-  console.log("Row Index:", rowIndex);
+  const handleActionClick = (tableIndex, rowIndex) => {
+    console.log("Table Index:", tableIndex);
+    console.log("Row Index:", rowIndex);
 
-  const updatedFormData = [...formdata];
-  const { subtender_name } = suggestionData[tableIndex];
-  const suggestionRow = suggestionData[tableIndex]?.items[rowIndex];
+    const updatedFormData = [...formdata];
+    const { subtender_name } = suggestionData[tableIndex];
+    const suggestionRow = suggestionData[tableIndex]?.items[rowIndex];
 
-  console.log("Suggestion Row:", suggestionRow);
+    console.log("Suggestion Row:", suggestionRow);
 
-  if (!suggestionRow || !suggestionRow.suggested_price) {
-    console.warn("No suggested_price found in this row.");
-    return;
-  }
+    if (!suggestionRow || !suggestionRow.suggested_price) {
+      console.warn("No suggested_price found in this row.");
+      return;
+    }
 
-  const { item_name, suggested_price } = suggestionRow;
+    const { item_name, suggested_price } = suggestionRow;
 
-  // Find the corresponding subtender by name
-  const correspondingSubTender = updatedFormData.find(
-    (subTender) => subTender.name.trim().toLowerCase() === subtender_name.trim().toLowerCase()
-  );
-
-  if (!correspondingSubTender) {
-    console.warn("No matching subtender found for:", subtender_name);
-    return;
-  }
-
-  console.log("Corresponding Subtender:", correspondingSubTender);
-
-  // Find the row in the subtender matching the item name
-  const itemColumnIndex = tender.headers.findIndex(
-    (header) => header.table_head.toLowerCase() === "item"
-  );
-
-  if (itemColumnIndex === -1) {
-    console.warn("No 'Item' column found in headers.");
-    return;
-  }
-
-  const correspondingRow = correspondingSubTender.rows.find((row) => {
-    const itemData = row[itemColumnIndex]?.data?.trim().toLowerCase();
-    return itemData === item_name.trim().toLowerCase();
-  });
-
-  if (!correspondingRow) {
-    console.warn(
-      `No matching row found for item_name: "${item_name}" in subtender: "${subtender_name}"`
+    // Find the corresponding subtender by name
+    const correspondingSubTender = updatedFormData.find(
+      (subTender) =>
+        subTender.name.trim().toLowerCase() ===
+        subtender_name.trim().toLowerCase()
     );
-    return;
-  }
 
-  console.log("Corresponding Row:", correspondingRow);
+    if (!correspondingSubTender) {
+      console.warn("No matching subtender found for:", subtender_name);
+      return;
+    }
 
-  // Find the "Rate" column index
-  const rateIndex = tender.headers.findIndex(
-    (header) => header.table_head.toLowerCase() === "rate"
-  );
+    console.log("Corresponding Subtender:", correspondingSubTender);
 
-  if (rateIndex === -1) {
-    console.warn("No 'Rate' column found in headers.");
-    return;
-  }
+    // Find the row in the subtender matching the item name
+    const itemColumnIndex = tender.headers.findIndex(
+      (header) => header.table_head.toLowerCase() === "item"
+    );
 
-  // Update the corresponding row's "Rate" cell with the suggested price
-  correspondingRow[rateIndex].data = suggested_price;
+    if (itemColumnIndex === -1) {
+      console.warn("No 'Item' column found in headers.");
+      return;
+    }
 
-  console.log("Updated Row:", correspondingRow);
+    const correspondingRow = correspondingSubTender.rows.find((row) => {
+      const itemData = row[itemColumnIndex]?.data?.trim().toLowerCase();
+      return itemData === item_name.trim().toLowerCase();
+    });
 
-  // Update the state with the new formData
-  setFormData(updatedFormData);
+    if (!correspondingRow) {
+      console.warn(
+        `No matching row found for item_name: "${item_name}" in subtender: "${subtender_name}"`
+      );
+      return;
+    }
 
-  // Recalculate total amounts
-  updateTotalBidAmount();
+    console.log("Corresponding Row:", correspondingRow);
 
-  toast.success(`Successfully updated "${item_name}" with suggested price ₹${suggested_price}`);
-};
+    // Find the "Rate" column index
+    const rateIndex = tender.headers.findIndex(
+      (header) => header.table_head.toLowerCase() === "rate"
+    );
 
+    if (rateIndex === -1) {
+      console.warn("No 'Rate' column found in headers.");
+      return;
+    }
+
+    // Update the corresponding row's "Rate" cell with the suggested price
+    correspondingRow[rateIndex].data = suggested_price;
+
+    console.log("Updated Row:", correspondingRow);
+
+    // Update the state with the new formData
+    setFormData(updatedFormData);
+
+    // Recalculate total amounts
+    updateTotalBidAmount();
+
+    toast.success(
+      `Successfully updated "${item_name}" with suggested price ₹${suggested_price}`
+    );
+  };
 
   const handleConfirm = () => {
     if (pendingUpdate) {
@@ -165,21 +168,21 @@ const AccessBidRoom = () => {
       // fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
-  // useEffect(() => {
-  //   const BidsDetails = async () => {
-  //     try {
-  //       const responce = await callApiGet(
-  //         `get-bid-details?tender_id=${tenderId}`
-  //       );
-  //       if (responce.success) {
-  //         setBidDetails(responce);
-  //       }
-  //     } catch (error) {
-  //       console.error(" Error Bids Details:", error.message);
-  //     }
-  //   };
-  //   BidsDetails();
-  // }, [tenderId]);
+  useEffect(() => {
+    const BidsDetails = async () => {
+      try {
+        const responce = await callApiGet(
+          `get-bid-details?tender_id=${tenderId}`
+        );
+        if (responce.success) {
+          setBidDetails(responce);
+        }
+      } catch (error) {
+        console.error(" Error Bids Details:", error.message);
+      }
+    };
+    BidsDetails();
+  }, [tenderId]);
 
   // console.log("hsdsdf", bidDetails);
 
@@ -211,8 +214,11 @@ const AccessBidRoom = () => {
       setTender(tenderData.data);
       setFormData(tenderData.data.sub_tenders);
       setSuggestionData(tenderData.data.suggested_prices.suggestedPrices);
-  
-      console.log("len++++++",tenderData.data.suggested_prices.suggestedPrices)
+
+      console.log(
+        "len++++++",
+        tenderData.data.suggested_prices.suggestedPrices
+      );
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -224,18 +230,18 @@ const AccessBidRoom = () => {
 
   // Fetch bids for the specific tender
   const fetchBids = async () => {
-    try {
-      const response = await callApiGet(`tender/bid/${tenderId}`);
-      const allBids = response.allBids; // Fetch bids by tender ID
-      if (response.success) {
-        setBids(response.allBids); // Set all bids data
+    // try {
+    //   // const response = await callApiGet(`tender/bid/${tenderId}`);
+    //   const allBids = response.allBids; // Fetch bids by tender ID
+    //   if (response.success) {
+    //     setBids(response.allBids); // Set all bids data
 
-        setLBidsUserId(response.lowestBid.user_id);
-        setLBid(response.lowestBid.bid_amount);
-      }
-    } catch (error) {
-      console.error("Error fetching bids:", error.message);
-    }
+    //     // setLBidsUserId(response.lowestBid.user_id);
+    //     // setLBid(response.lowestBid.bid_amount);
+    //   }
+    // } catch (error) {
+    //   console.error("Error fetching bids:", error.message);
+    // }
   };
 
   // useEffect(() => {
@@ -421,20 +427,20 @@ const AccessBidRoom = () => {
     const isL1 = lBidUserId === loggedInUserId;
 
     // If the auction has ended and the user is L1
-    if (auctionEnded && isL1) {
-      return (
-        <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 text-center">
-          <div className="flex justify-center items-center mb-4">
-            <i className="fas fa-check-circle text-green-700 text-3xl"></i>
-          </div>
-          <p className="font-semibold text-lg">
-            Congratulations! You have successfully secured a quantity of{" "}
-            {tender.qty_split_criteria} MT at the rate of ₹
-            {Number(lBid).toFixed(2)} CIF to {tender.dest_port}.
-          </p>
-        </div>
-      );
-    }
+    // if (auctionEnded && isL1) {
+    //   return (
+    //     <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 text-center">
+    //       <div className="flex justify-center items-center mb-4">
+    //         <i className="fas fa-check-circle text-green-700 text-3xl"></i>
+    //       </div>
+    //       <p className="font-semibold text-lg">
+    //         Congratulations! You have successfully secured a quantity of{" "}
+    //         {tender.qty_split_criteria} MT at the rate of ₹
+    //         {Number(lBid).toFixed(2)} CIF to {tender.dest_port}.
+    //       </p>
+    //     </div>
+    //   );
+    // }
 
     // If the auction is live
     return (
@@ -723,18 +729,9 @@ const AccessBidRoom = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
-                <h5 className="text-xl font-bold mb-3 text-center text-green-800">
-                  Current Bid Details
-                </h5>
-                {bidDetails ? (
-                  <div className="flex justify-between items-center">
-                    <p className="text-gray-600 font-medium">{`Bid Amount: $${bidDetails.data.latestUserBid.bid_amount}`}</p>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-400">Loading...</p>
-                )}
-              </div>
+              {/* <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+                <h5 className="text-xl font-bold mb-3 text-center text-green-800"></h5>
+              </div> */}
             </div>
 
             {/* Right Side Card */}
@@ -752,12 +749,6 @@ const AccessBidRoom = () => {
                 <div className="flex justify-between mb-4">
                   <span className="font-medium text-gray-700">Currency:</span>
                   <span className="text-gray-800">{tender.currency}</span>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <span className="font-medium text-gray-700">
-                    Destination Port:
-                  </span>
-                  <span className="text-gray-800">{tender.dest_port}</span>
                 </div>
                 <div className="flex justify-between mb-4">
                   <span className="font-medium text-gray-700">
@@ -820,125 +811,122 @@ const AccessBidRoom = () => {
           )}
 
           {/* sugession Table  */}
-{suggestionData?.length > 0 && (
-   <div className="p-4 bg-gray-50">
-   <h2 className="text-xl font-bold text-gray-800 mb-6">
-     Suggested Bids for Items
-   </h2>
+          {suggestionData?.length > 0 && (
+            <div className="p-4 bg-gray-50">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                Suggested Bids for Items
+              </h2>
 
-   {/* Grid container for tables */}
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-     {suggestionData?.map((table, tableIndex) => (
-       <div
-         key={tableIndex}
-         className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
-       >
-         <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
-           <h3 className="text-xl font-semibold text-blue-700">
-             {table.subtender_name}
-           </h3>
-         </div>
-         <div className="overflow-x-auto p-4">
-           <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
-             <thead className="bg-blue-100">
-               <tr>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Item
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Suggestion Amount
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Current Amount
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Difference
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-center text-blue-800 font-medium">
-                   Actions
-                 </th>
-               </tr>
-             </thead>
-             <tbody>
-               {table.items
-                 ?.filter((row) => row.suggested_price !== null)
-                 .map((row, rowIndex) => (
-                   <tr
-                     key={rowIndex}
-                     className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 transition-all duration-200"
-                   >
-                     {/* Item */}
-                     <td className="border border-gray-300 px-3 py-2">
-                       {row.item_name}
-                     </td>
+              {/* Grid container for tables */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {suggestionData?.map((table, tableIndex) => (
+                  <div
+                    key={tableIndex}
+                    className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
+                      <h3 className="text-xl font-semibold text-blue-700">
+                        {table.subtender_name}
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto p-4">
+                      <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                        <thead className="bg-blue-100">
+                          <tr>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Item
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Suggestion Amount
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Current Amount
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Difference
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-center text-blue-800 font-medium">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {table.items
+                            ?.filter((row) => row.suggested_price !== null)
+                            .map((row, rowIndex) => (
+                              <tr
+                                key={rowIndex}
+                                className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 transition-all duration-200"
+                              >
+                                {/* Item */}
+                                <td className="border border-gray-300 px-3 py-2">
+                                  {row.item_name}
+                                </td>
 
-                     {/* Suggestion Amount */}
-                     <td className="border border-gray-300 px-3 py-2">
-                       {row.suggested_price
-                         ? `₹${row.suggested_price}`
-                         : "N/A"}
-                     </td>
+                                {/* Suggestion Amount */}
+                                <td className="border border-gray-300 px-3 py-2">
+                                  {row.suggested_price
+                                    ? `₹${row.suggested_price}`
+                                    : "N/A"}
+                                </td>
 
-                     {/* Current Amount (Editable) */}
-                     <td className="border border-gray-300 px-3 py-2">
-                       {editingRow?.tableIndex === tableIndex &&
-                       editingRow?.rowIndex === rowIndex ? (
-                         <input
-                           type="number"
-                           value={row.currentAmount}
-                           onChange={(e) =>
-                             handleInputChange(
-                               tableIndex,
-                               rowIndex,
-                               "currentAmount",
-                               e.target.value
-                             )
-                           }
-                           className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
-                         />
-                       ) : (
-                         `${row.user_rate ? `₹${row.user_rate}` : "N/A"}`
-                       )}
-                     </td>
+                                {/* Current Amount (Editable) */}
+                                <td className="border border-gray-300 px-3 py-2">
+                                  {editingRow?.tableIndex === tableIndex &&
+                                  editingRow?.rowIndex === rowIndex ? (
+                                    <input
+                                      type="number"
+                                      value={row.currentAmount}
+                                      onChange={(e) =>
+                                        handleInputChange(
+                                          tableIndex,
+                                          rowIndex,
+                                          "currentAmount",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  ) : (
+                                    `${row.user_rate ? `₹${row.user_rate}` : "N/A"}`
+                                  )}
+                                </td>
 
-                     {/* Difference */}
-                     <td
-                       className={`border border-gray-300 px-3 py-2 font-medium ${
-                         row.difference < 0
-                           ? "text-red-500"
-                           : "text-green-500"
-                       }`}
-                     >
-                       ${row.user_rate - row.suggested_price}
-                     </td>
+                                {/* Difference */}
+                                <td
+                                  className={`border border-gray-300 px-3 py-2 font-medium ${
+                                    row.difference < 0
+                                      ? "text-red-500"
+                                      : "text-green-500"
+                                  }`}
+                                >
+                                  ${row.user_rate - row.suggested_price}
+                                </td>
 
-                     {/* Actions */}
-                     <td className="border border-gray-300 px-3 py-2 text-center">
-                       <button
-                         onClick={() =>
-                           handleActionClickWithDialog(
-                             tableIndex,
-                             rowIndex
-                           )
-                         }
-                         className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
-                       >
-                         Update
-                       </button>
-                     </td>
-                   </tr>
-                 ))}
-             </tbody>
-           </table>
-         </div>
-       </div>
-     ))}
-   </div>
- </div>
-)
-
-}
-       
+                                {/* Actions */}
+                                <td className="border border-gray-300 px-3 py-2 text-center">
+                                  <button
+                                    onClick={() =>
+                                      handleActionClickWithDialog(
+                                        tableIndex,
+                                        rowIndex
+                                      )
+                                    }
+                                    className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                                  >
+                                    Update
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* suggesion End  */}
 

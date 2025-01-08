@@ -41,6 +41,7 @@ const AddTender = () => {
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [selectedBuyers, setSelectedBuyers] = useState([]);
+  const [selectedbuyersId,setSelectedBuyersId] = useState([])
   // Quick Options
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
@@ -369,7 +370,7 @@ const AddTender = () => {
         headers, // Headers from EditableSheet
         sub_tenders: subTenders, // SubTender data with rows
       },
-      selected_buyers: selectedBuyers,
+      selected_buyers: selectedbuyersId,
       accessPosition: accessPosition,
       ShowItems:ShowItems,
       formula: generatedFormula,
@@ -402,10 +403,17 @@ const AddTender = () => {
     }
   };
 
-  const handleSelectedBuyersChange = (buyers) => {
-    const buyerIds = buyers.map((buyer) => buyer.user_id);
-    setSelectedBuyers(buyerIds); // Store only IDs in the state
-  };
+  
+  useEffect (()=>{
+    const handleSelectedBuyers = () => {
+
+      const buyerIds = selectedBuyers.map((buyer) => buyer.user_id);
+      setSelectedBuyersId(buyerIds); // Store only IDs in the state
+    };
+    handleSelectedBuyers ();
+  },[selectedBuyers])
+  console.log("----####$selectedid$#----", selectedbuyersId);
+  
   return (
     <>
       <HeaderTitle
@@ -473,7 +481,9 @@ const AddTender = () => {
                 setAccessPosition={setAccessPosition}
                 ShowItems={ShowItems}
                 setShowItems={setShowItems}
-                onSelectedBuyersChange={() => handleSelectedBuyersChange}
+                // onSelectedBuyersChange={() => handleSelectedBuyersChange}
+                selectedBuyers={selectedBuyers}
+                setSelectedBuyers={setSelectedBuyers}
               />
             </div>
 
