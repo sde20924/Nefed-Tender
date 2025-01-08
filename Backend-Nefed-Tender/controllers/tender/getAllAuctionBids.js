@@ -5,6 +5,7 @@ const { userVerifyApi } = require("../../utils/external/api");
 const getAllAuctionBids = async (req, res) => {
   try {
     const { tender_id } = req.params;
+
     if (!tender_id) {
       return res
         .status(400)
@@ -21,7 +22,9 @@ const getAllAuctionBids = async (req, res) => {
       ORDER BY \`order\`
     `;
     const [headers] = await db.query(headersQuery, [tender_id]);
-  
+    console.log("-=-=-=-=-=yha aa tk aa rha h")
+
+    // Fetch subtenders and rows (including buyer and seller data)
     const subtendersQuery = `
       SELECT 
     s.subtender_id,

@@ -4,7 +4,7 @@ const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // For handl
 const getTenderBids = asyncErrorHandler(async (req, res) => {
   try {
     const { tender_id } = req.params;
-    const { user_id, user_name } = req.user; // Assuming `user_name` is available in `req.user`
+    const { user_id } = req.user; // Assuming `user_name` is available in `req.user`
 
     if (!tender_id) {
       return res.status(400).json({ success: false, message: "Tender ID is required." });

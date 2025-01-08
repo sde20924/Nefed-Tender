@@ -166,8 +166,8 @@ const AccessBidRoom = () => {
 
   useEffect(() => {
     if (tenderId) {
-      fetchTenderDetails();
       fetchBids();
+      fetchTenderDetails();
       // fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
@@ -236,18 +236,18 @@ const AccessBidRoom = () => {
 
   // Fetch bids for the specific tender
   const fetchBids = async () => {
-    // try {
-    //   // const response = await callApiGet(`tender/bid/${tenderId}`);
-    //   const allBids = response.allBids; // Fetch bids by tender ID
-    //   if (response.success) {
-    //     setBids(response.allBids); // Set all bids data
+    try {
+      const response = await callApiGet(`tender/bid/${tenderId}`);
+      const allBids = response.allBids; // Fetch bids by tender ID
+      if (response.success) {
+        setBids(response.allBids); // Set all bids data
 
-    //     // setLBidsUserId(response.lowestBid.user_id);
-    //     // setLBid(response.lowestBid.bid_amount);
-    //   }
-    // } catch (error) {
-    //   console.error("Error fetching bids:", error.message);
-    // }
+        // setLBidsUserId(response.lowestBid.user_id);
+        // setLBid(response.lowestBid.bid_amount);
+      }
+    } catch (error) {
+      console.error("Error fetching bids:", error.message);
+    }
   };
 
   // useEffect(() => {
