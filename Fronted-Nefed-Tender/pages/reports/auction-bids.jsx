@@ -53,6 +53,26 @@ const AuctionBids = () => {
   useEffect(() => {
     if (socket) {
       const handleReport = (data) => {
+        function removeDuplicatesFromRows(data) {
+          const newData = JSON.parse(JSON.stringify(data)); // Deep copy
+
+          for (const subTenderId in newData) {
+            const subTender = newData[subTenderId];
+            const uniqueRows = new Set();
+
+            subTender.rows = subTender.rows.filter((row) => {
+              const serializedRow = JSON.stringify(row);
+              if (uniqueRows.has(serializedRow)) {
+                return false; // Skip duplicates
+              }
+              uniqueRows.add(serializedRow);
+              return true; // Keep unique rows
+            });
+          }
+          console.log("FEDSFRWGG", newData);
+          return newData;
+        }
+
         setTenderData((prevData) => ({
           ...prevData,
           headersChangedByBuyers: {
@@ -61,7 +81,7 @@ const AuctionBids = () => {
           },
           subTendersByBuyer: {
             ...prevData.subTendersByBuyer,
-            [data.buyer_id]: data.subTender,
+            [data.buyer_id]: removeDuplicatesFromRows(data.subTender),
           },
         }));
       };
