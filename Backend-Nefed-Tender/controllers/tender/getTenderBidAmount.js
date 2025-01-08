@@ -4,9 +4,8 @@ const asyncErrorHandler = require("../../utils/asyncErrorHandler"); // For handl
 const getTenderBids = asyncErrorHandler(async (req, res) => {
   try {
     const { tender_id } = req.params;
-    const { user_id } = req.user;
+    const { user_id, user_name } = req.user; // Assuming `user_name` is available in `req.user`
 
-    // Ensure the tender_id is provided
     if (!tender_id) {
       return res.status(400).json({ success: false, message: "Tender ID is required." });
     }
@@ -14,7 +13,7 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
     // Fetch tender details
     const tenderDetailsQuery = `
       SELECT 
-        mt.*,
+        mt.tender_title, 
         trd.doc_key, 
         trd.tender_doc_id, 
         trd.doc_label, 
@@ -25,17 +24,13 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
       WHERE mt.tender_id = ?
     `;
     const [tenderDetailsResult] = await db.query(tenderDetailsQuery, [tender_id]);
-
+   
     if (tenderDetailsResult.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Tender not found.",
-      });
+      return res.status(404).json({ success: false, message: "Tender not found." });
     }
 
-    // Parse tender details
     const tenderDetails = {
-      ...tenderDetailsResult[0],
+      tender_title: tenderDetailsResult[0].tender_title,
       tenderDocuments: tenderDetailsResult
         .map((doc) => ({
           doc_key: doc.doc_key,
@@ -47,29 +42,7 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
         .filter((doc) => doc.doc_key),
     };
 
-    // Fetch bids by the logged-in user for the tender
-    const userBidsQuery = `
-      SELECT 
-        bid_id, 
-        tender_id, 
-        user_id, 
-        bid_amount, 
-        created_at, 
-        status 
-      FROM tender_bid_room 
-      WHERE tender_id = ? AND user_id = ? 
-      ORDER BY created_at DESC
-    `;
-    const [userBids] = await db.query(userBidsQuery, [tender_id, user_id]);
-
-    if (userBids.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "No bids found for this tender from the logged-in user.",
-      });
-    }
-
-    // Fetch headers for the tender
+    // Fetch headers
     const headersQuery = `
       SELECT header_id, table_head, \`order\`, type
       FROM tender_header
@@ -78,7 +51,13 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
     `;
     const [headers] = await db.query(headersQuery, [tender_id]);
 
-    // Fetch data from buyer_header_row_data
+    if (!headers.length) {
+      return res.status(404).json({ success: false, message: "No headers found for this tender." });
+    }
+
+    const headerIds = headers.map((header) => header.header_id);
+
+    // Fetch buyer header row data
     const buyerHeaderDataQuery = `
       SELECT 
         bhrd.row_data_id,
@@ -90,23 +69,28 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
         bhrd.order
       FROM buyer_header_row_data AS bhrd
       JOIN tender_header AS th ON bhrd.header_id = th.header_id
-      WHERE header_id IN (?) AND buyer_id = ?
-      ORDER BY bhrd.row_number ASC, th.order ASC
+      WHERE bhrd.header_id IN (?) AND bhrd.buyer_id = ?
+      ORDER BY bhrd.subtender_id ASC, bhrd.row_number ASC, bhrd.order ASC
     `;
-    const [buyerHeaderData] = await db.query(buyerHeaderDataQuery, [tender_id, user_id]);
+    const [buyerHeaderData] = await db.query(buyerHeaderDataQuery, [headerIds, user_id]);
 
-    // Group buyer header data by subtender_id and row_number
+    // Organize buyer data by subtender and row
     const buyerData = buyerHeaderData.reduce((acc, row) => {
       const { subtender_id, row_number, table_head, row_data } = row;
 
       if (!acc[subtender_id]) acc[subtender_id] = {};
       if (!acc[subtender_id][row_number]) acc[subtender_id][row_number] = {};
+      if (!acc[subtender_id][row_number][table_head]) acc[subtender_id][row_number][table_head] = [];
 
-      acc[subtender_id][row_number][table_head] = row_data;
+      acc[subtender_id][row_number][table_head].push({
+        row_data_id: row.row_data_id,
+        row_data,
+        order: row.order,
+      });
       return acc;
     }, {});
 
-    // Fetch sub-tenders and group rows
+    // Fetch subtenders and organize their rows
     const subtendersQuery = `
       SELECT 
         s.subtender_id,
@@ -120,11 +104,10 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
       LEFT JOIN seller_header_row_data sh 
         ON s.subtender_id = sh.subtender_id
       WHERE s.tender_id = ?
-      ORDER BY s.subtender_id, sh.row_number, sh.order;
+      ORDER BY s.subtender_id ASC, sh.row_number ASC, sh.order ASC;
     `;
     const [subtenderResults] = await db.query(subtendersQuery, [tender_id]);
 
-    // Group sub-tender rows
     const subtenderData = subtenderResults.reduce((acc, row) => {
       const {
         subtender_id,
@@ -158,15 +141,49 @@ const getTenderBids = asyncErrorHandler(async (req, res) => {
       return acc;
     }, {});
 
+    // Integrate buyer data into subtenders
+    Object.keys(subtenderData).forEach((subtenderId) => {
+      const subtender = subtenderData[subtenderId];
+      subtender.rows.forEach((row, rowIndex) => {
+        if (!row) return;
+        row.forEach((cell, cellIndex) => {
+          if (cell.type === "edit") {
+            const header = headers.find((h) => h.header_id === cell.header_id);
+            if (header) {
+              const tableHead = header.table_head;
+              const buyerRowDataArray = buyerData[subtenderId]?.[rowIndex + 1]?.[tableHead] || [];
+              if (buyerRowDataArray.length > 0) {
+                subtender.rows[rowIndex][cellIndex].buyer_data = buyerRowDataArray;
+              }
+            }
+          }
+        });
+      });
+    });
+
+    // Fetch user bids
+    const userBidsQuery = `
+      SELECT 
+        bid_id, 
+        tender_id, 
+        user_id, 
+        bid_amount, 
+        created_at, 
+        status 
+      FROM tender_bid_room 
+      WHERE tender_id = ? AND user_id = ? 
+      ORDER BY created_at DESC
+    `;
+    const [userBids] = await db.query(userBidsQuery, [tender_id, user_id]);
+
     res.status(200).json({
       success: true,
       message: "Tender bids and buyer data fetched successfully.",
       data: {
-        tenderDetails,
-        headers,
-        subTenders: subtenderData,
-        buyerData,
-        userBids,
+        tenderDetails, // Contains tender_title and tenderDocuments
+        headers, // All headers
+        subTenders: subtenderData, // Subtender rows with integrated buyer data
+        userBids, // User's bids
       },
     });
   } catch (error) {
