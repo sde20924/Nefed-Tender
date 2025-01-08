@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 
 const TenderTable = ({ data }) => {
-  const socket = useSelector((state) => state.socket.socket_instance);
   const [headers, setHeaders] = useState([]);
   const [subTenders, setSubTenders] = useState({});
   const [buyersData, setBuyersData] = useState({});
@@ -17,28 +16,9 @@ const TenderTable = ({ data }) => {
     }
   }, [data]);
 
-  // useEffect(() => {
-  //   if (socket) {
-  //     const handleReport = (data) => {
-  //       console.log(data);
-  //       setBuyersData((prevBuyersData) => ({
-  //         ...prevBuyersData,
-  //         [data.buyer_id]: data.subTenderByBuyer,
-  //       }));
-
-  //       setGroupedHeadersByBuyers((prevGroupedHeaders) => ({
-  //         ...prevGroupedHeaders,
-  //         [data.buyer_id]: data.headersChangedByBuyers,
-  //       }));
-  //     };
-
-  //     socket.on("Auction-Bid-Report", handleReport);
-
-  //     return () => {
-  //       socket.off("Auction-Bid-Report", handleReport);
-  //     };
-  //   }
-  // }, [socket]);
+  // console.log("subTenders", subTenders);
+  // console.log("groupedHeadersByBuyers", groupedHeadersByBuyers);
+  // console.log("buyersData", buyersData);
 
   const renderHeaders = () => {
     return (
@@ -83,6 +63,7 @@ const TenderTable = ({ data }) => {
   };
 
   const renderRows = (subTenderId, rows) => {
+    // console.log("subTenderID", subTenderId, "rows", rows);
     return rows.map((row, rowIndex) => {
       // Collect all buyer-specific values for the row
       const buyerValues = Object.values(groupedHeadersByBuyers).map(
@@ -92,8 +73,9 @@ const TenderTable = ({ data }) => {
               buyersData[buyerGroup.buyer_id]?.[subTenderId];
             const buyerRow = buyerSubTender?.rows[rowIndex] || [];
             const matchingCell = buyerRow.find(
-              (cell) => cell?.header_id === header.header_id
+              (cell) => cell?.header_id == header.header_id
             );
+            // console.log("buyerSubTender", buyerSubTender);
             return {
               buyerId: buyerGroup.buyer_id,
               headerId: header.header_id,
@@ -105,21 +87,22 @@ const TenderTable = ({ data }) => {
 
       // Flatten and find the minimum value
       const flatBuyerValues = buyerValues.flat();
+      // console.log("flatBuyers", flatBuyerValues);
       const minValues = flatBuyerValues.reduce((acc, cell) => {
         if (!acc[cell.headerId] || cell.value < acc[cell.headerId].value) {
           acc[cell.headerId] = cell;
         }
         return acc;
       }, {});
-
+      // console.log("minValues", minValues);
       return (
         <tr
           key={rowIndex}
-          className={`${rowIndex % 2 === 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}
+          className={`${rowIndex % 2 == 0 ? "bg-gray-50" : "bg-white"} hover:bg-gray-100`}
         >
           {row.map(
             (cell, cellIndex) =>
-              cell?.type === "view" && (
+              cell?.type == "view" && (
                 <td
                   key={cellIndex}
                   className="px-4 py-2 border border-gray-300 text-center"
@@ -134,11 +117,12 @@ const TenderTable = ({ data }) => {
                 buyersData[buyerGroup.buyer_id]?.[subTenderId];
               const buyerRow = buyerSubTender?.rows[rowIndex] || [];
               const matchingCell = buyerRow.find(
-                (cell) => cell?.header_id === header.header_id
+                (cell) => cell?.header_id == header.header_id
               );
+              // console.log(matchingCell?.row_data);
               const isLowest =
-                minValues[header.header_id]?.buyerId === buyerGroup.buyer_id &&
-                minValues[header.header_id]?.value ===
+                minValues[header.header_id]?.buyerId == buyerGroup.buyer_id &&
+                minValues[header.header_id]?.value ==
                   parseFloat(matchingCell?.row_data);
 
               return (

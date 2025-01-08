@@ -19,6 +19,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
     await db.query("START TRANSACTION");
 
     //buyer Details
+    const headerIdsSet = new Set();
     const token = req.headers["authorization"];
 
     const buyerDetailsResponse = await axios.post(
@@ -41,7 +42,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
 
     let headersChangedByBuyers = {
       [user_id]: {
-        buyer: user_id,
+        buyer_id: user_id,
         buyer_name:
           buyerDetailsResponse?.data?.data[0]?.first_name +
           " " +
@@ -66,9 +67,16 @@ const saveBuyerHeaderRowData = async (req, res) => {
 
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const row = rows[rowIndex];
+        const rowData = [];
 
         for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
           const cell = row[cellIndex];
+          const header = headers[cellIndex];
+          const header_id = header?.header_id;
+
+          if (cell.type !== "edit") {
+            rowData.push(null);
+          }
 
           // Only process cells with type "edit" and non-null, non-empty data
           if (
@@ -76,24 +84,23 @@ const saveBuyerHeaderRowData = async (req, res) => {
             cell.data !== null &&
             cell.data.trim() !== ""
           ) {
-            const header = headers[cellIndex];
-            const header_id = header?.header_id;
-
             if (!header_id) {
               console.error(`Header ID not found for cell index ${cellIndex}`);
               continue;
             }
 
             // Add header information to headersChangedByBuyers
-            headersChangedByBuyers[user_id].headers.push({
-              header_id,
-              header_name: header.table_head,
-              buyer_id: user_id,
-              // buyer_name: "",
-            });
+            if (!headerIdsSet.has(header_id)) {
+              headersChangedByBuyers[user_id].headers.push({
+                header_id,
+                header_name: header.table_head,
+                buyer_id: user_id,
+              });
+              headerIdsSet.add(header_id); // Add the header_id to the Set
+            }
 
             // Add row information to subTenderByBuyer
-            subTenderByBuyer[user_id][subtender_id].rows.push({
+            rowData.push({
               header_id,
               row_data: cell.data,
               type: "edit",
@@ -102,6 +109,7 @@ const saveBuyerHeaderRowData = async (req, res) => {
               order: cellIndex + 1,
             });
 
+            subTenderByBuyer[user_id][subtender_id].rows.push(rowData);
             // Insert data into the buyer_header_row_data table
             await db.query(
               `INSERT INTO buyer_header_row_data 
@@ -144,8 +152,8 @@ const saveBuyerHeaderRowData = async (req, res) => {
     emitEvent(
       "Auction-Bid-Report",
       {
-        headersChangedByBuyers,
-        subTenderByBuyer,
+        headers: headersChangedByBuyers[user_id],
+        subTender: subTenderByBuyer[user_id],
         action_type: "Auction-Bid-Report",
         buyer_id: user_id,
       },

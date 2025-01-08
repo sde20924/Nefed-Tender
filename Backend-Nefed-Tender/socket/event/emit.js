@@ -19,6 +19,7 @@ const emitEvent = (eventName, data, userType, ids, user_id = "") => {
           connectedUsers[users].userType == userType &&
           connectedUsers[users].id == ids
         ) {
+          console.log(data);
           io.to(id).emit(eventName, data);
         }
       });

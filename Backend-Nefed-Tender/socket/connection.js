@@ -8,7 +8,7 @@ const initializeSocket = (server) => {
   io = socketIO(server, {
     path: "/socket.io",
     cors: {
-      origin: ["http://localhost:8001"],
+      origin: ["https://api.tender.shippingbaba.com"],
       methods: ["GET", "POST", "DELETE", "PUT"],
       credentials: true,
     },
