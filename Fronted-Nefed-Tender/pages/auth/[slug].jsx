@@ -128,7 +128,7 @@ export default function Login() {
         localStorage.setItem("data", JSON.stringify(data));
         localStorage.setItem("login_as", data?.login_as);
         //socket connection
-        const socketInstance = io("https://api.tender.shippingbaba.com", {
+        const socketInstance = io("http://localhost:8002", {
           query: { token: data.token },
           transports: ["websocket"],
         });
@@ -143,6 +143,7 @@ export default function Login() {
       console.log(e);
     }
   };
+
   const verifyOtp = async () => {
     setSignInDisabled(true);
     const otpData = await authApi("otp/verify", "POST", {

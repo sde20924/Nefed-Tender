@@ -50,31 +50,27 @@ const AuctionBids = () => {
     }
   };
 
-  // useEffect(() => {
-  //   if (socket) {
-  //     const handleReport = (data) => {
-  //       setTenderData((prevData) => ({
-  //         ...prevData,
-  //         headersChangedByBuyers: {
-  //           ...prevData.headersChangedByBuyers,
-  //           [data.buyer_id]: data.headers,
-  //         },
-  //         subTendersByBuyer: {
-  //           ...prevData.subTendersByBuyer,
-  //           [data.buyer_id]: data.subTender,
-  //         },
-  //       }));
-  //     };
+  useEffect(() => {
+    if (socket) {
+      const handleReport = (data) => {
+        setTenderData((prevData) => ({
+          ...prevData,
+          headersChangedByBuyers: {
+            ...prevData.headersChangedByBuyers,
+            [data.buyer_id]: data.headers,
+          },
+          subTendersByBuyer: {
+            ...prevData.subTendersByBuyer,
+            [data.buyer_id]: data.subTender,
+          },
+        }));
+      };
 
-  //     socket.on("Auction-Bid-Report", handleReport);
+      socket.on("Auction-Bid-Report", handleReport);
+    }
+  }, [socket]);
 
-  //     return () => {
-  //       socket.off("Auction-Bid-Report", handleReport);
-  //     };
-  //   }
-  // }, [socket]);
-
-  // console.log(tenderData);
+  console.log(tenderData);
 
   return (
     <>

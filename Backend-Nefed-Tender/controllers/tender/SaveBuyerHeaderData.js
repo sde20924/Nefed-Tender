@@ -18,6 +18,18 @@ const saveBuyerHeaderRowData = async (req, res) => {
   try {
     await db.query("START TRANSACTION");
 
+    const removeDuplicateArrays = (arr) => {
+      const seen = new Set();
+      return arr.filter((subArray) => {
+        const serialized = JSON.stringify(subArray);
+        if (seen.has(serialized)) {
+          return false;
+        }
+        seen.add(serialized);
+        return true;
+      });
+    };
+
     //buyer Details
     const headerIdsSet = new Set();
     const token = req.headers["authorization"];
@@ -65,9 +77,11 @@ const saveBuyerHeaderRowData = async (req, res) => {
         rows: [],
       };
 
+      const rowSet = new Set();
+
       for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
         const row = rows[rowIndex];
-        const rowData = [];
+        let rowData = [];
 
         for (let cellIndex = 0; cellIndex < row.length; cellIndex++) {
           const cell = row[cellIndex];
@@ -109,7 +123,13 @@ const saveBuyerHeaderRowData = async (req, res) => {
               order: cellIndex + 1,
             });
 
-            subTenderByBuyer[user_id][subtender_id].rows.push(rowData);
+            const rowDataString = JSON.stringify(rowData);
+
+            if (!rowSet.has(rowDataString)) {
+              rowSet.add(rowDataString);
+              subTenderByBuyer[user_id][subtender_id].rows.push(rowData);
+            }
+
             // Insert data into the buyer_header_row_data table
             await db.query(
               `INSERT INTO buyer_header_row_data 

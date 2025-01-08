@@ -7,7 +7,9 @@ import {
   removeNotificationsByIndex,
   setNotifications,
 } from "@/store/slices/notificationSlice";
+import { setSocket } from "@/store/slices/socketSlice";
 import { useRouter } from "next/router";
+import { io } from "socket.io-client";
 
 const NotificationDropdown = () => {
   const socket = useSelector((state) => state.socket.socket_instance);
@@ -38,6 +40,29 @@ const NotificationDropdown = () => {
       // };
     }
   }, [socket]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No token found in localStorage.");
+      return;
+    }
+
+    const socketInstance = io("http://localhost:8002", {
+      query: { token },
+      transports: ["websocket"],
+    });
+
+    socketInstance.on("connect", () => {
+      console.log("Socket connected:", socketInstance.id);
+      dispatch(setSocket(socketInstance));
+    });
+
+    socketInstance.on("connect_error", (error) => {
+      console.log("Socket connection error:", error);
+    });
+  }, [dispatch]);
 
   const handleNotifications = (data) => {
     setUnreadCount((prevCount) => prevCount + 1);
