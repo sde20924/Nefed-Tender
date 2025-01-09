@@ -40,7 +40,7 @@ sequelizeInstance
 db.sequelize = sequelizeInstance;
 db.Sequelize = Sequelize;
 
-db.ManageTender = ManageTender(sequelizeInstance, Sequelize);
+//db.ManageTender = ManageTender(sequelizeInstance, Sequelize);
 
 //= ==============================
 Object.values(db).forEach((model) => {

@@ -1,8 +1,8 @@
-import mysql from 'mysql2/promise';
+import mysql from "mysql2/promise";
 
 // MySQL Database Configuration
 const dbConfig = {
-  host: 'earth.hostitbro.com',
+  host: "earth.hostitbro.com",
   user: "nafedtra_admin",
   password: "Admin@2024",
   database: "nafedtra_tender_viexports",
@@ -25,7 +25,7 @@ const pool = mysql.createPool(dbConfig);
   } catch (err) {
     console.error("Error connecting to MySQL database", err);
   }
-});
+})();
 
 // Export the pool for use in queries
 export default pool;

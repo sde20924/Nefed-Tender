@@ -48,7 +48,7 @@ export default {
       database: envVars.DB_NAME,
       host: envVars.DB_HOST,
       port: envVars.DB_PORT, // Add MySQL port
-      dialect: 'postgres', // Change dialect to MySQL
+      dialect: 'mysql', // Change dialect to MySQL
       logging: false, // Optional: Disable SQL logging
     },
   }

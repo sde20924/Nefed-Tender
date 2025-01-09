@@ -1,11 +1,11 @@
 import express from 'express';
 import tenderRoute from './tender.route.js';
-import userRoute from './users/usersRoute.js';
-import buyerRoute from './buyers/buyerRoute.js';
-import sellerRoute from './sellers/sellerRoute.js';
-import adminRoute from './admin/adminRoute.js';
-import managerRoute from './manager/managerRoute.js';
-import tenderRoutes from './tender/tenderRoute.js'
+import userRoute from './usersRoute.js';
+import buyerRoute from './buyerRoute.js';
+import sellerRoute from './sellerRoute.js';
+import adminRoute from './adminRoute.js';
+import managerRoute from './managerRoute.js';
+import tenderRoutes from './tenderRoute.js'
 
 const router = express.Router();
 
@@ -14,7 +14,7 @@ const defaultRoutes = [
   {
     path: '/tender',
     route: tenderRoute,
-  }
+  },
 ];
 
 // Loop through each route and apply to the router
