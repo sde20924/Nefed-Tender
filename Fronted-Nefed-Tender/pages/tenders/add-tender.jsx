@@ -378,13 +378,32 @@ const AddTender = () => {
       formula: generatedFormula,
       category: selectedCategory,
     };
+    const requiredFields = [
+      "tender_title",
+      "tender_slug",
+      "tender_desc",
+      "currency",
+      "start_price",
+      "app_start_time",
+      "app_end_time",
+      "auct_start_time",
+      "auct_end_time",
+    ];
+  
+    for (const field of requiredFields) {
+      if (!formData[field] || formData[field] === "") {
+        toast.error(`Field "${field}" is required.`);
+        return; // Exit if a required field is missing
+      }
+    }
 
     try {
       setLoading(true);
       if (tenderOption === "publish" && generatedFormula == "") {
         toast.error("Formula Required For Calculate Total Coast");
-        return;
+        return
       }
+      
       if (tenderOption === "draft") {
         const response = await callApiPost("create_new_tender", formData);
         console.log("Response:", response);

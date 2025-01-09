@@ -520,7 +520,7 @@ const TenderDetail = () => {
       </div>
       <div className="space-y-8">
         <div className="space-y-8">
-          {iseditableSheet.sub_tenders.map((subTender) => (
+          {iseditableSheet?.sub_tenders?.map((subTender) => (
             <div
               key={subTender.id}
               className="border border-gray-300 p-4 rounded"

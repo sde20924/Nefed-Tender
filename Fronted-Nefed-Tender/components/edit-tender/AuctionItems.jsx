@@ -10,6 +10,8 @@ const AuctionItems = ({
   auctionType,
   accessPosition,
   setAccessPosition,
+  ShowItems,
+  setShowItems,
   onSelectedBuyersChange,
   initialSelectedBuyersIds,
 }) => {
@@ -72,6 +74,14 @@ const AuctionItems = ({
       setAccessPosition("yes");
     }
   }, [accessPosition, setAccessPosition]);
+  useEffect(() => {
+      if (!ShowItems) {
+        setShowItems("yes");
+      }
+    }, [ShowItems, setShowItems]);
+    const handleShowItems = (value) => {
+      setShowItems(value);
+    };
 
   const handleAccessPositionChange = (value) => {
     setAccessPosition(value);
@@ -386,40 +396,7 @@ const AuctionItems = ({
             )}
           </div>
         </div>
-        <div className="mt-2 mb-2">
-          <div className="flex items-center justify-between">
-            {/* Label */}
-            <h3 className="lg:text-lg text-sm font-medium">
-              Access Position<span className="text-red-400">*</span>
-            </h3>
-
-            {/* Radio Buttons */}
-            <div className="flex items-center gap-4 md:px-4 px-2 lg:text-lg">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="accessPosition"
-                  value="yes"
-                  checked={accessPosition === "yes"}
-                  onChange={() => handleAccessPositionChange("yes")}
-                  className="form-radio text-blue-600 mr-2"
-                />
-                <span>Yes</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="accessPosition"
-                  value="no"
-                  checked={accessPosition === "no"}
-                  onChange={() => handleAccessPositionChange("no")}
-                  className="form-radio text-blue-600 mr-2"
-                />
-                <span>No</span>
-              </label>
-            </div>
-          </div>
-        </div>
+        
 
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
@@ -462,6 +439,74 @@ const AuctionItems = ({
                   className="form-radio text-blue-600 mr-2"
                 />
                 <span>Other</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 mb-2">
+          <div className="flex items-center justify-between">
+            {/* Label */}
+            <h3 className="text-lg font-medium">
+              Access Position<span className="text-red-400">*</span>
+            </h3>
+
+            {/* Radio Buttons */}
+            <div className="flex items-center gap-4 px-5">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="accessPosition"
+                  value={accessPosition}
+                  checked={accessPosition=="yes"}
+                  onChange={() => handleAccessPositionChange("yes")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>Yes</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="accessPosition"
+                  value={accessPosition}
+                  checked={accessPosition=="no"}
+                  onChange={() => handleAccessPositionChange("no")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>No</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 mb-2">
+          <div className="flex flex-col items-left justify-between">
+            {/* Label */}
+            <h3 className="text-lg font-medium">
+              Do you want to show Tender-items to buyer at Application submit<span className="text-red-400">*</span>
+            </h3>
+
+            {/* Radio Buttons */}
+            <div className="flex items-left mt-2 gap-4 ">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="ShowItems"
+                  value="yes"
+                  checked={ShowItems === "yes"}
+                  onChange={() => handleShowItems("yes")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>Yes</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="ShowItems"
+                  value="no"
+                  checked={ShowItems === "no"}
+                  onChange={() => handleShowItems("no")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>No</span>
               </label>
             </div>
           </div>

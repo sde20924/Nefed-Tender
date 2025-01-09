@@ -61,7 +61,8 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             audi_key: tenderDetailsResult[0].audi_key,
             access_position: tenderDetailsResult[0].access_position,
             show_items:tenderDetailsResult[0].show_items,
-            category:tenderDetailsResult[0].category
+            category:tenderDetailsResult[0].category,
+            formula:tenderDetailsResult[0].cal_formula
         };
              //      Parse attachments
              tenderDetails = {
@@ -88,25 +89,24 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
         const [headers] = await db.query(headersQuery, [tenderId]);
         tenderDetails.headers = headers;
         // Fetch subtenders and all possible rows, including empty ones
-        if (login_as === "buyer" && tenderDetails.show_items === "yes") {
-            const headersWithSubTendersQuery = `
-                SELECT 
-                    s.subtender_id,
-                    s.subtender_name,
-                    r.row_data_id,
-                    r.header_id,
-                    r.row_data,
-                    r.type,
-                    r.order,
-                    r.row_number
-                FROM subtender s
-                LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
-                WHERE s.tender_id = ?
-                ORDER BY s.subtender_id, r.row_number, r.order
-            `;
-            const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
-        
-
+        if (login_as==="seller" ||(login_as === "buyer" && tenderDetails.show_items === "yes")) {
+        const headersWithSubTendersQuery = `
+            SELECT 
+                s.subtender_id,
+                s.subtender_name,
+                r.row_data_id,
+                r.header_id,
+                r.row_data,
+                r.type,
+                r.order,
+                r.row_number
+            FROM subtender s
+            LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
+            WHERE s.tender_id = ?
+            ORDER BY s.subtender_id, r.row_number, r.order
+        `;
+        const [headersWithSubTendersResult] = await db.query(headersWithSubTendersQuery, [tenderId]);
+       
         // Parse subtenders and group rows by row_number
         const subTendersArray = [];
         const subTenderMap = new Map();
@@ -135,10 +135,8 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             };
             subTender.rows[row.row_number - 1] = rowGroup;
         });
-
+   
         tenderDetails.sub_tenders = subTendersArray;
-    }else{
-        tenderDetails.sub_tenders = [];
     }
            // Fetch selected buyers for private tenders
         if (tenderDetails.accessType === 'private') {
