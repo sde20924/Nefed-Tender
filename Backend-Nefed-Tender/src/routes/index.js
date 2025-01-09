@@ -1,18 +1,18 @@
-import express from 'express';
-import tenderRoute from './tender.route.js';
-import userRoute from './usersRoute.js';
-import buyerRoute from './buyerRoute.js';
-import sellerRoute from './sellerRoute.js';
-import adminRoute from './adminRoute.js';
-import managerRoute from './managerRoute.js';
-import tenderRoutes from './tenderRoute.js'
+const express = require("express");
+const tenderRoute = require("./tender.route");
+const userRoute = require("./usersRoute");
+const buyerRoute = require("./buyerRoute");
+const sellerRoute = require("./sellerRoute");
+const adminRoute = require("./adminRoute");
+const managerRoute = require("./managerRoute");
+const tenderRoutes = require("./tenderRoute");
 
 const router = express.Router();
 
 // Define routes and their paths
 const defaultRoutes = [
   {
-    path: '/tender',
+    path: "/tender",
     route: tenderRoute,
   },
 ];
@@ -29,4 +29,5 @@ router.use(sellerRoute);
 router.use(adminRoute);
 router.use(managerRoute);
 router.use(tenderRoutes);
-export default router;
+
+module.exports = router;

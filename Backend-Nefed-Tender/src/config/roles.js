@@ -1,7 +1,12 @@
 const allRoles = {
-  user: ['viewTender','bid','placeBid'],
-  admin: ['createTender', 'viewTender','viewBid'],
+  user: ["viewTender", "bid", "placeBid"],
+  admin: ["createTender", "viewTender", "viewBid"],
 };
 
-export const roles = Object.keys(allRoles);
-export const roleRights = new Map(Object.entries(allRoles));
+const roles = Object.keys(allRoles);
+const roleRights = new Map(Object.entries(allRoles));
+
+module.exports = {
+  roles,
+  roleRights,
+};

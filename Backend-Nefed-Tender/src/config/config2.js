@@ -1,4 +1,4 @@
-import mysql from "mysql2/promise";
+const mysql = require("mysql2/promise");
 
 // MySQL Database Configuration
 const dbConfig = {
@@ -28,4 +28,4 @@ const pool = mysql.createPool(dbConfig);
 })();
 
 // Export the pool for use in queries
-export default pool;
+module.exports = pool;

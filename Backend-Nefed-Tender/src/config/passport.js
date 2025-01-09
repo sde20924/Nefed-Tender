@@ -1,7 +1,6 @@
-import {Strategy as JwtStrategy, ExtractJwt} from 'passport-jwt';
-import config from './config.js';
-import {tokenTypes} from './tokens.js';
-import db from '../models/index.js';
+const { Strategy: JwtStrategy, ExtractJwt } = require("passport-jwt");
+const { tokenTypes } = require("./tokens.js");
+const db = require("../models/index.js");
 
 const jwtOptions = {
   secretOrKey: process.env.JWT_SECRET,
@@ -11,7 +10,7 @@ const jwtOptions = {
 const jwtVerify = async (payload, done) => {
   try {
     if (payload.type !== tokenTypes.ACCESS) {
-      throw new Error('Invalid token type');
+      throw new Error("Invalid token type");
     }
     const user = await db.User.findByPk(payload.userId);
     if (!user) {
@@ -25,6 +24,4 @@ const jwtVerify = async (payload, done) => {
 
 const jwtStrategy = new JwtStrategy(jwtOptions, jwtVerify);
 
-export {
-  jwtStrategy,
-};
+module.exports = { jwtStrategy };

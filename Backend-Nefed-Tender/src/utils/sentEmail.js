@@ -1,9 +1,9 @@
-import nodemailer from 'nodemailer';
+const nodemailer = require("nodemailer");
 
 const generateOtpEmailHtml = (otp, orgName, purpose) => {
-  let emailContent = '';
+  let emailContent = "";
 
-  if (purpose === 'registration') {
+  if (purpose === "registration") {
     emailContent = `
       <p>Thank you for registering with ${orgName}. Your One Time Password (OTP) for completing the registration is:</p>
       <div style="text-align: center; font-size: 24px; font-weight: bold; margin: 20px 0; color: #4CAF50;">
@@ -11,7 +11,7 @@ const generateOtpEmailHtml = (otp, orgName, purpose) => {
       </div>
       <p>Please enter this OTP to complete your registration.</p>
     `;
-  } else if (purpose === 'forgot_password') {
+  } else if (purpose === "forgot_password") {
     emailContent = `
       <p>You have requested to reset your password for ${orgName}. Your One Time Password (OTP) for completing the password reset is:</p>
       <div style="text-align: center; font-size: 24px; font-weight: bold; margin: 20px 0; color: #4CAF50;">
@@ -38,31 +38,29 @@ const generateOtpEmailHtml = (otp, orgName, purpose) => {
   `;
 };
 
-
 const transporter = nodemailer.createTransport({
-  service: 'Gmail', 
+  service: "Gmail",
   auth: {
-    user: 'developer2@viexports.com', 
-    pass: 'ckrcjdlijzfycffz', 
+    user: "developer2@viexports.com",
+    pass: "ckrcjdlijzfycffz",
   },
 });
 
 const sendOtpEmail = async (email, otp, purpose) => {
   const mailOptions = {
-    from: 'developer2@viexports.com',
+    from: "developer2@viexports.com",
     to: email,
     subject: `Your OTP for ${purpose}`,
-    html: generateOtpEmailHtml(otp, 'Vi Exports India Pvt. Ltd', purpose),
+    html: generateOtpEmailHtml(otp, "Vi Exports India Pvt. Ltd", purpose),
   };
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log('OTP email sent successfully');
+    console.log("OTP email sent successfully");
   } catch (error) {
-    console.error('Error sending OTP email:', error);
-    throw new Error('Could not send OTP email');
+    console.error("Error sending OTP email:", error);
+    throw new Error("Could not send OTP email");
   }
 };
 
-export default sendOtpEmail;
-
+module.exports = sendOtpEmail;
