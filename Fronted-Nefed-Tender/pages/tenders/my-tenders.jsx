@@ -3,6 +3,8 @@ import UserDashboard from "@/layouts/UserDashboard";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { callApiGet } from "../../utils/FetchApi";
+import DynamicCard from "@/components/ui/DynamicCard";
+import Loader from "@/components/Loader";
 
 const MyTender = () => {
   const [applications, setApplications] = useState([]);
@@ -131,7 +133,7 @@ const MyTender = () => {
     return true;
   });
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader/>;
   if (error) return <p>Error: {error}</p>;
 
   return (
@@ -143,107 +145,112 @@ const MyTender = () => {
       />
 
       <div className="container mx-auto p-6">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1  lg:grid-cols-3 gap-4">
           {filteredApplications?.length > 0 ? (
             filteredApplications.map((application) => {
               const tender = tenderDetails[application.tender_id];
               const timeInfo = timeLeft[application.tender_id];
 
               return (
-                <div
-                  key={application.tender_application_id}
+                <DynamicCard
+
                   className="bg-white shadow-lg rounded-2xl p-6 border border-gray-200 hover:shadow-xl transition-all duration-300 flex flex-col justify-between"
                 >
-                  {tender && (
-                    <div className="relative">
-                      {/* Title and Timer */}
-                      <div className="flex justify-between items-center mb-4">
-                        <h2 className="text-xl font-semibold text-gray-800 leading-tight">
-                          {tender.tender_title}
-                        </h2>
-                        {timeInfo?.label !== "Expired" && (
-                          <div
-                            className={`flex items-center text-xs px-3 py-1 rounded-full font-medium ${
-                              timeInfo.label === "Starting At"
-                                ? "bg-green-100 text-green-600"
-                                : "bg-red-100 text-red-600"
-                            }`}
-                          >
-                            <i
-                              className={`fas fa-clock mr-2 ${
+                  <div
+                    key={application.tender_application_id}
+                    className="flex flex-col h-full"
+                  >
+                    {tender && (
+                      <div className="relative flex-grow">
+                        {/* Title and Timer */}
+                        <div className="flex justify-between items-center mb-4">
+                          <h2 className="text-xl font-semibold text-gray-800 leading-tight">
+                            {tender.tender_title}
+                          </h2>
+                          {timeInfo?.label !== "Expired" && (
+                            <div
+                              className={`flex items-center text-xs px-3 py-1 rounded-full font-medium ${
                                 timeInfo.label === "Starting At"
-                                  ? "text-green-500"
-                                  : "text-red-500"
+                                  ? "bg-green-100 text-green-600"
+                                  : "bg-red-100 text-red-600"
                               }`}
-                            ></i>
-                            <span>{timeInfo.label}</span>
-                            <span className="font-bold ml-1">
-                              {timeInfo.time}
-                            </span>
-                          </div>
+                            >
+                              <i
+                                className={`fas fa-clock mr-2 ${
+                                  timeInfo.label === "Starting At"
+                                    ? "text-green-500"
+                                    : "text-red-500"
+                                }`}
+                              ></i>
+                              <span>{timeInfo.label}</span>
+                              <span className="font-bold ml-1">
+                                {timeInfo.time}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Description */}
+                        {tender.tender_desc ? (
+                          <p
+                            className="text-gray-600 mb-4 leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html:
+                                tender.tender_desc.length > 150
+                                  ? tender.tender_desc.slice(0, 150) + "..."
+                                  : tender.tender_desc,
+                            }}
+                          ></p>
+                        ) : (
+                          <p className="text-gray-500 mb-4">
+                            No description available.
+                          </p>
                         )}
+
+                        {/* Auction Timing */}
+                        <div className="flex items-center text-sm text-gray-500">
+                          <i className="fas fa-calendar-alt text-blue-500 mr-2"></i>
+                          <span>
+                            {new Date(
+                              tender.auct_start_time * 1000
+                            ).toLocaleString()}{" "}
+                            -{" "}
+                            {new Date(
+                              tender.auct_end_time * 1000
+                            ).toLocaleString()}
+                          </span>
+                        </div>
                       </div>
+                    )}
 
-                      {/* Description */}
-                      {tender.tender_desc ? (
-                        <p
-                          className="text-gray-600 mb-4 leading-relaxed"
-                          dangerouslySetInnerHTML={{
-                            __html:
-                              tender.tender_desc.length > 150
-                                ? tender.tender_desc.slice(0, 150) + "..."
-                                : tender.tender_desc,
-                          }}
-                        ></p>
-                      ) : (
-                        <p className="text-gray-500 mb-4">
-                          No description available.
-                        </p>
-                      )}
-
-                      {/* Auction Timing */}
-                      <div className="flex items-center text-sm text-gray-500 ">
-                        <i className="fas fa-calendar-alt text-blue-500 mr-2"></i>
-                        <span>
-                          {new Date(
-                            tender.auct_start_time * 1000
-                          ).toLocaleString()}{" "}
-                          -{" "}
-                          {new Date(
-                            tender.auct_end_time * 1000
-                          ).toLocaleString()}
+                    {/* Footer Section */}
+                    <div className="flex justify-between items-center mt-4">
+                      {/* Starting Price */}
+                      <h3 className="text-sm font-medium text-gray-700">
+                        Starting Price:{" "}
+                        <span className="text-blue-600 font-bold">
+                          {tender.start_price}
                         </span>
-                      </div>
+                      </h3>
+
+                      {/* Access Bid Room Button */}
+                      <button
+                        onClick={() =>
+                          timeInfo.label !== "Starting At" &&
+                          handleViewDetails(application.tender_id)
+                        }
+                        disabled={timeInfo.label === "Starting At"}
+                        className={`px-5 py-2 rounded-lg text-sm font-semibold shadow-md transition-all ${
+                          timeInfo.label === "Starting At"
+                            ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
+                        }`}
+                      >
+                        Access Bid Room
+                      </button>
                     </div>
-                  )}
-
-                  {/* Footer Section */}
-                  <div className="flex justify-between items-center mt-4">
-                    {/* Starting Price */}
-                    <h3 className="text-sm font-medium text-gray-700">
-                      Starting Price:{" "}
-                      <span className="text-blue-600 font-bold">
-                        {tender.start_price}
-                      </span>
-                    </h3>
-
-                    {/* Access Bid Room Button */}
-                    <button
-                      onClick={() =>
-                        timeInfo.label !== "Starting At" &&
-                        handleViewDetails(application.tender_id)
-                      }
-                      disabled={timeInfo.label === "Starting At"}
-                      className={`px-5 py-2 rounded-lg text-sm font-semibold shadow-md transition-all ${
-                        timeInfo.label === "Starting At"
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-gradient-to-r from-blue-500 to-blue-600 text-white hover:from-blue-600 hover:to-blue-700"
-                      }`}
-                    >
-                      Access Bid Room
-                    </button>
                   </div>
-                </div>
+                </DynamicCard>
               );
             })
           ) : (

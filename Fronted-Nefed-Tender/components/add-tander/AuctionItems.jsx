@@ -182,10 +182,10 @@ const AuctionItems = ({
       <div className=" flex flex-col justify-between items-start ">
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium ">
+            <h2 className="md:text-lg text-sm font-medium ">
               Access User<span className="text-red-400">*</span>
             </h2>
-            <div className="flex items-center gap-4 px-5">
+            <div className="flex items-center gap-4 md:px-5 px-1">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -193,7 +193,7 @@ const AuctionItems = ({
                   value="public"
                   checked={accessType === "public"}
                   onChange={() => handleAccessChange("public")}
-                  className="mr-2"
+                  className="mr-1 md:mr-2 md:text-lg text-sm"
                 />
                 Public
               </label>
@@ -204,7 +204,7 @@ const AuctionItems = ({
                   value="private"
                   checked={accessType === "private"}
                   onChange={() => handleAccessChange("private")}
-                  className="mr-2"
+                  className="mr-1 md:mr-2 md:text-lg text-sm"
                 />
                 Private
               </label>
@@ -220,7 +220,7 @@ const AuctionItems = ({
                   >
                     <FaTimes />
                   </button>
-                  <h3 className="text-lg font-bold mb-4">Private Access</h3>
+                  <h3 className="md:text-lg text-sm font-bold mb-4">Private Access</h3>
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Search Buyer by Email:
@@ -245,7 +245,7 @@ const AuctionItems = ({
                                 (b) => b.email === buyer.email
                               )}
                               onChange={() => toggleSelectBuyer(buyer)}
-                              className="mr-2"
+                              className="mr-1 md:mr-2"
                             />
                             {buyer.first_name} {buyer.last_name} ({buyer.email})
                             - {buyer.company_name}
@@ -392,12 +392,12 @@ const AuctionItems = ({
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
             {/* Label */}
-            <h3 className="text-lg font-medium">
+            <h3 className="md:text-lg text-sm font-medium">
               Auction Type<span className="text-red-400">*</span>
             </h3>
 
             {/* Radio Buttons */}
-            <div className=" px-5 flex items-center gap-4">
+            <div className=" md:px-5 px-1 flex items-center gap-4 ">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -405,9 +405,9 @@ const AuctionItems = ({
                   value="reverse"
                   checked={auctionType === "reverse"}
                   onChange={handleAuctionTypeChange}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>Reverse</span>
+                <span className="md:text-lg text-sm">Reverse</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -416,9 +416,9 @@ const AuctionItems = ({
                   value="forward"
                   checked={auctionType === "forward"}
                   onChange={handleAuctionTypeChange}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>Forward</span>
+                <span className="md:text-lg text-sm">Forward</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -427,9 +427,9 @@ const AuctionItems = ({
                   value="other"
                   checked={auctionType === "other"}
                   onChange={handleAuctionTypeChange}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>Other</span>
+                <span className="md:text-lg text-sm">Other</span>
               </label>
             </div>
           </div>
@@ -437,12 +437,12 @@ const AuctionItems = ({
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
             {/* Label */}
-            <h3 className="text-lg font-medium">
+            <h3 className="md:text-lg text-sm font-medium">
               Access Position<span className="text-red-400">*</span>
             </h3>
 
             {/* Radio Buttons */}
-            <div className="flex items-center gap-4 px-5">
+            <div className="flex md:items-center items-left gap-4 md:px-5 px-1">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -450,9 +450,9 @@ const AuctionItems = ({
                   value="yes"
                   checked={accessPosition === "yes"}
                   onChange={() => handleAccessPositionChange("yes")}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>Yes</span>
+                <span className="md:text-lg text-sm">Yes</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -461,9 +461,9 @@ const AuctionItems = ({
                   value="no"
                   checked={accessPosition === "no"}
                   onChange={() => handleAccessPositionChange("no")}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>No</span>
+                <span className="md:text-lg text-sm">No</span>
               </label>
             </div>
           </div>
@@ -471,7 +471,7 @@ const AuctionItems = ({
         <div className="mt-2 mb-2">
           <div className="flex flex-col items-left justify-between">
             {/* Label */}
-            <h3 className="text-lg font-medium">
+            <h3 className="md:text-lg text-sm font-medium">
               Do you want to show Tender-items to buyer at Application submit<span className="text-red-400">*</span>
             </h3>
 
@@ -484,9 +484,9 @@ const AuctionItems = ({
                   value="yes"
                   checked={ShowItems === "yes"}
                   onChange={() => handleShowItems("yes")}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>Yes</span>
+                <span className="md:text-lg text-sm">Yes</span>
               </label>
               <label className="flex items-center">
                 <input
@@ -495,9 +495,9 @@ const AuctionItems = ({
                   value="no"
                   checked={ShowItems === "no"}
                   onChange={() => handleShowItems("no")}
-                  className="form-radio text-blue-600 mr-2"
+                  className="form-radio text-blue-600 mr-1 md:mr-2"
                 />
-                <span>No</span>
+                <span className="md:text-lg text-sm">No</span>
               </label>
             </div>
           </div>

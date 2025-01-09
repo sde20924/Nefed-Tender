@@ -50,14 +50,14 @@ export default function TenderCategories({
   };
 
   return (
-    <div className=" font-bold">
+    <div className="p-4">
       <h2
-        className={` ${headerdynamicSize ? `text-${headerdynamicSize} font-bold mb-1`  : "text-2xl" } mb-1`}
+        className={` ${headerdynamicSize ? `text-${headerdynamicSize} font-medium text-gray-700`  : "text-2xl" } mb-1 font-bold`}
       >
         Tender Categories
       </h2>
 
-      <div className=" m-4">
+      <div className=" ">
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center space-x-2 text-gray-500">

@@ -12,6 +12,8 @@ import {
   FaTimes,
 } from "react-icons/fa";
 import TenderCategories from "@/components/add-tander/TenderCategories";
+import Loader from "@/components/Loader";
+import DynamicCard from "@/components/ui/DynamicCard";
 
 const Modal = ({ isOpen, onClose, onSubmit }) => {
   const [reason, setReason] = useState("");
@@ -68,7 +70,7 @@ const SubmittedApplications = () => {
   const [selectedCategory, setSelectedCategory] = useState("");
   const [filteredData, setFilteredData] = useState([]);
   const [selectedTenderTitle, setSelectedTenderTitle] = useState("");
-  const [headerdynamicSize ,setHeaderdynamicSize]=useState("sm")
+  const [headerdynamicSize, setHeaderdynamicSize] = useState("sm");
 
   const safeString = (str) => (str ? str.toLowerCase() : "");
 
@@ -175,7 +177,7 @@ const SubmittedApplications = () => {
     setIsModalOpen(false);
   };
 
-  if (loading) return <p>Loading...</p>;
+  if (loading) return <Loader />;
   if (error) return <p>Error: {error}</p>;
 
   return (
@@ -186,9 +188,9 @@ const SubmittedApplications = () => {
         title={"Submitted Applications"}
       />
       <div className="container mx-auto p-4">
-        <div className="mb-6 flex  flex-col md:flex-row md:items-center md:space-x-4 space-y-4 md:space-y-0 ">
+        <div className="mb-6 flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
           {/* Tender Categories Selector */}
-          <div className="flex-1 md:w-1/3">
+          <div className="w-full md:w-1/4 text-left">
             <TenderCategories
               categories={categories}
               setCategories={setCategories}
@@ -200,12 +202,12 @@ const SubmittedApplications = () => {
           </div>
 
           {/* Tender Titles Dropdown */}
-          <div className="flex-1 md:w-1/3">
+          <div className="w-full md:w-1/4 ">
             <label
               htmlFor="tender-title"
               className="block text-sm font-medium text-gray-700 mb-1"
             >
-              Tender Title
+              Tender 
             </label>
             <select
               id="tender-title"
@@ -231,7 +233,7 @@ const SubmittedApplications = () => {
           </div>
 
           {/* Search Input */}
-          <div className="flex-1 md:w-1/3">
+          <div className="w-full md:w-1/4 ">
             <label
               htmlFor="search"
               className="block text-sm font-medium text-gray-700 mb-1"
@@ -249,13 +251,10 @@ const SubmittedApplications = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {selectedCategory.length > 0
             ? filteredApplications.map((application) => (
-                <div
-                  key={application.tender_application_id}
-                  className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col relative"
-                >
+                <DynamicCard className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col relative">
                   {/* Top Section */}
                   <div className="flex justify-between items-start mb-4">
                     <h2 className="text-lg font-bold text-gray-900 truncate">
@@ -304,7 +303,7 @@ const SubmittedApplications = () => {
                       <h4 className="font-semibold text-gray-800">
                         Uploaded Files:
                       </h4>
-                      <ul className="space-y-2">
+                      <ul className="space-y-2 mt-2 ">
                         {application.file_details?.length > 0 ? (
                           application.file_details.map((file) => (
                             <li
@@ -316,13 +315,10 @@ const SubmittedApplications = () => {
                                 href={file.doc_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-indigo-600 underline truncate"
+                                className="text-indigo-600  truncate"
                               >
                                 {`Document ${file.tender_user_doc_id}`}
                               </a>
-                              <span className="text-gray-600 text-xs">
-                                ({file.application_status || "Unknown Status"})
-                              </span>
                             </li>
                           ))
                         ) : (
@@ -333,7 +329,7 @@ const SubmittedApplications = () => {
                   </div>
 
                   {/* Bottom Section */}
-                  <div className="flex justify-between items-center mt-2 space-x-2 ">
+                  <div className="flex justify-between items-center mt-4 space-x-2">
                     <button
                       onClick={() =>
                         handleAction(
@@ -356,13 +352,10 @@ const SubmittedApplications = () => {
                       Reject
                     </button>
                   </div>
-                </div>
+                </DynamicCard>
               ))
             : applications.map((application) => (
-                <div
-                  key={application.tender_application_id}
-                  className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col relative"
-                >
+                <DynamicCard className="bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-lg rounded-lg p-4 border border-gray-200 hover:shadow-xl transition-shadow duration-300 flex flex-col relative">
                   {/* Top Section */}
                   <div className="flex justify-between items-start mb-4">
                     <h2 className="text-lg font-bold text-gray-900 truncate">
@@ -411,25 +404,22 @@ const SubmittedApplications = () => {
                       <h4 className="font-semibold text-gray-800">
                         Uploaded Files:
                       </h4>
-                      <ul className="space-y-2">
+                      <ul className="space-y-2 mt-2">
                         {application.file_details?.length > 0 ? (
                           application.file_details.map((file) => (
                             <li
                               key={file.tender_user_doc_id}
-                              className="flex items-center space-x-2"
+                              className="flex items-center space-x-2 "
                             >
                               <FaFileAlt className="text-blue-500 w-5 h-5" />
                               <a
                                 href={file.doc_url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-indigo-600 underline truncate"
+                                className="text-indigo-600 truncate "
                               >
                                 {`Document ${file.tender_user_doc_id}`}
                               </a>
-                              <span className="text-gray-600 text-xs">
-                                ({file.application_status || "Unknown Status"})
-                              </span>
                             </li>
                           ))
                         ) : (
@@ -440,7 +430,7 @@ const SubmittedApplications = () => {
                   </div>
 
                   {/* Bottom Section */}
-                  <div className="flex justify-between items-center  space-x-2  mt-2">
+                  <div className="flex justify-between items-center mt-4 space-x-2">
                     <button
                       onClick={() =>
                         handleAction(
@@ -463,7 +453,7 @@ const SubmittedApplications = () => {
                       Reject
                     </button>
                   </div>
-                </div>
+                </DynamicCard>
               ))}
         </div>
       </div>

@@ -569,7 +569,7 @@ export default function EditableSheet({
   };
   console.log("headdsdddderrrr", headers);
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 p-4">
       {/* File Upload */}
       <div className="mb-4 flex justify-between items-center">
         {/* Auction Items Heading */}
@@ -582,7 +582,7 @@ export default function EditableSheet({
           <button
             type="button"
             onClick={(e) => openAddSubTenderModal(e)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
           >
             Add SubTender
           </button>
@@ -630,7 +630,7 @@ export default function EditableSheet({
               <button
                 type="button"
                 onClick={() => setShowFormulaModal(true)}
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                className="bg-green-500 hover:bg-green-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
               >
                 Generate Formula
               </button>
@@ -750,7 +750,7 @@ export default function EditableSheet({
             <button
               type="button"
               onClick={handleAddColumn}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-green-500 hover:bg-green-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
             >
               Add Column
             </button>
@@ -813,7 +813,7 @@ export default function EditableSheet({
                 event.preventDefault(); // Prevent the default action (if any)
                 handleDeleteColumn(); // Call the function to delete selected columns
               }}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-red-500 hover:bg-red-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
             >
               Delete Columns
             </button>
@@ -1104,7 +1104,7 @@ export default function EditableSheet({
           </button>
         </div>
       ) : (
-        <div className="container mx-auto p-6 gap-6">
+        <div className="container mx-auto  md:p-6 gap-6">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
             <div className="w-full md:w-[48%] p-8 rounded-lg bg-white shadow-xl transform transition-all duration-300 ease-in-out hover:scale-105">
               <p className="text-lg text-blue-700 font-semibold mb-2">
