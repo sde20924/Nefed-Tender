@@ -274,7 +274,7 @@ const EditTenderForm = () => {
           className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 relative"
         >
           {/* Grid Layout with 2 Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* ----- LEFT COLUMN ----- */}
             <div>
               {/* Tenders Details */}
@@ -347,7 +347,7 @@ const EditTenderForm = () => {
           />
 
           {/* Sticky Submit Button */}
-          <div className="fixed bottom-8 right-4">
+          <div className="flex justify-end">
             <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

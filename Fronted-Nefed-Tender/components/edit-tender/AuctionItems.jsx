@@ -184,17 +184,17 @@ const AuctionItems = ({
   };
 
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="bg-white shadow-md rounded lg:px-8 px-4 pt-6 pb-8 mb-4">
       <h2 className="text-2xl font-bold mb-4">Auction Control</h2>
 
       {/* Auction Type Section */}
       <div className=" flex flex-col justify-between items-start ">
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium ">
+            <h2 className="lg:text-lg text-sm font-medium ">
               Access User<span className="text-red-400">*</span>
             </h2>
-            <div className="flex items-center gap-4 px-5">
+            <div className="flex items-center gap-4 md:px-4 px-2 lg:text-lg">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -401,12 +401,12 @@ const AuctionItems = ({
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
             {/* Label */}
-            <h3 className="text-lg font-medium">
+            <h3 className="lg:text-lg text-sm font-medium">
               Auction Type<span className="text-red-400">*</span>
             </h3>
 
             {/* Radio Buttons */}
-            <div className=" px-5 flex items-center gap-4">
+            <div className=" md:px-4 px-2 lg:text-lg flex items-center gap-4">
               <label className="flex items-center">
                 <input
                   type="radio"
