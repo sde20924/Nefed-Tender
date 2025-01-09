@@ -1,8 +1,69 @@
 import React, { useState } from "react";
 import * as XLSX from "xlsx";
 import { FaTrash } from "react-icons/fa";
+import { useDrag, useDrop, DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
+const DraggableHeader = ({ header, type, onDrop }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "HEADER",
+    item: { header, type },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <button
+      ref={drag}
+      className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded transition-opacity ${
+        isDragging ? "opacity-50" : "opacity-100"
+      }`}
+      disabled={isDragging}
+    >
+      {header}
+    </button>
+  );
+};
+const DropArea = ({ onDrop,formulaDisplay}) => {
+  const [{ isOver }, drop] = useDrop(() => ({
+    accept: "HEADER",
+    drop: (item) => onDrop(item),
+    collect: (monitor) => ({
+      isOver: monitor.isOver(),
+    }),
+  }));
+
+  return (
+    <div
+      ref={drop}
+      className={`p-2 px-4 border-2 rounded min-h-[100px] ${
+        isOver ? "border-blue-500 bg-blue-50" : "border-gray-300 bg-gray-100"
+      }`}
+    >
+      <div className="flex flex-wrap gap-2">
+        {formulaDisplay.map((item, index) => (
+          <span
+            key={index}
+            className={`px-2 py-1 rounded ${
+              typeof item === 'string' && '+-*/='.includes(item)
+                ? 'bg-gray-500 text-white'
+                : 'bg-blue-500 text-white'
+            }`}
+          >
+            {item}
+          </span>
+        ))}
+      </div>
+      {formulaDisplay.length === 0 && (
+        <div className="text-gray-500">
+          Drag and drop headers here to create your formula...
+        </div>
+      )}
+    </div>
+  );
+};
 export default function EditableSheet({
   headers,
   setHeaders,
@@ -12,7 +73,7 @@ export default function EditableSheet({
   onFormulaChange,
 }) {
   // Add a new subtender
-  console.log("headerrrr--", headers);
+  console.log("headerrrr++++++--", headers);
   // console.log("hsdfsdf--", subTenders);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
@@ -21,6 +82,7 @@ export default function EditableSheet({
   const [formula, setFormula] = useState("");
   const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] =
     useState([]);
+    const [formulaDisplay, setFormulaDisplay] = useState([]);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
@@ -34,7 +96,7 @@ export default function EditableSheet({
   const [uploadedHeaders, setUploadedHeaders] = useState([]);
   const [headerTypes, setHeaderTypes] = useState([]);
   const [sheetData, setSheetData] = useState([]); // Store sheet data for parsing later
-
+  const [currentIdentifierIndex, setCurrentIdentifierIndex] = useState(0);
   const handleColumnTypeChange = (e) => {
     setNewColumnType(e.target.value);
   };
@@ -77,65 +139,86 @@ export default function EditableSheet({
   };
   //Formule
   const identifierSequence = ["P", "R", "Q"];
+  const handleHeaderDrop = (headerItem) => {
+  const existingIdentifiers = selectedHeadersWithShortNames.map(
+    (item) => item.sortform
+  );
+  const nextIdentifier = identifierSequence.find(
+    (id) => !existingIdentifiers.includes(id)
+  );
 
-  const handleHeaderSelect = (header) => {
-    const nextIdentifier =
-      identifierSequence[selectedHeadersWithShortNames.length];
-    if (nextIdentifier) {
-      setFormula((prev) => `${prev}${nextIdentifier}`);
-      setSelectedHeadersWithShortNames((prev) => [
-        ...prev,
-        { header: header.header, type: header.type, sortform: nextIdentifier },
-      ]);
-      console.log("-=-=-==-=nextIdentifier");
-      setHeaders((prev) =>
-        prev.map((h) =>
-          h.header === header ? { ...h, sortform: nextIdentifier } : h
-        )
-      );
-      console.log("dloffdkfkfdk+_+_", header);
-    } else {
-      console.warn("No more identifiers available for headers.");
-    }
-  };
+  if (nextIdentifier) {
+    setFormula((prev) => [...prev, nextIdentifier]);
+    setFormulaDisplay((prev) => [...prev, headerItem.header]);
+
+    setSelectedHeadersWithShortNames((prev) => [
+      ...prev,
+      { header: headerItem.header, type: headerItem.type, sortform: nextIdentifier },
+    ]);
+    console.log("+_+_++nexytidenti",nextIdentifier)
+    setHeaders((prev) =>
+      prev.map((h) =>
+        h.header === headerItem.header ? { ...h, sortform: nextIdentifier } : h
+      )
+    );
+  } else {
+    toast.warn("No more identifiers available for headers.");
+  }
+};
+
+  // const handleHeaderSelect = (header) => {
+  //   const nextIdentifier =
+  //     identifierSequence[selectedHeadersWithShortNames.length];
+  //   if (nextIdentifier) {
+  //     setFormula((prev) => `${prev}${nextIdentifier}`);
+  //     setSelectedHeadersWithShortNames((prev) => [
+  //       ...prev,
+  //       { header: header.header, type: header.type, sortform: nextIdentifier },
+  //     ]);
+  //     console.log("-=-=-==-=nextIdentifier");
+  //     setHeaders((prev) =>
+  //       prev.map((h) =>
+  //         h.header === header ? { ...h, sortform: nextIdentifier } : h
+  //       )
+  //     );
+  //   } else {
+  //     console.warn("No more identifiers available for headers.");
+  //   }
+  // };
   const handleOperationClick = (operation) => {
-    setFormula((prev) => `${prev}${operation}`);
+    setFormula((prev) => [...prev, operation]);
+    setFormulaDisplay((prev) => [...prev, operation]);
   };
   const handleNumberClick = (number) => {
     setFormula((prev) => `${prev}${number}`);
   };
 
   const handleClearFormula = () => {
-    setFormula("");
+    setFormula([]);
+    setFormulaDisplay([]);
     setSelectedHeadersWithShortNames([]);
     setHeaders((prev) => prev.map((h) => ({ ...h, sortform: null })));
   };
 
+
   const handleSaveFormula = (e) => {
     if (e) e.preventDefault();
+    console.log("jdnjddn", headers);
+    console.log("formula",formula)
     setShowFormulaModal(false);
-    if (formula === "") {
-      toast.error("Formula Required");
-      return;
-    }
     const enrichedHeaders = headers.map((header) => ({
       header: header.header,
       type: header.type,
-      sortform: header.sortform, // Set sortform to null if not provided
+      sortform: header.sortform,
+       // Set sortform to null if not provided
     }));
-    const updatedSubTenders = subTenders.map((subTender, index) => {
-      if (index === 0) {
-        return { ...subTender, formula };
-      }
-      return subTender;
-    });
 
-    setSubTenders(updatedSubTenders);
     const payload = {
       headers: enrichedHeaders,
       sub_tenders: subTenders,
       formula: formula,
     };
+    console.log(payload)
     if (formula == "") {
       toast.error("Formula Required");
     }
@@ -569,6 +652,7 @@ export default function EditableSheet({
   };
   console.log("headdsdddderrrr", headers);
   return (
+
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
       {/* File Upload */}
       <div className="mb-4 flex justify-between items-center">
@@ -625,6 +709,7 @@ export default function EditableSheet({
           </div>
         )}
         {subTenders.length > 0 && (
+          <DndProvider backend={HTML5Backend}>
           <div className=" flex gap-2">
             <div>
               <button
@@ -669,16 +754,13 @@ export default function EditableSheet({
                     <div className="mb-4">
                       <h3 className="font-bold mb-2">Headers</h3>
                       <div className="flex flex-wrap gap-2">
-                        {headers.map(({ header, type }, index) => (
-                          <button
-                          type="button"
-                            key={index}
-                            onClick={() => handleHeaderSelect(header,type)}
-                            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded"
-                          >
-                            {header}
-                          </button>
-                        ))}
+                      {Array.isArray(headers) && headers.map((header, index) => (
+              <DraggableHeader 
+                key={index} 
+                header={header.header} 
+                type={header.type}
+              />
+            ))}
                       </div>
                     </div>
                     <div className="mb-4">
@@ -686,7 +768,6 @@ export default function EditableSheet({
                       <div className="flex space-x-2">
                         {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((operation) => (
                           <button
-                          type="button"
                             key={operation}
                             onClick={() => handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
@@ -701,7 +782,6 @@ export default function EditableSheet({
                       <div className="flex space-x-2">
                         {["+", "-", "*", "/", "="].map((operation) => (
                           <button
-                          type="button"
                             key={operation}
                             onClick={() => handleOperationClick(operation)}
                             className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
@@ -715,12 +795,11 @@ export default function EditableSheet({
                       <h3 className="font-bold mb-2">Formula</h3>
 
                       <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
-                        {formula || "Start creating your formula..."}
+                      <DropArea onDrop={handleHeaderDrop} formulaDisplay={formulaDisplay} />
                       </div>
                     </div>
                     <div className="flex justify-between">
                       <button
-                      type="button"
                         onClick={handleClearFormula}
                         className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
                       >
@@ -728,14 +807,12 @@ export default function EditableSheet({
                       </button>
                       <div className="space-x-2">
                         <button
-                        type="button"
                           onClick={() => setShowFormulaModal(false)}
                           className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
                         >
                           Cancel
                         </button>
                         <button
-                        type="button"
                           onClick={handleSaveFormula}
                           className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
                         >
@@ -867,6 +944,7 @@ export default function EditableSheet({
               </div>
             )}
           </div>
+          </DndProvider>
         )}
       </div>
 
@@ -928,7 +1006,7 @@ export default function EditableSheet({
             <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
               <thead className="bg-blue-100 text-gray-700">
                 <tr>
-                  {headers.map(({ header,type }, index) => (
+                  {headers.map(({ header, type }, index) => (
                     <th
                       key={index}
                       className="border border-gray-300 px-4 py-2 font-bold"
@@ -947,41 +1025,35 @@ export default function EditableSheet({
                     key={rowIndex}
                     className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
                   >
-                    {row.map((cell, cellIndex) => {
-                      const isEditable = headers[cellIndex]?.type === "view"; 
-                      return (
-                        <td
-                          key={cellIndex}
-                          className="border border-gray-300 px-4 py-2 break-words max-w-[200px] lg:max-w-[450px]"
-                          contentEditable={isEditable} 
-                          suppressContentEditableWarning
-                          style={{
-                            wordWrap: "break-word",
-                            whiteSpace: "pre-wrap",
-                            backgroundColor: isEditable ? "white" : "#f9f9f9", // Highlight editable cells
-                          }}
-                          onBlur={(e) => {
-                            if (isEditable) {
-                              handleCellEdit(
-                                subTender.id,
-                                rowIndex,
-                                cellIndex,
-                                e.target.innerText
-                              );
-                            }
-                          }}
-                        >
-                          {cell}
-                        </td>
-                      );
-                    })}
+                    {row.map((cell, cellIndex) => (
+                      <td
+                        key={cellIndex}
+                        className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
+                        contentEditable
+                        suppressContentEditableWarning
+                        style={{
+                          wordWrap: "break-word", // Ensure text wrapping
+                          whiteSpace: "pre-wrap", // Preserve spaces and wrap text
+                        }}
+                        onBlur={(e) =>
+                          handleCellEdit(
+                            subTender.id,
+                            rowIndex,
+                            cellIndex,
+                            e.target.innerText
+                          )
+                        }
+                      >
+                        {cell}
+                      </td>
+                    ))}
                     <td className="text-center align-middle border border-gray-300 px-4 py-2">
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(subTender.id, rowIndex)}
                         className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center m-auto items-center space-x-1 transition-all duration-200"
                       >
-                        <FaTrash className="w-4 h-4" />
+                        <FaTrash className="w-4 h-4 " />
                       </button>
                       {showDeleteModal && (
                         <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
@@ -1030,9 +1102,7 @@ export default function EditableSheet({
           <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl relative">
             {/* Header Section */}
             <div className="w-full bg-blue-500 text-white text-center py-4 rounded-t-lg">
-              <h2 className="text-lg font-bold">
-                Select the columns for buyers where input is required
-              </h2>
+              <h2 className="text-lg font-bold">Select the columns for buyers where input is required</h2>
             </div>
 
             {/* Content Section */}
@@ -1105,7 +1175,9 @@ export default function EditableSheet({
         </div>
       ) : (
         <div className="container mx-auto p-6 gap-6">
+          {/* Combined Section for Upload and Create Excel */}
           <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
+            {/* Left Section - Upload Excel */}
             <div className="w-full md:w-[48%] p-8 rounded-lg bg-white shadow-xl transform transition-all duration-300 ease-in-out hover:scale-105">
               <p className="text-lg text-blue-700 font-semibold mb-2">
                 Upload your Excel sheet
@@ -1150,6 +1222,8 @@ export default function EditableSheet({
           </div>
         </div>
       )}
+
+      {/* ToastContainer for notifications */}
     </div>
   );
 }
