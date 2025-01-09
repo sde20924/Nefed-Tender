@@ -5,10 +5,10 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
-const DraggableHeader = ({ header, type, onDrop }) => {
+const DraggableHeader = ({ header, type,typee}) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "HEADER",
-    item: { header, type },
+    item: { header, type,typee },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -20,20 +20,63 @@ const DraggableHeader = ({ header, type, onDrop }) => {
       className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded transition-opacity ${
         isDragging ? "opacity-50" : "opacity-100"
       }`}
-      disabled={isDragging}
     >
       {header}
     </button>
   );
 };
-const DropArea = ({ onDrop,formulaDisplay}) => {
-  const [{ isOver }, drop] = useDrop(() => ({
-    accept: "HEADER",
-    drop: (item) => onDrop(item),
+const DraggableOperation = ({ operation,type}) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "OPERATION",
+    item: { operation ,type},
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <button
+      ref={drag}
+      className={`bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded transition-opacity ${
+        isDragging ? "opacity-50" : "opacity-100"
+      }`}
+      disabled={isDragging}
+    >
+      {operation}
+    </button>
+  );
+};
+const DraggableNumber = ({ number,type }) => {
+  const [{ isDragging }, drag] = useDrag(() => ({
+    type: "NUMBER",
+    item: { number,type },
+    collect: (monitor) => ({
+      isDragging: monitor.isDragging(),
+    }),
+  }));
+
+  return (
+    <button
+      ref={drag}
+      className={`bg-gray-400 hover:bg-gray-500 text-white font-bold py-1 px-3 rounded transition-opacity ${
+        isDragging ? "opacity-50" : "opacity-100"
+      }`}
+    >
+      {number}
+    </button>
+  );
+};
+const DropArea = ({ onDrop, formulaDisplay }) => {
+  const [{ isOver }, drop] = useDrop({
+    accept: ["HEADER", "OPERATION", "NUMBER"],
+    drop: (item) => {
+      onDrop(item);
+    },
     collect: (monitor) => ({
       isOver: monitor.isOver(),
     }),
-  }));
+  });
+ 
 
   return (
     <div
@@ -137,61 +180,65 @@ export default function EditableSheet({
       toast.error("Please enter a valid SubTender name.");
     }
   };
+
+  const handleItemDrop = (item) => {
+    console.log("yahan chala")
+    console.log("item.type",item.type)
+    if (item.typee === "HEADERS") {
+      handleHeaderDrop(item);
+    } else if (item.type === "OPERATIONS") {
+      handleOperationDrop(item);
+    } else if (item.type === "NUMBERS") {
+      handleNumberDrop(item);
+    }
+  };
   //Formule
-  const identifierSequence = ["P", "R", "Q"];
   const handleHeaderDrop = (headerItem) => {
-  const existingIdentifiers = selectedHeadersWithShortNames.map(
-    (item) => item.sortform
-  );
-  const nextIdentifier = identifierSequence.find(
-    (id) => !existingIdentifiers.includes(id)
-  );
+  
+      
+   
+    const identifierSequence = ["P", "R", "Q",];
+    setSelectedHeadersWithShortNames((prev) => {
+      // Calculate the next identifier based on the length of the updated state
+      const nextIdentifier = identifierSequence[prev.length];
+      if (nextIdentifier) {
+        // Update formula and formulaDisplay
+        setFormula((prevFormula) => `${prevFormula}${nextIdentifier}`);
+        setFormulaDisplay((prevDisplay) => [...prevDisplay, headerItem.header]);
+        // Update headers state
+        setHeaders((prevHeaders) =>
+          prevHeaders.map((h) =>
+            h.header === headerItem.header
+              ? { ...h, sortform: nextIdentifier }
+              : h
+          )
+        );
+        // Return the updated state
+        return [
+          ...prev,
+          {
+            header: headerItem.header,
+            type: headerItem.type,
+            sortform: nextIdentifier,
+          },
+        ];
+      } else {
+        toast.warn("No more identifiers available for headers.");
+        return prev; // No changes if no identifier is available
+      }
+    });
+  
+  };
 
-  if (nextIdentifier) {
-    setFormula((prev) => [...prev, nextIdentifier]);
-    setFormulaDisplay((prev) => [...prev, headerItem.header]);
 
-    setSelectedHeadersWithShortNames((prev) => [
-      ...prev,
-      { header: headerItem.header, type: headerItem.type, sortform: nextIdentifier },
-    ]);
-    console.log("+_+_++nexytidenti",nextIdentifier)
-    setHeaders((prev) =>
-      prev.map((h) =>
-        h.header === headerItem.header ? { ...h, sortform: nextIdentifier } : h
-      )
-    );
-  } else {
-    toast.warn("No more identifiers available for headers.");
-  }
-};
-
-  // const handleHeaderSelect = (header) => {
-  //   const nextIdentifier =
-  //     identifierSequence[selectedHeadersWithShortNames.length];
-  //   if (nextIdentifier) {
-  //     setFormula((prev) => `${prev}${nextIdentifier}`);
-  //     setSelectedHeadersWithShortNames((prev) => [
-  //       ...prev,
-  //       { header: header.header, type: header.type, sortform: nextIdentifier },
-  //     ]);
-  //     console.log("-=-=-==-=nextIdentifier");
-  //     setHeaders((prev) =>
-  //       prev.map((h) =>
-  //         h.header === header ? { ...h, sortform: nextIdentifier } : h
-  //       )
-  //     );
-  //   } else {
-  //     console.warn("No more identifiers available for headers.");
-  //   }
+  
+  // const handleOperationClick = (operation) => {
+  //   setFormula((prev) => [...prev, operation]);
+  //   setFormulaDisplay((prev) => [...prev, operation]);
   // };
-  const handleOperationClick = (operation) => {
-    setFormula((prev) => [...prev, operation]);
-    setFormulaDisplay((prev) => [...prev, operation]);
-  };
-  const handleNumberClick = (number) => {
-    setFormula((prev) => `${prev}${number}`);
-  };
+  // const handleNumberClick = (number) => {
+  //   setFormula((prev) => `${prev}${number}`);
+  // };
 
   const handleClearFormula = () => {
     setFormula([]);
@@ -200,7 +247,31 @@ export default function EditableSheet({
     setHeaders((prev) => prev.map((h) => ({ ...h, sortform: null })));
   };
 
+  const handleOperationDrop = (operationItem) => {
+    // Basic validation: prevent starting formula with an operation
+    if (formula.length === 0) {
+      toast.error("Formula cannot start with an operator.");
+      return;
+    }
 
+    const lastItem = formula[formula.length - 1];
+    if ("+-*/=".includes(lastItem)) {
+      toast.error("Cannot add two consecutive operators.");
+      return;
+    }
+    setFormula((prevFormula) => `${prevFormula}${operationItem.operation}`);
+   
+    setFormulaDisplay((prevDisplay) => [...prevDisplay, operationItem.operation]);
+
+    toast.success(`Operation "${operationItem.operation}" added to formula.`);
+  };
+  const handleNumberDrop = (numberItem) => {
+    // Basic validation: prevent starting formula with a number if needed
+    setFormula((prevFormula) => `${prevFormula}${numberItem.number}`);
+    setFormulaDisplay((prevDisplay) => [...prevDisplay, numberItem.number]);
+
+    toast.success(`Number "${numberItem.number}" added to formula.`);
+  };
   const handleSaveFormula = (e) => {
     if (e) e.preventDefault();
     console.log("jdnjddn", headers);
@@ -310,7 +381,6 @@ export default function EditableSheet({
     );
   };
 
-  //   if (window.confirm("Are you sure you want to delete this row?")) {
   //     setSubTenders((prev) =>
   //       prev.map((subTender) => {
   //         if (subTender.id === subTenderId) {
@@ -360,23 +430,14 @@ export default function EditableSheet({
         return subTender;
       })
     );
-
-    // Show toast for successful deletion
     toast.success("Row deleted successfully.");
-
-    // Close the modal and reset the deletion info
     setShowDeleteModal(false);
     setRowToDelete(null);
   };
-
-  // Cancel the deletion (close modal)
   const handleRowCellDelete = () => {
     setShowDeleteModal(false);
-    setRowToDelete(null); // Reset row to delete
+    setRowToDelete(null); 
   };
-
-  // Delete an entire SubTender table
-
   const handleDeleteSubTender = (subTenderId) => {
     setSubTenderToDelete(subTenderId); // Store the SubTender ID to be deleted
     setDeleteTableModal(true); // Show the modal for confirmation
@@ -474,8 +535,6 @@ export default function EditableSheet({
         : [...prev, colIndex]
     );
   };
-
-  // const parseSheetData = (sheetData, headers) => {
   //   const newSubTenders = [];
   //   let currentSubTender = null;
 
@@ -759,21 +818,16 @@ export default function EditableSheet({
                 key={index} 
                 header={header.header} 
                 type={header.type}
+                typee ="HEADERS"
               />
             ))}
                       </div>
                     </div>
                     <div className="mb-4">
-                      <h3 className="font-bold mb-2">Operations</h3>
+                      <h3 className="font-bold mb-2">Numbers</h3>
                       <div className="flex space-x-2">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((operation) => (
-                          <button
-                            key={operation}
-                            onClick={() => handleOperationClick(operation)}
-                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
-                          >
-                            {operation}
-                          </button>
+                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((number) => (
+                          <DraggableNumber key={number} number={number} type="NUMBERS" />
                         ))}
                       </div>
                     </div>
@@ -781,13 +835,7 @@ export default function EditableSheet({
                       <h3 className="font-bold mb-2">Operations</h3>
                       <div className="flex space-x-2">
                         {["+", "-", "*", "/", "="].map((operation) => (
-                          <button
-                            key={operation}
-                            onClick={() => handleOperationClick(operation)}
-                            className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded"
-                          >
-                            {operation}
-                          </button>
+                           <DraggableOperation key={operation} operation={operation} type="OPERATIONS" />
                         ))}
                       </div>
                     </div>
@@ -795,7 +843,7 @@ export default function EditableSheet({
                       <h3 className="font-bold mb-2">Formula</h3>
 
                       <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
-                      <DropArea onDrop={handleHeaderDrop} formulaDisplay={formulaDisplay} />
+                      <DropArea onDrop={handleItemDrop} formulaDisplay={formulaDisplay} />
                       </div>
                     </div>
                     <div className="flex justify-between">

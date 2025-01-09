@@ -379,9 +379,6 @@ const AddTender = () => {
       "tender_desc",
       "currency",
       "start_price",
-      "dest_port",
-      "bag_size",
-      "bag_type",
       "app_start_time",
       "app_end_time",
       "auct_start_time",
@@ -403,10 +400,8 @@ const AddTender = () => {
       }
       
       const response = await callApiPost("create_new_tender", formData);
-        if(response.status===201){
+        if(response.success){
         toast.success("Tender Created Sucessfully");
-      }else {
-        toast.error("Failed to create tender. Please try again.");
       }
       if (tenderOption === "draft") {
         const response = await callApiPost("create_new_tender", formData);

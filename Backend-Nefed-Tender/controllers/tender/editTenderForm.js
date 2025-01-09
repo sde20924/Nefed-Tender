@@ -41,6 +41,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
     headers,
     sub_tender,
     accessPosition,
+    ShowItems
   } = req.body;
 
   try {
@@ -63,7 +64,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
         auct_start_time = ?, auct_end_time = ?, time_frame_ext = ?, extended_at = ?, 
         amt_of_ext = ?, aut_auct_ext_bfr_end_time = ?, min_decr_bid_val = ?, timer_ext_val = ?, 
         qty_split_criteria = ?, counter_offr_accept_timer = ?, img_url = ?, auction_type = ?, user_access
- = ?, audi_key = ?, access_position = ?
+        = ?, audi_key = ?, access_position = ?,show_items=?
       WHERE tender_id = ?
     `;
     const tenderValues = [
@@ -98,6 +99,7 @@ const updateTenderDetails = asyncErrorHandler(async (req, res) => {
       audi_key,
       tender_id,
       accessPosition,
+      ShowItems
     ];
     await db.query(updateTenderQuery, tenderValues);
 
