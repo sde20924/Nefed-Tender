@@ -272,7 +272,7 @@ export default function EditTable({
     // Add SubTender data
     subTenders.forEach((subTender) => {
       // Add SubTender name and ID as a separate row
-      worksheetData.push([`SubTender: ${subTender.name}`, `ID: ${subTender.id}`]);
+      worksheetData.push([subTender.id, subTender.name]);
       
       // Add rows for the SubTender
       subTender.rows.forEach((row) => {

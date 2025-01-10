@@ -4,6 +4,7 @@ import { FaPlus, FaTrash, FaTimes } from "react-icons/fa";
 import { authApi } from "@/utils/FetchApi";
 import { Formik, Form, Field, ErrorMessage } from "formik";
 import * as Yup from "yup";
+import { toast } from "react-toastify";
 const AuctionItems = ({
   setAuctionType,
   setAccessType,
@@ -15,7 +16,8 @@ const AuctionItems = ({
   ShowItems,
   setShowItems,
   selectedBuyers,
-  setSelectedBuyers
+  setSelectedBuyers,
+  selectedCategory,
 }) => {
   const [showPopup, setShowPopup] = useState(false);
   const [showAddBuyerFields, setShowAddBuyerFields] = useState(false);
@@ -27,7 +29,6 @@ const AuctionItems = ({
     phone_number: "",
     company_name: "",
   });
-  
 
   const handleAuctionTypeChange = (e) => {
     setAuctionType(e.target.value);
@@ -58,9 +59,17 @@ const AuctionItems = ({
     fetchBuyers();
   }, [accessType]);
 
-  
   const handleAccessChange = (type) => {
+    if (
+      type === "private" &&
+      (selectedCategory === "" || selectedCategory === null)
+    ) {
+      toast.info("Select the categories first");
+      return; // Exit the function to prevent further action
+    }
+
     setAccessType(type);
+
     if (type === "private") {
       setShowPopup(true);
       setShowAddBuyerFields(false);
@@ -68,9 +77,8 @@ const AuctionItems = ({
       setShowPopup(false);
     }
   };
-  console.log("--######---",selectedBuyers);
-  
-  
+  console.log("--######---", selectedBuyers);
+
   const handleSearchBuyer = (input) => {
     setBuyerEmail(input);
 
@@ -182,7 +190,7 @@ const AuctionItems = ({
       <div className=" flex flex-col justify-between items-start ">
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
-            <h2 className="md:text-lg text-sm font-medium ">
+            <h2 className="lg:text-lg text-sm font-medium ">
               Access User<span className="text-red-400">*</span>
             </h2>
             <div className="flex items-center gap-4 md:px-5 px-1">
@@ -220,7 +228,9 @@ const AuctionItems = ({
                   >
                     <FaTimes />
                   </button>
-                  <h3 className="md:text-lg text-sm font-bold mb-4">Private Access</h3>
+                  <h3 className="md:text-lg text-sm font-bold mb-4">
+                    Private Access
+                  </h3>
                   <div>
                     <label className="block text-sm font-medium mb-2">
                       Search Buyer by Email:
@@ -388,11 +398,10 @@ const AuctionItems = ({
           </div>
         </div>
 
-        
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
             {/* Label */}
-            <h3 className="md:text-lg text-sm font-medium">
+            <h3 className="lg:text-lg text-sm font-medium">
               Auction Type<span className="text-red-400">*</span>
             </h3>
 
@@ -437,7 +446,7 @@ const AuctionItems = ({
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
             {/* Label */}
-            <h3 className="md:text-lg text-sm font-medium">
+            <h3 className="lg:text-lg text-sm font-medium">
               Access Position<span className="text-red-400">*</span>
             </h3>
 
@@ -471,8 +480,9 @@ const AuctionItems = ({
         <div className="mt-2 mb-2">
           <div className="flex flex-col items-left justify-between">
             {/* Label */}
-            <h3 className="md:text-lg text-sm font-medium">
-              Do you want to show Tender-items to buyer at Application submit<span className="text-red-400">*</span>
+            <h3 className="lg:text-lg text-sm font-medium">
+              Do you want to show Tender-items to buyer at Application submit
+              <span className="text-red-400">*</span>
             </h3>
 
             {/* Radio Buttons */}
