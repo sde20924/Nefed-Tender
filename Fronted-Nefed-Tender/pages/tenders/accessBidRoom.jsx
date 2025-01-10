@@ -33,7 +33,7 @@ const AccessBidRoom = () => {
   });
   const [isBidValid, setIsBidValid] = useState(false);
   const [latestBidAmount,setLatestBidAmount]=useState(0);
-
+  const [toastShown, setToastShown] = useState(false); 
   // Handle input changes for editable fields
   const handleInputChange = (tableIndex, rowIndex, field, value) => {
     const updatedData = [...suggestionData];
@@ -314,6 +314,7 @@ const AccessBidRoom = () => {
         setIsBidValid(true);
       } else {
         setIsBidValid(false);
+        setToastShown(true);
        
       }
     } else if (auctionType === "forward") {
@@ -331,11 +332,15 @@ const AccessBidRoom = () => {
       toast.error("Unknown auction type. Please contact support.");
     }
   };
-  
+  useEffect(() => {
+    if (totalBidAmount > 0) {
+      setToastShown(false); // Reset on valid bid input
+    }
+  }, [totalBidAmount]);
   // Re-validate bid whenever totalBidAmount or tender details change
   useEffect(() => {
     validateBidAmount();
-  }, [totalBidAmount, tender,latestBidAmount]);
+  }, [totalBidAmount, tender]);
   const sendFormData = async () => {
     try {
       const body = {
@@ -348,7 +353,6 @@ const AccessBidRoom = () => {
       if (response.success) {
         toast.success("Bid submitted successfully!");
         fetchTenderDetails();
-        BidsDetails();
       } else {
         toast.error("Failed to submit form data.");
       }
@@ -387,25 +391,30 @@ const AccessBidRoom = () => {
                       return cell; // Keep the original value
                     }
                   } else {
+                    if (!toastShown) {
                     // Subsequent bids: apply auction type validation
                     if (auctionType === "reverse" && updatedValue > currentValue) {
                       toast.error(
                         "In a reverse auction, you cannot enter a value higher than the current lowest bid."
                       );
                       allInputsValid = false;
+                      setToastShown(true);
                       return cell; 
                     } else if (auctionType === "forward" && updatedValue < currentValue) {
                       toast.error(
                         "In a forward auction, you cannot enter a value lower than the current highest bid."
                       );
                       allInputsValid = false;
+                      setToastShown(true);
                       return cell; // Keep the original value
                     }
+                  } 
                   }
                   return { ...cell, data: updatedValue };
                 }
                 return cell; // Return unchanged cells
               });
+           
               const headers = tender.headers;
               const quantityIndex = headers.findIndex(
                 (header) => header.table_head.toLowerCase() === "total quantity"
