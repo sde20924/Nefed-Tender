@@ -9,8 +9,6 @@ export default function EditTable({
   subTenders,
   setSubTenders,
 }) {
-  
-
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
 
@@ -126,7 +124,6 @@ export default function EditTable({
       })
     );
   };
-  
 
   const [showDeleteModal, setShowDeleteModal] = useState(false); // Modal visibility state
   const [rowToDelete, setRowToDelete] = useState(null); // Store the row information to be deleted
@@ -194,7 +191,7 @@ export default function EditTable({
     const updatedSubTenders = subTenders.filter(
       (st) => st.id !== subTenderToDelete
     );
-  
+
     const reindexedSubTenders = updatedSubTenders.map((subTender, newIndex) => {
       const updatedRows = subTender.rows.map((row, i) => {
         if (row[0] && typeof row[0] === "object") {
@@ -208,15 +205,14 @@ export default function EditTable({
         }
         return row;
       });
-  
+
       return { ...subTender, id: newIndex + 1, rows: updatedRows }; // Optionally reassign id
     });
-  
+
     setSubTenders(reindexedSubTenders);
     toast.success("SubTender deleted successfully.");
     setDeleteTableModal(false);
   };
-  
 
   const handleCancelDelete = () => {
     setDeleteTableModal(false); // Close the modal without deleting
@@ -265,35 +261,36 @@ export default function EditTable({
 
   const handleDownload = () => {
     const worksheetData = [];
-  
+
     // Add headers to the worksheet data
     worksheetData.push(headers.map((header) => header.table_head)); // Use table_head for headers
-  
+
     // Add SubTender data
     subTenders.forEach((subTender) => {
       // Add SubTender name and ID as a separate row
       worksheetData.push([subTender.id, subTender.name]);
-      
+
       // Add rows for the SubTender
       subTender.rows.forEach((row) => {
-        worksheetData.push(row.map((cell) => (cell.data !== undefined ? cell.data : cell))); // Extract `data` if it's an object
+        worksheetData.push(
+          row.map((cell) => (cell.data !== undefined ? cell.data : cell))
+        ); // Extract `data` if it's an object
       });
-  
+
       // Add an empty row to separate SubTenders visually
       worksheetData.push([]);
     });
-  
+
     // Create worksheet
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-  
+
     // Create workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Editable Table");
-  
+
     // Write the file
     XLSX.writeFile(workbook, "editable_subtender_table.xlsx");
   };
-  
 
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
@@ -302,7 +299,7 @@ export default function EditTable({
           <button
             type="button"
             onClick={openAddSubTenderModal}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
           >
             Add SubTender
           </button>
@@ -349,7 +346,7 @@ export default function EditTable({
             <button
               type="button"
               onClick={handleAddColumn}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-green-500 hover:bg-green-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
             >
               Add Column
             </button>
@@ -392,7 +389,7 @@ export default function EditTable({
                 event.preventDefault(); // Prevent the default action (if any)
                 handleDeleteColumn(); // Call the function to delete selected columns
               }}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+              className="bg-red-500 hover:bg-red-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
             >
               Delete Columns
             </button>
@@ -553,7 +550,7 @@ export default function EditTable({
                       <button
                         type="button"
                         onClick={() => handleDeleteRow(subTender.id, rowIndex)}
-                        className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center items-center space-x-1 transition-all duration-200"
+                        className="bg-red-100 text-red-500 hover:bg-red-500 hover:text-white font-bold py-1 px-3 rounded flex justify-center m-auto items-center space-x-1 transition-all duration-200"
                       >
                         <FaTrash className="w-4 h-4 " />
                       </button>

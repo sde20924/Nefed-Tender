@@ -4,7 +4,8 @@ import { FaTrash } from "react-icons/fa";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "react-toastify"; // Importing toast for notifications
-
+import UomList from "../../utils/uomList";
+import uomList from "../../utils/uomList";
 const DraggableHeader = ({ header, type, typee }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "HEADER",
@@ -118,8 +119,6 @@ export default function EditableSheet({
   onFormulaChange,
 }) {
   // Add a new subtender
-  console.log("headerrrr++++++--", headers);
-  // console.log("hsdfsdf--", subTenders);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
@@ -182,6 +181,7 @@ export default function EditableSheet({
       toast.error("Please enter a valid SubTender name.");
     }
   };
+  console.log("--------888--", uomList);
 
   const handleItemDrop = (item) => {
     console.log("yahan chala");
@@ -974,34 +974,72 @@ export default function EditableSheet({
                   >
                     {row.map((cell, cellIndex) => {
                       const isEditable = headers[cellIndex]?.type === "view"; // Check if the column type is "view"
+                      const isUOMColumn = headers[cellIndex]?.header === "UOM"; // Check if the column header is "UOM"
+
                       return (
                         <td
                           key={cellIndex}
                           className={`border border-gray-300 px-4 py-2 break-words max-w-[200px] lg:max-w-[450px] ${
                             isEditable
                               ? "bg-white"
-                              : "bg-gray-100 cursor-not-allowed"
+                              : isUOMColumn
+                                ? "bg-white"
+                                : "bg-gray-100 cursor-not-allowed"
                           }`}
-                          contentEditable={isEditable}
-                          suppressContentEditableWarning={isEditable}
+                          contentEditable={isEditable && !isUOMColumn} // Prevent contentEditable for UOM dropdown
+                          suppressContentEditableWarning={
+                            isEditable && !isUOMColumn
+                          }
                           style={{
                             wordWrap: "break-word", // Ensure text wrapping
                             whiteSpace: "pre-wrap", // Preserve spaces and wrap text
                           }}
-                          onBlur={(e) =>
-                            isEditable &&
-                            handleCellEdit(
-                              subTender.id,
-                              rowIndex,
-                              cellIndex,
-                              e.target.innerText
-                            )
-                          }
                         >
-                          {cell}
+                          {isUOMColumn ? (
+                            // Render dropdown for UOM column
+                            <select
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                              value={cell} // Bind the value to the current cell
+                              onChange={(e) =>
+                                handleCellEdit(
+                                  subTender.id,
+                                  rowIndex,
+                                  cellIndex,
+                                  e.target.value // Update the cell value on dropdown change
+                                )
+                              }
+                            >
+                              <option value="" disabled>
+                                Select UOM
+                              </option>
+                              {uomList.map((uom) => (
+                                <option key={uom.id} value={uom.name}>
+                                  {uom.name} ({uom.abbreviation})
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            // Render normal cell for other columns
+                            <div
+                              contentEditable={isEditable}
+                              suppressContentEditableWarning={isEditable}
+                              onBlur={(e) =>
+                                isEditable &&
+                                handleCellEdit(
+                                  subTender.id,
+                                  rowIndex,
+                                  cellIndex,
+                                  e.target.innerText
+                                )
+                              }
+                            >
+                              {cell}
+                            </div>
+                          )}
                         </td>
                       );
                     })}
+
                     <td className="text-center align-middle border border-gray-300 px-4 py-2">
                       <button
                         type="button"
@@ -1046,7 +1084,7 @@ export default function EditableSheet({
               onClick={() => handleAddRowToSubTender(subTender.id)}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
             >
-              Add Row
+              <span className="mr-1">➕</span> Add Row
             </button>
           </div>
         </div>
