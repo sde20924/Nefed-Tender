@@ -5,10 +5,10 @@ import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "react-toastify"; // Importing toast for notifications
 
-const DraggableHeader = ({ header, type,typee}) => {
+const DraggableHeader = ({ header, type, typee }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "HEADER",
-    item: { header, type,typee },
+    item: { header, type, typee },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -25,10 +25,10 @@ const DraggableHeader = ({ header, type,typee}) => {
     </button>
   );
 };
-const DraggableOperation = ({ operation,type}) => {
+const DraggableOperation = ({ operation, type }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "OPERATION",
-    item: { operation ,type},
+    item: { operation, type },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -46,10 +46,10 @@ const DraggableOperation = ({ operation,type}) => {
     </button>
   );
 };
-const DraggableNumber = ({ number,type }) => {
+const DraggableNumber = ({ number, type }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "NUMBER",
-    item: { number,type },
+    item: { number, type },
     collect: (monitor) => ({
       isDragging: monitor.isDragging(),
     }),
@@ -76,7 +76,6 @@ const DropArea = ({ onDrop, formulaDisplay }) => {
       isOver: monitor.isOver(),
     }),
   });
- 
 
   return (
     <div
@@ -90,9 +89,9 @@ const DropArea = ({ onDrop, formulaDisplay }) => {
           <span
             key={index}
             className={`px-2 py-1 rounded ${
-              typeof item === 'string' && '+-*/='.includes(item)
-                ? 'bg-gray-500 text-white'
-                : 'bg-blue-500 text-white'
+              typeof item === "string" && "+-*/=".includes(item)
+                ? "bg-gray-500 text-white"
+                : "bg-blue-500 text-white"
             }`}
           >
             {item}
@@ -125,7 +124,7 @@ export default function EditableSheet({
   const [formula, setFormula] = useState("");
   const [selectedHeadersWithShortNames, setSelectedHeadersWithShortNames] =
     useState([]);
-    const [formulaDisplay, setFormulaDisplay] = useState([]);
+  const [formulaDisplay, setFormulaDisplay] = useState([]);
   const [showFormulaModal, setShowFormulaModal] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [newColumnName, setNewColumnName] = useState("");
@@ -182,8 +181,8 @@ export default function EditableSheet({
   };
 
   const handleItemDrop = (item) => {
-    console.log("yahan chala")
-    console.log("item.type",item.type)
+    console.log("yahan chala");
+    console.log("item.type", item.type);
     if (item.typee === "HEADERS") {
       handleHeaderDrop(item);
     } else if (item.type === "OPERATIONS") {
@@ -194,10 +193,7 @@ export default function EditableSheet({
   };
   //Formule
   const handleHeaderDrop = (headerItem) => {
-  
-      
-   
-    const identifierSequence = ["P", "R", "Q",];
+    const identifierSequence = ["P", "R", "Q"];
     setSelectedHeadersWithShortNames((prev) => {
       // Calculate the next identifier based on the length of the updated state
       const nextIdentifier = identifierSequence[prev.length];
@@ -227,11 +223,8 @@ export default function EditableSheet({
         return prev; // No changes if no identifier is available
       }
     });
-  
   };
 
-
-  
   // const handleOperationClick = (operation) => {
   //   setFormula((prev) => [...prev, operation]);
   //   setFormulaDisplay((prev) => [...prev, operation]);
@@ -260,8 +253,11 @@ export default function EditableSheet({
       return;
     }
     setFormula((prevFormula) => `${prevFormula}${operationItem.operation}`);
-   
-    setFormulaDisplay((prevDisplay) => [...prevDisplay, operationItem.operation]);
+
+    setFormulaDisplay((prevDisplay) => [
+      ...prevDisplay,
+      operationItem.operation,
+    ]);
 
     toast.success(`Operation "${operationItem.operation}" added to formula.`);
   };
@@ -275,13 +271,13 @@ export default function EditableSheet({
   const handleSaveFormula = (e) => {
     if (e) e.preventDefault();
     console.log("jdnjddn", headers);
-    console.log("formula",formula)
+    console.log("formula", formula);
     setShowFormulaModal(false);
     const enrichedHeaders = headers.map((header) => ({
       header: header.header,
       type: header.type,
       sortform: header.sortform,
-       // Set sortform to null if not provided
+      // Set sortform to null if not provided
     }));
 
     const payload = {
@@ -289,7 +285,7 @@ export default function EditableSheet({
       sub_tenders: subTenders,
       formula: formula,
     };
-    console.log(payload)
+    console.log(payload);
     if (formula == "") {
       toast.error("Formula Required");
     }
@@ -436,7 +432,7 @@ export default function EditableSheet({
   };
   const handleRowCellDelete = () => {
     setShowDeleteModal(false);
-    setRowToDelete(null); 
+    setRowToDelete(null);
   };
   const handleDeleteSubTender = (subTenderId) => {
     setSubTenderToDelete(subTenderId); // Store the SubTender ID to be deleted
@@ -711,8 +707,7 @@ export default function EditableSheet({
   };
   console.log("headdsdddderrrr", headers);
   return (
-
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 p-4">
       {/* File Upload */}
       <div className="mb-4 flex justify-between items-center">
         {/* Auction Items Heading */}
@@ -725,7 +720,7 @@ export default function EditableSheet({
           <button
             type="button"
             onClick={(e) => openAddSubTenderModal(e)}
-            className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded"
+            className="bg-blue-500 hover:bg-blue-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
           >
             Add SubTender
           </button>
@@ -769,229 +764,243 @@ export default function EditableSheet({
         )}
         {subTenders.length > 0 && (
           <DndProvider backend={HTML5Backend}>
-          <div className=" flex gap-2">
-            <div>
+            <div className=" flex gap-2">
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setShowFormulaModal(true)}
+                  className="bg-green-500 hover:bg-green-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
+                >
+                  Generate Formula
+                </button>
+
+                {showFormulaModal && (
+                  <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                    <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+                      <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
+                        <p>
+                          <strong>Note:</strong> When creating formulas, follow
+                          this structure:
+                          <span className="font-bold">P = R * Q</span>, where:
+                          <ul className="list-disc ml-6">
+                            <li>
+                              <strong>P:</strong> Total Cost (first field).
+                            </li>
+                            <li>
+                              <strong>R:</strong> Rate (second field).
+                            </li>
+                            <li>
+                              <strong>Q:</strong> Quantity (third field).
+                            </li>
+                          </ul>
+                          Always start with this sequence (P, R, Q). You can add
+                          operators (+, -, *, /) or numbers, but{" "}
+                          <span className="font-bold">
+                            do not change the order.
+                          </span>
+                          If buyer input is needed, select{" "}
+                          <span className="font-bold">Edit</span> for the
+                          respective columns.
+                        </p>
+                      </div>
+                      <h2 className="text-xl font-bold mb-4">
+                        Generate Formula
+                      </h2>
+
+                      <div className="mb-4">
+                        <h3 className="font-bold mb-2">Headers</h3>
+                        <div className="flex flex-wrap gap-2">
+                          {Array.isArray(headers) &&
+                            headers.map((header, index) => (
+                              <DraggableHeader
+                                key={index}
+                                header={header.header}
+                                type={header.type}
+                                typee="HEADERS"
+                              />
+                            ))}
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <h3 className="font-bold mb-2">Numbers</h3>
+                        <div className="flex space-x-2">
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((number) => (
+                            <DraggableNumber
+                              key={number}
+                              number={number}
+                              type="NUMBERS"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <h3 className="font-bold mb-2">Operations</h3>
+                        <div className="flex space-x-2">
+                          {["+", "-", "*", "/", "="].map((operation) => (
+                            <DraggableOperation
+                              key={operation}
+                              operation={operation}
+                              type="OPERATIONS"
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <div className="mb-4">
+                        <h3 className="font-bold mb-2">Formula</h3>
+
+                        <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
+                          <DropArea
+                            onDrop={handleItemDrop}
+                            formulaDisplay={formulaDisplay}
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <button
+                          onClick={handleClearFormula}
+                          className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+                        >
+                          Clear
+                        </button>
+                        <div className="space-x-2">
+                          <button
+                            onClick={() => setShowFormulaModal(false)}
+                            className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                          >
+                            Cancel
+                          </button>
+                          <button
+                            onClick={handleSaveFormula}
+                            className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                          >
+                            Save Formula
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
               <button
                 type="button"
-                onClick={() => setShowFormulaModal(true)}
-                className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
+                onClick={handleAddColumn}
+                className="bg-green-500 hover:bg-green-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
               >
-                Generate Formula
+                Add Column
               </button>
+              {/* Render SubTenders and their respective tables */}
 
-              {showFormulaModal && (
-                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-                  <div className="bg-white p-6 rounded shadow-lg max-w-lg w-full">
+              {/* Modal for Adding Column */}
+              {showModal && subTenders.length > 0 && (
+                <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
+                  <div className="bg-white p-6 rounded shadow-md w-96">
+                    <h2 className="text-lg font-semibold mb-4">
+                      Enter Column Name
+                    </h2>
+                    <input
+                      type="text"
+                      value={newColumnName}
+                      onChange={handleColumnNameChange}
+                      className="w-full mb-4 p-2 border border-gray-300 rounded"
+                      placeholder="Enter new column name"
+                    />
                     <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
                       <p>
-                        <strong>Note:</strong> When creating formulas, follow
-                        this structure:
-                        <span className="font-bold">P = R * Q</span>, where:
-                        <ul className="list-disc ml-6">
-                          <li>
-                            <strong>P:</strong> Total Cost (first field).
-                          </li>
-                          <li>
-                            <strong>R:</strong> Rate (second field).
-                          </li>
-                          <li>
-                            <strong>Q:</strong> Quantity (third field).
-                          </li>
-                        </ul>
-                        Always start with this sequence (P, R, Q). You can add
-                        operators (+, -, *, /) or numbers, but{" "}
-                        <span className="font-bold">
-                          do not change the order.
-                        </span>
-                        If buyer input is needed, select{" "}
-                        <span className="font-bold">Edit</span> for the
-                        respective columns.
+                        <strong>Note:</strong> Choosing{" "}
+                        <span className="font-bold">Edit</span> will allow
+                        buyers to fill in this column with editable data. Use
+                        this option if buyer input is required.
                       </p>
                     </div>
-                    <h2 className="text-xl font-bold mb-4">Generate Formula</h2>
-
-                    <div className="mb-4">
-                      <h3 className="font-bold mb-2">Headers</h3>
-                      <div className="flex flex-wrap gap-2">
-                      {Array.isArray(headers) && headers.map((header, index) => (
-              <DraggableHeader 
-                key={index} 
-                header={header.header} 
-                type={header.type}
-                typee ="HEADERS"
-              />
-            ))}
-                      </div>
-                    </div>
-                    <div className="mb-4">
-                      <h3 className="font-bold mb-2">Numbers</h3>
-                      <div className="flex space-x-2">
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 0].map((number) => (
-                          <DraggableNumber key={number} number={number} type="NUMBERS" />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mb-4">
-                      <h3 className="font-bold mb-2">Operations</h3>
-                      <div className="flex space-x-2">
-                        {["+", "-", "*", "/", "="].map((operation) => (
-                           <DraggableOperation key={operation} operation={operation} type="OPERATIONS" />
-                        ))}
-                      </div>
-                    </div>
-                    <div className="mb-4">
-                      <h3 className="font-bold mb-2">Formula</h3>
-
-                      <div className="p-2 px-4 border border-gray-300 rounded bg-gray-100 min-h-[100px]">
-                      <DropArea onDrop={handleItemDrop} formulaDisplay={formulaDisplay} />
-                      </div>
-                    </div>
-                    <div className="flex justify-between">
+                    <h2 className="text-lg font-semibold mb-4">
+                      Select Column Type
+                    </h2>
+                    <select
+                      value={newColumnType}
+                      onChange={handleColumnTypeChange}
+                      className="w-full mb-4 p-2 border border-gray-300 rounded"
+                    >
+                      <option value="view">View</option>
+                      <option value="edit">Edit</option>
+                    </select>
+                    <div className="flex justify-end space-x-4">
                       <button
-                        onClick={handleClearFormula}
-                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
+                        onClick={handleCloseModal}
+                        className="bg-gray-500 text-white py-2 px-4 rounded"
                       >
-                        Clear
+                        Cancel
                       </button>
-                      <div className="space-x-2">
-                        <button
-                          onClick={() => setShowFormulaModal(false)}
-                          className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={handleSaveFormula}
-                          className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-                        >
-                          Save Formula
-                        </button>
-                      </div>
+                      <button
+                        onClick={handleAddColumnConfirm}
+                        className="bg-blue-500 text-white py-2 px-4 rounded"
+                      >
+                        Yes, Add Column
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <button
+                // onClick={handleDeleteColumn}
+                onClick={(event) => {
+                  event.preventDefault(); // Prevent the default action (if any)
+                  handleDeleteColumn(); // Call the function to delete selected columns
+                }}
+                className="bg-red-500 hover:bg-red-600 text-white md:font-bold text-sm md:text-md py-2 lg:px-4 px-2 rounded"
+              >
+                Delete Columns
+              </button>
+
+              {/* Delete Column Modal */}
+              {showDeleteColumnModal && subTenders.length > 0 && (
+                <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
+                  <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
+                    <h2 className="text-xl font-bold mb-4">
+                      Select Columns to Delete
+                    </h2>
+                    <div className="mb-4">
+                      {headers.map(({ header, type }, index) => (
+                        <div key={index} className="flex items-center mb-2">
+                          <input
+                            type="checkbox"
+                            id={`col_${index}`}
+                            className="mr-2"
+                            onChange={() => handleCheckboxChange(index)}
+                          />
+                          <label
+                            htmlFor={`col_${index}`}
+                            className="text-gray-700"
+                          >
+                            {header}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="flex justify-end space-x-4">
+                      <button
+                        onClick={(event) => {
+                          event.preventDefault(); // Prevent the default action (if any)
+                          setShowDeleteColumnModal(false); // Close the modal
+                        }}
+                        className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={(event) => {
+                          event.preventDefault(); // Prevent the default action (if any)
+                          handleDeleteSelectedColumns(); // Call the function to delete selected columns
+                        }}
+                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
+                      >
+                        Delete
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
             </div>
-            <button
-              type="button"
-              onClick={handleAddColumn}
-              className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
-            >
-              Add Column
-            </button>
-            {/* Render SubTenders and their respective tables */}
-
-            {/* Modal for Adding Column */}
-            {showModal && subTenders.length > 0 && (
-              <div className="fixed inset-0 bg-gray-500 bg-opacity-50 flex justify-center items-center">
-                <div className="bg-white p-6 rounded shadow-md w-96">
-                  <h2 className="text-lg font-semibold mb-4">
-                    Enter Column Name
-                  </h2>
-                  <input
-                    type="text"
-                    value={newColumnName}
-                    onChange={handleColumnNameChange}
-                    className="w-full mb-4 p-2 border border-gray-300 rounded"
-                    placeholder="Enter new column name"
-                  />
-                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-300 rounded text-yellow-800 text-sm">
-                    <p>
-                      <strong>Note:</strong> Choosing{" "}
-                      <span className="font-bold">Edit</span> will allow buyers
-                      to fill in this column with editable data. Use this option
-                      if buyer input is required.
-                    </p>
-                  </div>
-                  <h2 className="text-lg font-semibold mb-4">
-                    Select Column Type
-                  </h2>
-                  <select
-                    value={newColumnType}
-                    onChange={handleColumnTypeChange}
-                    className="w-full mb-4 p-2 border border-gray-300 rounded"
-                  >
-                    <option value="view">View</option>
-                    <option value="edit">Edit</option>
-                  </select>
-                  <div className="flex justify-end space-x-4">
-                    <button
-                      onClick={handleCloseModal}
-                      className="bg-gray-500 text-white py-2 px-4 rounded"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleAddColumnConfirm}
-                      className="bg-blue-500 text-white py-2 px-4 rounded"
-                    >
-                      Yes, Add Column
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            <button
-              // onClick={handleDeleteColumn}
-              onClick={(event) => {
-                event.preventDefault(); // Prevent the default action (if any)
-                handleDeleteColumn(); // Call the function to delete selected columns
-              }}
-              className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-            >
-              Delete Columns
-            </button>
-
-            {/* Delete Column Modal */}
-            {showDeleteColumnModal && subTenders.length > 0 && (
-              <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-                <div className="bg-white p-6 rounded shadow-lg max-w-md w-full">
-                  <h2 className="text-xl font-bold mb-4">
-                    Select Columns to Delete
-                  </h2>
-                  <div className="mb-4">
-                    {headers.map(({ header, type }, index) => (
-                      <div key={index} className="flex items-center mb-2">
-                        <input
-                          type="checkbox"
-                          id={`col_${index}`}
-                          className="mr-2"
-                          onChange={() => handleCheckboxChange(index)}
-                        />
-                        <label
-                          htmlFor={`col_${index}`}
-                          className="text-gray-700"
-                        >
-                          {header}
-                        </label>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="flex justify-end space-x-4">
-                    <button
-                      onClick={(event) => {
-                        event.preventDefault(); // Prevent the default action (if any)
-                        setShowDeleteColumnModal(false); // Close the modal
-                      }}
-                      className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={(event) => {
-                        event.preventDefault(); // Prevent the default action (if any)
-                        handleDeleteSelectedColumns(); // Call the function to delete selected columns
-                      }}
-                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
           </DndProvider>
         )}
       </div>
@@ -1150,7 +1159,9 @@ export default function EditableSheet({
           <div className="bg-white rounded-lg shadow-lg w-full max-w-2xl relative">
             {/* Header Section */}
             <div className="w-full bg-blue-500 text-white text-center py-4 rounded-t-lg">
-              <h2 className="text-lg font-bold">Select the columns for buyers where input is required</h2>
+              <h2 className="text-lg font-bold">
+                Select the columns for buyers where input is required
+              </h2>
             </div>
 
             {/* Content Section */}

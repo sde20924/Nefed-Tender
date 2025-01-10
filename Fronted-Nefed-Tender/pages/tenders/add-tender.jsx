@@ -42,7 +42,7 @@ const AddTender = () => {
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
   const [selectedBuyers, setSelectedBuyers] = useState([]);
-  const [selectedbuyersId,setSelectedBuyersId] = useState([])
+  const [selectedbuyersId, setSelectedBuyersId] = useState([]);
   // Quick Options
   const [isFeatured, setIsFeatured] = useState(false);
   const [isPublished, setIsPublished] = useState(false);
@@ -283,8 +283,8 @@ const AddTender = () => {
     if (selectedCategory) {
       const selectedData = categories.find(
         (category) => category.demo_tender_sheet_id === selectedCategory
-      ); 
-      console.log("jdujhdujn+_+_+",selectedCategory)
+      );
+      console.log("jdujhdujn+_+_+", selectedCategory);
       console.log("Selected Category Data:", selectedData);
 
       if (selectedData) {
@@ -327,7 +327,12 @@ const AddTender = () => {
   // Handle Submit
   const handleSubmit = async (e, tenderOption) => {
     e.preventDefault();
+    console.log("fjrfhnf", tenderOption);
+
+    // Generate a random tender_id using current time
     const tender_id = `tender_${new Date().getTime()}`; // Prefixing with 'tender_' to ensure uniqueness
+
+    // Prepare form data to send to backend
     const formData = {
       tender_title: name, // Title of the tender
       tender_slug: slug, // URL-friendly version of the title
@@ -369,9 +374,9 @@ const AddTender = () => {
       },
       selected_buyers: selectedbuyersId,
       accessPosition: accessPosition,
-      ShowItems:ShowItems,
+      ShowItems: ShowItems,
       formula: generatedFormula,
-      category:selectedCategory
+      category: selectedCategory,
     };
     const requiredFields = [
       "tender_title",
@@ -400,39 +405,39 @@ const AddTender = () => {
         return
       }
       
-      const response = await callApiPost("create_new_tender", formData);
-        if(response.success){
-        toast.success("Tender Created Sucessfully");
-      }
       if (tenderOption === "draft") {
         const response = await callApiPost("create_new_tender", formData);
         console.log("Response:", response);
         toast.success("Tender Saved Sucessfully");
         setLoading(false);
-        return
+        return;
       }
-    }catch (error) {
+      const response = await callApiPost("create_new_tender", formData);
+      console.log("{}{}{}{}{}}}{}", response.status);
+      if (response.status === 201) {
+        console.log("Response:", response);
+        toast.success("Tender Created Sucessfully");
+      }
+    } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit tender.");
-    }finally {
-      setLoading(false); 
+    } finally {
+      setLoading(false); // Hide loader
     }
   };
 
-  
-  useEffect (()=>{
+  useEffect(() => {
     const handleSelectedBuyers = () => {
-
       const buyerIds = selectedBuyers.map((buyer) => buyer.user_id);
       setSelectedBuyersId(buyerIds); // Store only IDs in the state
     };
-    handleSelectedBuyers ();
-  },[selectedBuyers])
+    handleSelectedBuyers();
+  }, [selectedBuyers]);
   console.log("----####$selectedid$#----", selectedbuyersId);
-  
+
   return (
     <>
-    {loading && <Loader />}
+      {loading && <Loader />}
       <HeaderTitle
         padding={"p-4"}
         subTitle={"Add new tenders, set visibility etc."}
@@ -440,11 +445,8 @@ const AddTender = () => {
       />
 
       <div className="container mx-auto px-4 py-6">
-        <form onSubmit={handleSubmit}
-         
-          className="bg-white shadow-lg rounded-md p-6 md:p-10 mb-6"
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-2 p-6 rounded-md">
+        <form className="bg-white shadow-lg rounded-md  md:p-10 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 border-2 md:p-6 rounded-md">
             {/* Left Column */}
             <div className="space-y-6">
               {/* Tenders Details */}
@@ -566,7 +568,16 @@ const AddTender = () => {
           </div>
           {/* Submit Button */}
           {/* Sticky Submit Button */}
-          <div className="fixed bottom-8 right-4 p-4">
+
+          <EditableSheet
+            headers={headers}
+            setHeaders={setHeaders}
+            subTenders={subTenders}
+            setSubTenders={setSubTenders}
+            selectedCategory={selectedCategory}
+            onFormulaChange={handleFormulaChange}
+          />
+          <div className=" flex justify-end p-4">
             <button
               type="button"
               className="bg-blue-600 mx-4 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
@@ -582,15 +593,6 @@ const AddTender = () => {
               Create
             </button>
           </div>
-
-          <EditableSheet
-            headers={headers}
-            setHeaders={setHeaders}
-            subTenders={subTenders}
-            setSubTenders={setSubTenders}
-            selectedCategory={selectedCategory}
-            onFormulaChange={handleFormulaChange}
-          />
         </form>
         {/* Sticky Submit Button */}
       </div>
