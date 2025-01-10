@@ -42,9 +42,8 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
     accessPosition,
     formula,
     save_as,
-    ShowItems
-, 
-    category
+    ShowItems,
+    category,
   } = req.body;
   console.log("+++++++++++++++++------", req.body);
   // Validation to ensure required fields are provided
@@ -134,7 +133,7 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
         category,
       ]
     );
-    
+
     // Insert attachments into `tender_required_doc`
     for (const attachment of parsedAttachments) {
       const { key, label, extension, maxFileSize } = attachment;
@@ -290,13 +289,13 @@ const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
     res
       .status(201)
-      .send({ msg: "Tender created successfully", tender_id: tender_id });
+      .send({status: "success", msg: "Tender created successfully", tender_id: tender_id });
   } catch (error) {
     await db.query("ROLLBACK");
     console.error("Error creating tender:", error.message);
     res
       .status(500)
-      .send({ msg: "Error creating tender", error: error.message });
+      .send({status: "error", msg: "Error creating tender", error: error.message });
   }
 });
 
