@@ -2,6 +2,7 @@ const db = require("../config/config"); // Your DB config
 
 const SuggestedPrice = async (tenderId, userId) => {
   try {
+    // Count unique buyers for the tender
     const uniqueBuyerCountQuery = `
       SELECT COUNT(DISTINCT buyer_id) AS uniqueBuyers
       FROM buyer_header_row_data
@@ -12,14 +13,16 @@ const SuggestedPrice = async (tenderId, userId) => {
       )
     `;
     const [uniqueBuyerResult] = await db.query(uniqueBuyerCountQuery, [tenderId]);
-    console.log("+_+_+_+_+_",uniqueBuyerResult)
     const uniqueBuyers = uniqueBuyerResult[0]?.uniqueBuyers || 0;
-    if (uniqueBuyers < 2 ) {
+
+    if (uniqueBuyers < 2) { // Changed from 3 to 2 as per your latest code
       return {
         success: false,
-        message: "Suggested data not available. Less than three unique buyers.",
+        message: "Suggested data not available. Less than two unique buyers.",
       };
     }
+
+    // Get the Rate column header_id
     const rateHeaderSql = `
       SELECT header_id
       FROM tender_header
@@ -32,6 +35,8 @@ const SuggestedPrice = async (tenderId, userId) => {
       throw new Error('No Rate column found in tender_header with cal_col="R".');
     }
     const rateHeaderId = rateHeaders[0].header_id;
+
+    // Get the Item column header_id
     const itemHeaderSql = `
       SELECT header_id
       FROM tender_header
@@ -44,6 +49,8 @@ const SuggestedPrice = async (tenderId, userId) => {
       throw new Error('No "Item" column found in tender_header (table_head="Item").');
     }
     const itemHeaderId = itemHeaders[0].header_id;
+
+    // Fetch subtender details, items, and rates
     const sql = `
       SELECT
         s.subtender_id,
@@ -81,10 +88,13 @@ const SuggestedPrice = async (tenderId, userId) => {
       subtenderMap[subtender_id].items.push({
         row_number: rowNumber,
         item_name: itemName,
-        seller_rate: rate,
+        seller_rate: parseFloat(rate) || null, // Ensure rate is numeric
       });
     }
+
+    // Generate suggested prices
     const suggestedPrices = [];
+    const EPSILON = 1e-6; // Tolerance for floating-point comparison
 
     for (const subtenderId in subtenderMap) {
       const st = subtenderMap[subtenderId];
@@ -94,8 +104,9 @@ const SuggestedPrice = async (tenderId, userId) => {
       };
 
       for (const itemObj of st.items) {
-        const { row_number, item_name } = itemObj;
+        const { row_number, item_name, seller_rate } = itemObj;
 
+        // Fetch all rates for the item
         const userTotalAmountQuery = `
           SELECT
             buyer_id,
@@ -119,26 +130,40 @@ const SuggestedPrice = async (tenderId, userId) => {
         let userRate = null;
 
         userTotals.forEach((u) => {
+          const rate = parseFloat(u.rate);
+          if (isNaN(rate)) return;
+
           if (u.buyer_id === userId) {
-            userRate = u.rate;
+            userRate = rate;
           }
-          if (u.rate < lowestRate) {
-            lowestRate = u.rate;
+          if (rate < lowestRate) {
+            lowestRate = rate;
           }
         });
 
-        if (userRate !== null && userRate === lowestRate) {
+        // Log rates for debugging
+        console.log(`Subtender ID: ${subtenderId}, Item: ${item_name}`);
+        console.log(`Lowest Rate: ${lowestRate}, User Rate: ${userRate}`);
+
+        // Skip if the logged-in user has the lowest rate (within tolerance)
+        if (userRate !== null && Math.abs(userRate - lowestRate) < EPSILON) {
+          console.log("User has the lowest rate. No suggested price.");
           continue;
         }
 
+        // Calculate suggested price as 90% of the lowest rate
         const suggestedPrice = lowestRate * 0.9;
+
+        // Show suggested price only if the user's rate is null or greater than the suggested price
         const showSuggestedPrice = userRate === null || userRate > suggestedPrice;
 
-        subtenderResult.items.push({
-          item_name,
-          suggested_price: showSuggestedPrice ? suggestedPrice.toFixed(2) : null,
-          user_rate: userRate,
-        });
+        if (showSuggestedPrice) {
+          subtenderResult.items.push({
+            item_name,
+            suggested_price: suggestedPrice.toFixed(2),
+            user_rate: userRate,
+          });
+        }
       }
 
       if (subtenderResult.items.length) {

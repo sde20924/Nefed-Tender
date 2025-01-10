@@ -386,7 +386,8 @@ const AddTender = () => {
     ];
   
     for (const field of requiredFields) {
-      if (!formData[field] || formData[field] === "") {
+     
+      if (!formData[field] || formData[field] === "" || formData[field] ===  '<p><br></p>') {
         toast.error(`Field "${field}" is required.`);
         return; // Exit if a required field is missing
       }

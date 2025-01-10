@@ -123,7 +123,6 @@ const AuctionBids = () => {
                     "Amount",
                     "Status",
                     "Action",
-                    "Bided At",
                   ].map((header) => (
                     <th
                       key={header}
@@ -179,9 +178,6 @@ const AuctionBids = () => {
                           <button className="x-4 py-1 inline-block text-sm leading-5 font-semibold rounded-full min-w-[80px] text-center bg-blue-500 text-white ml-2">
                             Reject
                           </button>
-                        </td>
-                        <td className="border-t px-6 py-3 text-right">
-                          {bidDate} - {bidTime.split(".")[0]}
                         </td>
                       </tr>
                     );
