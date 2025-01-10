@@ -155,6 +155,7 @@ export default (sequelize, DataTypes) => {
       },
     },
     {
+      tableName: "manage_tender",
       timestamps: false,
     }
   );

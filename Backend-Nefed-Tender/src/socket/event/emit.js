@@ -1,7 +1,7 @@
-const { getConnectedUsers } = require("../authenticate");
-const { getIO } = require("../connection");
+import { getConnectedUsers } from "../authenticate.js";
+import { getIO } from "../connection.js";
 
-const emitEvent = (eventName, data, userType, ids, user_id = "") => {
+export const emitEvent = (eventName, data, userType, ids, user_id = "") => {
   const io = getIO();
   if (io) {
     const connectedUsers = getConnectedUsers();
@@ -9,27 +9,21 @@ const emitEvent = (eventName, data, userType, ids, user_id = "") => {
     if (!connectedUsers || Object.keys(connectedUsers).length === 0) {
       return;
     }
-    // if (!userType) {
-    //   io.emit(eventName, data);
-    // }
+
     if (userType && ids) {
-      Object.keys(connectedUsers).forEach((users) => {
-        const id = connectedUsers[users].socketId;
-        if (
-          connectedUsers[users].userType == userType &&
-          connectedUsers[users].id == ids
-        ) {
-          io.to(id).emit(eventName, data);
+      // Emit to specific users based on userType and ids
+      Object.keys(connectedUsers).forEach((userKey) => {
+        const user = connectedUsers[userKey];
+        if (user.userType === userType && user.id == ids) {
+          io.to(user.socketId).emit(eventName, data);
         }
       });
     } else {
-      Object.keys(connectedUsers).forEach((users) => {
-        const id = connectedUsers[users].socketId;
-        if (
-          connectedUsers[users].userType === userType &&
-          connectedUsers[users].id != user_id
-        ) {
-          io.to(id).emit(eventName, data);
+      // Emit to all users of a certain userType, excluding a specific user_id
+      Object.keys(connectedUsers).forEach((userKey) => {
+        const user = connectedUsers[userKey];
+        if (user.userType === userType && user.id != user_id) {
+          io.to(user.socketId).emit(eventName, data);
         }
       });
     }
@@ -37,5 +31,3 @@ const emitEvent = (eventName, data, userType, ids, user_id = "") => {
     console.error("Socket.IO not initialized");
   }
 };
-
-module.exports = { emitEvent };

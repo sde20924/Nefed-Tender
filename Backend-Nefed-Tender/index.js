@@ -1,15 +1,18 @@
-import app from './src/app.js';
-import config from './src/config/config.js';
-import logger from './src/config/logger.js';
+import app from "./src/app.js";
+import config from "./src/config/config.js";
+import logger from "./src/config/logger.js";
+import { initializeSocket } from "./src/socket/connection.js";
 
 const server = app.listen(config.port, () => {
   logger.info(`Listening to port ${config.port}`);
 });
 
+initializeSocket(server);
+
 const exitHandler = () => {
   if (server) {
     server.close(() => {
-      logger.info('Server closed');
+      logger.info("Server closed");
       process.exit(1);
     });
   } else {
@@ -22,11 +25,11 @@ const unexpectedErrorHandler = (error) => {
   exitHandler();
 };
 
-process.on('uncaughtException', unexpectedErrorHandler);
-process.on('unhandledRejection', unexpectedErrorHandler);
+process.on("uncaughtException", unexpectedErrorHandler);
+process.on("unhandledRejection", unexpectedErrorHandler);
 
-process.on('SIGTERM', () => {
-  logger.info('SIGTERM received');
+process.on("SIGTERM", () => {
+  logger.info("SIGTERM received");
   if (server) {
     server.close();
   }

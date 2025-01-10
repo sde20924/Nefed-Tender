@@ -1,8 +1,8 @@
-const { Sequelize, DataTypes } = require("sequelize");
+import { Sequelize, DataTypes } from "sequelize";
 // sde20924
 // developer@viexports.com
 
-module.exports = (sequelize) => {
+export default (sequelize) => {
   const Admin = sequelize.define(
     "Admin",
     {

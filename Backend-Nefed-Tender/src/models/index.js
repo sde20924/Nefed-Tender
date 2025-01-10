@@ -1,30 +1,30 @@
-const { Sequelize } = require("sequelize");
-const config = require("../config/config.js");
-const logger = require("../config/logger.js");
-const Admin = require("./admin.model.js");
-const Buyer = require("./buyer.model.js");
-const BuyerHeaderRowData = require("./buyerHeaderRow.js");
-const DemoTenderHeader = require("./demoTenderHeader.model.js");
-const DemoTenderSheet = require("./demoTenderSheet.model.js");
-const HomepageContent = require("./homePageContent.model.js");
-const Manager = require("./manager.model.js");
-const ManageTender = require("./manageTender.model.js");
-const RequiredDocuments = require("./requiredDocuments.model.js");
-const RequirementDocuments = require("./requirementDocument.model.js");
-const Seller = require("./seller.model.js");
-const SellerBuyer = require("./sellerBuyer.model.js");
-const SellerHeaderRowData = require("./sellerHeaderRowData.model.js");
-const Subtender = require("./subTender.model.js");
-const Tags = require("./tags.model.js");
-const TenderAccess = require("./tenderAccess.model.js");
-const TenderApplication = require("./tenderApplication.model.js");
-const TenderAuctItems = require("./tenderAuctionItem.model.js");
-const TenderBidRoom = require("./tenderBidRoom.js");
-const TenderHeader = require("./tenderHeader.model.js");
-const TenderRequiredDoc = require("./tenderRequiredDoc.model.js");
-const TenderUserDoc = require("./tenderUserDoc.js");
-const UserDocuments = require("./userDocuments.js");
-const UserManagerAssignments = require("./userManagerAssignments.model.js");
+import { Sequelize } from "sequelize";
+import config from "../config/config.js";
+import logger from "../config/logger.js";
+import Admin from "./admin.model.js";
+import Buyer from "./buyer.model.js";
+import BuyerHeaderRowData from "./buyerHeaderRow.js";
+import DemoTenderHeader from "./demoTenderHeader.model.js";
+import DemoTenderSheet from "./demoTenderSheet.model.js";
+import HomepageContent from "./homePageContent.model.js";
+import Manager from "./manager.model.js";
+import ManageTender from "./manageTender.model.js";
+import RequiredDocuments from "./requiredDocuments.model.js";
+import RequirementDocuments from "./requirementDocument.model.js";
+import Seller from "./seller.model.js";
+import SellerBuyer from "./sellerBuyer.model.js";
+import SellerHeaderRowData from "./sellerHeaderRowData.model.js";
+import Subtender from "./subTender.model.js";
+import Tags from "./tags.model.js";
+import TenderAccess from "./tenderAccess.model.js";
+import TenderApplication from "./tenderApplication.model.js";
+import TenderAuctItems from "./tenderAuctionItem.model.js";
+import TenderBidRoom from "./tenderBidRoom.js";
+import TenderHeader from "./tenderHeader.model.js";
+import TenderRequiredDoc from "./tenderRequiredDoc.model.js";
+import TenderUserDoc from "./tenderUserDoc.js";
+import UserDocuments from "./userDocuments.js";
+import UserManagerAssignments from "./userManagerAssignments.model.js";
 
 // Extract the correct configuration for the current environment (e.g., development)
 const sequelizeConfig = config.sequelize.development;
@@ -42,7 +42,7 @@ const sequelizeInstance = new Sequelize(
       min: 0,
       max: 100,
       acquire: 5000,
-      idle: 1000, // corrected from "Idle" to "idle"
+      idle: 1000, // Corrected from "Idle" to "idle"
     },
   }
 );
@@ -89,11 +89,11 @@ db.UserManagerAssignments = UserManagerAssignments(
   Sequelize
 );
 
-//= ==============================
+// Associate models if the associate method exists
 Object.values(db).forEach((model) => {
   if (model.associate) {
     model.associate(db);
   }
 });
 
-module.exports = db;
+export default db;

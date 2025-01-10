@@ -1,7 +1,2 @@
-var authValidation = require("./auth.validation");
-var userValidation = require("./user.validation");
-
-module.exports = {
-  authValidation,
-  userValidation,
-};
+export var authValidation = require("./auth.validation");
+export var userValidation = require("./user.validation");

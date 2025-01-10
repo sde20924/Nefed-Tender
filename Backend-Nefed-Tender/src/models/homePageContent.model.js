@@ -1,5 +1,5 @@
-const { Sequelize, DataTypes } = require("sequelize");
-module.exports = (sequelize) => {
+import { Sequelize, DataTypes } from "sequelize";
+export default (sequelize) => {
   const HomepageContent = sequelize.define(
     "HomepageContent",
     {

@@ -1,6 +1,8 @@
-const Joi = require("joi");
+// src/validations/authValidation.js
 
-const register = {
+import Joi from "joi";
+
+export const register = {
   body: Joi.object({
     name: Joi.string().trim().min(1).max(100).required().messages({
       "string.empty": "Name is required.",
@@ -29,28 +31,21 @@ const register = {
   }),
 };
 
-const login = {
+export const login = {
   body: Joi.object().keys({
     email: Joi.string().required(),
     password: Joi.string().required(),
   }),
 };
 
-const logout = {
+export const logout = {
   body: Joi.object().keys({
     refreshToken: Joi.string().required(),
   }),
 };
 
-const refreshTokens = {
+export const refreshTokens = {
   body: Joi.object().keys({
     refreshToken: Joi.string().required(),
   }),
-};
-
-module.exports = {
-  register,
-  login,
-  logout,
-  refreshTokens,
 };

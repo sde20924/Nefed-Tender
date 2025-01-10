@@ -1,8 +1,19 @@
-const httpStatus = require("http-status");
-const ApiError = require("../utils/ApiError.js");
-const { roleRights, roles } = require("../config/roles.js");
-const passport = require("passport");
+// src/middlewares/auth.js
 
+import httpStatus from "http-status";
+import ApiError from "../utils/ApiError.js";
+import { roleRights } from "../config/roles.js";
+import passport from "passport";
+
+/**
+ * Callback function to verify user authentication and authorization.
+ *
+ * @param {Object} req - The request object.
+ * @param {Function} resolve - The function to call when verification succeeds.
+ * @param {Function} reject - The function to call when verification fails.
+ * @param {Array<string>} requiredRights - List of required rights for the endpoint.
+ * @returns {Function} - The callback function for passport authentication.
+ */
 const verifyCallback =
   (req, resolve, reject, requiredRights) => async (err, user, info) => {
     if (err || info || !user) {
@@ -25,6 +36,12 @@ const verifyCallback =
     resolve();
   };
 
+/**
+ * Middleware to authenticate and authorize users.
+ *
+ * @param {...string} requiredRights - Rights required to access the endpoint.
+ * @returns {Function} - The middleware function.
+ */
 const auth =
   (...requiredRights) =>
   async (req, res, next) => {
@@ -39,4 +56,4 @@ const auth =
       .catch((err) => next(err));
   };
 
-module.exports = auth;
+export default auth;

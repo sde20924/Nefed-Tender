@@ -1,4 +1,4 @@
-const nodemailer = require("nodemailer");
+import nodemailer from "nodemailer";
 
 const generateOtpEmailHtml = (otp, orgName, purpose) => {
   let emailContent = "";
@@ -63,4 +63,4 @@ const sendOtpEmail = async (email, otp, purpose) => {
   }
 };
 
-module.exports = sendOtpEmail;
+export default sendOtpEmail;

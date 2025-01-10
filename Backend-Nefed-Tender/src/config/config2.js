@@ -1,7 +1,7 @@
-const mysql = require("mysql2/promise");
+import mysql from "mysql2/promise";
 
 // MySQL Database Configuration
-const dbConfig = {
+export const dbConfig = {
   host: "earth.hostitbro.com",
   user: "nafedtra_admin",
   password: "Admin@2024",
@@ -28,4 +28,4 @@ const pool = mysql.createPool(dbConfig);
 })();
 
 // Export the pool for use in queries
-module.exports = pool;
+export default pool;

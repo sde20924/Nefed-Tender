@@ -1,9 +1,9 @@
-import db from "../../../../config/config2.js";
+import db from "../../../../models/index.js"; // Import database connection
 import asyncErrorHandler from "../../../../utils/asyncErrorHandler.js";
-const { emitEvent } = require("../../socket/event/emit");
-const { userVerifyApi } = require("../../utils/external/api");
-const axios = require("axios");
-const { v4: uuidv4 } = require("uuid"); // UUID for generating a unique tender ID
+import { emitEvent } from "../../../../socket/event/emit.js";
+import { userVerifyApi } from "../../../../utils/external/api.js";
+import axios from "axios";
+import { v4 as uuidv4 } from "uuid";
 
 export const createNewTenderController = asyncErrorHandler(async (req, res) => {
   const user_id = req.user.user_id;
@@ -75,6 +75,7 @@ export const createNewTenderController = asyncErrorHandler(async (req, res) => {
       missingFields,
     });
   }
+  const transaction = await db.db.sequelize.transaction();
 
   try {
     const parsedAttachments =
@@ -82,28 +83,15 @@ export const createNewTenderController = asyncErrorHandler(async (req, res) => {
     const parsedCustomForm =
       typeof custom_form === "string" ? JSON.parse(custom_form) : custom_form;
 
-    // Begin a transaction
-    await db.query("START TRANSACTION");
-
-    // Insert the new tender data into the `manage_tender` table
-    const [newTender] = await db.query(
-      `INSERT INTO manage_tender (
-        user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt,
-        custom_form, currency, start_price, dest_port,
-        bag_size, bag_type, app_start_time, app_end_time,
-        auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext,
-        aut_auct_ext_bfr_end_time, min_decr_bid_val, timer_ext_val,
-        qty_split_criteria, counter_offr_accept_timer, img_url, auction_type,
-        tender_id, audi_key, user_access, access_position, cal_formula, save_as, show_items, category
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [
+    const newTender = await db.ManageTender.create(
+      {
         user_id,
         tender_title,
         tender_slug,
         tender_desc,
         tender_cat,
         tender_opt,
-        JSON.stringify(parsedCustomForm),
+        custom_form: JSON.stringify(parsedCustomForm),
         currency,
         start_price,
         dest_port,
@@ -125,91 +113,89 @@ export const createNewTenderController = asyncErrorHandler(async (req, res) => {
         auction_type,
         tender_id,
         audi_key,
-        accessType,
-        accessPosition,
-        formula,
+        user_access: accessType,
+        access_position: accessPosition,
+        cal_formula: formula,
         save_as,
-        ShowItems,
+        show_items: ShowItems,
         category,
-      ]
+      },
+      { transaction }
     );
 
-    // Insert attachments into `tender_required_doc`
-    for (const attachment of parsedAttachments) {
-      const { key, label, extension, maxFileSize } = attachment;
-      await db.query(
-        `INSERT INTO tender_required_doc (tender_id, doc_key, doc_label, doc_ext, doc_size)
-         VALUES (?, ?, ?, ?, ?)`,
-        [tender_id, key, label, extension, maxFileSize]
-      );
+    // Insert attachments into TenderRequiredDoc
+    if (Array.isArray(parsedAttachments)) {
+      const attachmentsToCreate = parsedAttachments.map((attachment) => ({
+        tender_id: tender_id || newTender.id, // Use newTender.id if tender_id not provided
+        doc_key: attachment.key,
+        doc_label: attachment.label,
+        doc_ext: attachment.extension,
+        doc_size: attachment.maxFileSize,
+      }));
+
+      await db.TenderRequiredDoc.bulkCreate(attachmentsToCreate, {
+        transaction,
+      });
     }
 
     // Handle `editable_sheet`: Insert headers and sub-tenders
-    const { headers, sub_tenders } = editable_sheet;
 
-    // Insert headers into `tender_header` table and get the header_id
-    for (let i = 0; i < headers.length; i++) {
-      const { header, type, sortform } = headers[i];
+    if (
+      editable_sheet &&
+      editable_sheet.headers &&
+      editable_sheet.sub_tenders
+    ) {
+      const { headers, sub_tenders } = editable_sheet;
 
-      // Insert the tender_header row
-      const [headerResult] = await db.query(
-        `INSERT INTO tender_header 
-           (tender_id, table_head, type, \`order\`, cal_col) 
-         VALUES (?, ?, ?, ?, ?)`,
-        [tender_id, header, type, i + 1, sortform]
-      );
-      const headerId = headerResult.insertId; // The header_id for this column
+      for (let i = 0; i < headers.length; i++) {
+        const { header, type, sortform } = headers[i];
 
-      // Now insert data for each Sub-Tender
-      for (const subTender of sub_tenders) {
-        const { name, rows } = subTender;
-
-        // Make sure subtender row exists
-        const [subTenderResult] = await db.query(
-          `SELECT subtender_id 
-             FROM subtender 
-            WHERE subtender_name = ? 
-              AND tender_id      = ?`,
-          [name, tender_id]
+        // Create TenderHeader
+        const tenderHeader = await db.TenderHeader.create(
+          {
+            tender_id: tender_id || newTender.id,
+            table_head: header,
+            type,
+            order: i + 1,
+            cal_col: sortform,
+          },
+          { transaction }
         );
 
-        let subtenderId;
-        if (subTenderResult.length === 0) {
-          const [newSubTender] = await db.query(
-            `INSERT INTO subtender (subtender_name, tender_id)
-             VALUES (?, ?)`,
-            [name, tender_id]
-          );
-          subtenderId = newSubTender.insertId;
-        } else {
-          subtenderId = subTenderResult[0].subtender_id;
-        }
+        // Handle SubTenders
+        for (const subTender of sub_tenders) {
+          const { name, rows } = subTender;
 
-        // Insert each row’s data for this column
-        for (const [rowIndex, row] of rows.entries()) {
-          // row[i] corresponds to the cell data for this column
-          const cellData = row[i] ?? "";
+          // Find or create SubTender
+          const [existingSubTender] = await db.Subtender.findOrCreate({
+            where: {
+              subtender_name: name,
+              tender_id: tender_id || newTender.id,
+            },
+            defaults: {
+              subtender_name: name,
+              tender_id: tender_id || newTender.id,
+            },
+            transaction,
+          });
 
-          await db.query(
-            `INSERT INTO seller_header_row_data (
-               header_id, 
-               row_data, 
-               subtender_id, 
-               seller_id, 
-               \`order\`, 
-               type, 
-               row_number
-             ) VALUES (?, ?, ?, ?, ?, ?, ?)`,
-            [
-              headerId, // The column's header_id
-              cellData, // Actual cell data
-              subtenderId, // The subtender we are inserting for
-              user_id,
-              i + 1, // "order" could be column index or up to you
-              type, // <-- Use the header's type (e.g. 'edit' or 'view')
-              rowIndex + 1, // row_number
-            ]
-          );
+          const subtenderId = existingSubTender.subtender_id;
+
+          // Prepare SellerHeaderRowData entries
+          const rowDataEntries = rows.map((row, rowIndex) => ({
+            header_id: tenderHeader.id,
+            row_data: row[i] ?? "",
+            subtender_id: subtenderId,
+            seller_id: user_id,
+            order: i + 1,
+            type, // Assuming type is from header
+            row_number: rowIndex + 1,
+          }));
+
+          // Bulk create SellerHeaderRowData
+          await db.SellerHeaderRowData.bulkCreate(rowDataEntries, {
+            transaction,
+          });
         }
       }
     }
@@ -220,78 +206,78 @@ export const createNewTenderController = asyncErrorHandler(async (req, res) => {
       Array.isArray(selected_buyers) &&
       selected_buyers.length > 0
     ) {
-      // Loop through each buyer_id in the selected_buyers array
-      for (const buyer_id of selected_buyers) {
-        await db.query(
-          `INSERT INTO tender_access (buyer_id, tender_id) VALUES (?, ?)`,
-          [buyer_id, tender_id]
-        );
-      }
+      const accessEntries = selected_buyers.map((buyer_id) => ({
+        buyer_id,
+        tender_id: tender_id || newTender.id,
+      }));
+
+      await TenderAccess.bulkCreate(accessEntries, { transaction });
     }
 
-    const token = req.headers["authorization"];
+    // Commit the transaction before making external API calls and emitting events
 
-    const sellerDetailsResponse = await axios.post(
-      userVerifyApi + "taqw-yvsu",
-      {
-        required_keys: "*",
-        user_ids: [
-          {
-            type: "seller",
-            user_id: req.user?.user_id,
-          },
-        ],
-      },
-      {
-        headers: {
-          Authorization: token,
-        },
-      }
-    );
+    // const token = req.headers["authorization"];
 
-    if (
-      accessType == "private" &&
-      Array.isArray(selected_buyers) &&
-      selected_buyers.length > 0
-    ) {
-      for (const buyer_id of selected_buyers) {
-        emitEvent(
-          "Tender",
-          {
-            message: "New Tender Added",
-            seller_id: req.user.user_id,
-            company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
-            tender_id: tender_id,
-            action_type: "New-Tender/Private",
-            route: "/tenders/explore-tenders/",
-          },
-          "buyer",
-          buyer_id
-        );
-      }
-    } else {
-      emitEvent(
-        "Tender",
-        {
-          message: "New Tender Added",
-          seller_id: req.user.user_id,
-          company_name: sellerDetailsResponse?.data[0]?.company_name,
-          tender_id: tender_id,
-          action_type: "New-Tender/Public",
-          route: "/tenders/explore-tenders/",
-        },
-        "buyer"
-      );
-    }
+    // const sellerDetailsResponse = await axios.post(
+    //   `${userVerifyApi}/taqw-yvsu`,
+    //   {
+    //     required_keys: "*",
+    //     user_ids: [
+    //       {
+    //         type: "seller",
+    //         user_id: user_id,
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: token,
+    //     },
+    //   }
+    // );
 
-    // Commit the transaction
-    await db.query("COMMIT");
+    // const companyName =
+    //   sellerDetailsResponse?.data?.data?.[0]?.company_name || "Unknown Company";
 
-    res
-      .status(201)
-      .send({ msg: "Tender created successfully", tender_id: tender_id });
+    // // Emit events based on accessType
+    // if (accessType === "private" && selected_buyers.length > 0) {
+    //   for (const buyer_id of selected_buyers) {
+    //     emitEvent(
+    //       "Tender",
+    //       {
+    //         message: "New Tender Added",
+    //         seller_id: user_id,
+    //         company_name: companyName,
+    //         tender_id: tender_id || newTender.id,
+    //         action_type: "New-Tender/Private",
+    //         route: "/tenders/explore-tenders/",
+    //       },
+    //       "buyer",
+    //       buyer_id
+    //     );
+    //   }
+    // } else {
+    //   emitEvent(
+    //     "Tender",
+    //     {
+    //       message: "New Tender Added",
+    //       seller_id: user_id,
+    //       company_name: companyName,
+    //       tender_id: tender_id || newTender.id,
+    //       action_type: "New-Tender/Public",
+    //       route: "/tenders/explore-tenders/",
+    //     },
+    //     "buyer"
+    //   );
+    // }
+    await transaction.commit();
+    // Send success response
+    res.status(201).json({
+      msg: "Tender created successfully",
+      tender_id: tender_id || newTender.id,
+    });
   } catch (error) {
-    await db.query("ROLLBACK");
+    await transaction.rollback();
     console.error("Error creating tender:", error.message);
     res
       .status(500)
@@ -308,86 +294,261 @@ const generateTenderId = () => {
 export const cloneTenderController = asyncErrorHandler(async (req, res) => {
   const { id } = req.params; // Tender ID that needs to be cloned
   const sellerId = req.user.user_id; // Assuming the user ID is correctly set in the middleware
-
+  const transaction = await db.sequelize.transaction();
   try {
     // Query to find the tender to be cloned, making sure it belongs to the seller
-    const tenderQuery = `SELECT * FROM manage_tender WHERE tender_id = ? AND user_id = ?`;
-    const [tenderToClone] = await db.query(tenderQuery, [id, sellerId]);
+    const tenderQuery = `
+      SELECT * FROM manage_tender
+      WHERE tender_id = :tenderId AND user_id = :userId
+      LIMIT 1
+    `;
+    const tenderToClone = await db.sequelize.query(tenderQuery, {
+      replacements: { tenderId: id, userId: sellerId },
+      transaction,
+    });
 
     if (tenderToClone.length === 0) {
+      await transaction.rollback();
       return res
         .status(404)
         .json({ success: false, msg: "Tender not found or not authorized" });
     }
 
     const tender = tenderToClone[0];
-    const newTenderId = generateTenderId(); // Generate a new tender ID
-
+    const newTenderId = generateTenderId(); // Implement this function as per your requirements
     const newTitle = `${tender.tender_title.trim()} - Clone`;
 
     // Clone the tender and insert it into the manage_tender table
     const cloneQuery = `
-            INSERT INTO manage_tender (
-                tender_id, user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt, emd_amt, emt_lvl_amt,
-                currency, start_price, qty, dest_port, bag_size, bag_type, measurement_unit, app_start_time, app_end_time,
-                auct_start_time, auct_end_time, time_frame_ext, extended_at, amt_of_ext, aut_auct_ext_bfr_end_time, 
-                min_decr_bid_val, timer_ext_val, qty_split_criteria, counter_offr_accept_timer, img_url, auction_type, audi_key
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
+      INSERT INTO manage_tender (
+        tender_id, user_id, tender_title, tender_slug, tender_desc, tender_cat, tender_opt,
+        emd_amt, emt_lvl_amt, currency, start_price, qty, dest_port, bag_size, bag_type,
+        measurement_unit, app_start_time, app_end_time, auct_start_time, auct_end_time,
+        time_frame_ext, extended_at, amt_of_ext, aut_auct_ext_bfr_end_time, 
+        min_decr_bid_val, timer_ext_val, qty_split_criteria, counter_offr_accept_timer,
+        img_url, auction_type, audi_key
+      ) VALUES (
+        :newTenderId, :userId, :newTitle, :tenderSlug, :tenderDesc, :tenderCat, :tenderOpt,
+        :emdAmt, :emtLvlAmt, :currency, :startPrice, :qty, :destPort, :bagSize, :bagType,
+        :measurementUnit, :appStartTime, :appEndTime, :auctStartTime, :auctEndTime,
+        :timeFrameExt, :extendedAt, :amtOfExt, :autAuctExtBfrEndTime, 
+        :minDecrBidVal, :timerExtVal, :qtySplitCriteria, :counterOffrAcceptTimer,
+        :imgUrl, :auctionType, :audiKey
+      )
+    `;
 
-    // Set values for the new tender, keeping the same data but with a new ID and updated title
-    const values = [
+    // Prepare values for the new tender
+    const values = {
       newTenderId,
-      sellerId,
+      userId: sellerId,
       newTitle,
-      tender.tender_slug,
-      tender.tender_desc,
-      tender.tender_cat,
-      tender.tender_opt,
-      tender.emd_amt,
-      tender.emt_lvl_amt,
-      tender.currency,
-      tender.start_price,
-      tender.qty,
-      tender.dest_port,
-      tender.bag_size,
-      tender.bag_type,
-      tender.measurement_unit,
-      tender.app_start_time,
-      tender.app_end_time,
-      tender.auct_start_time,
-      tender.auct_end_time,
-      tender.time_frame_ext,
-      tender.extended_at,
-      tender.amt_of_ext,
-      tender.aut_auct_ext_bfr_end_time,
-      tender.min_decr_bid_val,
-      tender.timer_ext_val,
-      tender.qty_split_criteria,
-      tender.counter_offr_accept_timer,
-      tender.img_url,
-      tender.auction_type,
-      tender.audi_key,
-    ];
+      tenderSlug: tender.tender_slug, // Ensure this remains unique or modify as needed
+      tenderDesc: tender.tender_desc,
+      tenderCat: tender.tender_cat,
+      tenderOpt: tender.tender_opt,
+      emdAmt: tender.emd_amt,
+      emtLvlAmt: tender.emt_lvl_amt,
+      currency: tender.currency,
+      startPrice: tender.start_price,
+      qty: tender.qty, // Ensure this field exists; adjust if necessary
+      destPort: tender.dest_port,
+      bagSize: tender.bag_size,
+      bagType: tender.bag_type,
+      measurementUnit: tender.measurement_unit,
+      appStartTime: tender.app_start_time,
+      appEndTime: tender.app_end_time,
+      auctStartTime: tender.auct_start_time,
+      auctEndTime: tender.auct_end_time,
+      timeFrameExt: tender.time_frame_ext,
+      extendedAt: tender.extended_at,
+      amtOfExt: tender.amt_of_ext,
+      autAuctExtBfrEndTime: tender.aut_auct_ext_bfr_end_time,
+      minDecrBidVal: tender.min_decr_bid_val,
+      timerExtVal: tender.timer_ext_val,
+      qtySplitCriteria: tender.qty_split_criteria,
+      counterOffrAcceptTimer: tender.counter_offr_accept_timer,
+      imgUrl: tender.img_url,
+      auctionType: tender.auction_type,
+      audiKey: tender.audi_key,
+    };
 
-    // Execute the insert query
-    const [result] = await db.query(cloneQuery, values);
+    // Execute the insert query within the transaction
+    await db.sequelize.query(cloneQuery, {
+      replacements: values,
+      transaction,
+    });
 
     // Return success response with the new tender ID
-    res
-      .status(201)
-      .json({
-        success: true,
-        msg: "Tender cloned successfully",
-        clonedId: newTenderId,
-      });
+    res.status(201).json({
+      success: true,
+      msg: "Tender cloned successfully",
+      clonedId: newTenderId,
+    });
   } catch (error) {
-    console.error("Error cloning tender:", error);
-    res
-      .status(500)
-      .json({
-        success: false,
-        msg: "Failed to clone tender",
-        error: error.message,
-      });
+    await transaction.rollback();
+    res.status(500).json({
+      success: false,
+      msg: "Failed to clone tender",
+      error: error.message,
+    });
   }
 });
+
+export const submitFileUrl = async (req, res) => {
+  const { tender_id, file_url, status, tender_user_doc_id = null } = req.body;
+  const { user_id } = req.user; // Assuming 'req.user' contains authenticated user details
+
+  const transaction = await db.sequelize.transaction(); // Start transaction
+
+  try {
+    console.log(req.body);
+
+    // Check if the user already has an application for this specific tender
+    const [existingApp] = await db.sequelize.query(
+      `SELECT tender_application_id 
+       FROM tender_application 
+       WHERE tender_id = :tenderId AND user_id = :userId`,
+      {
+        replacements: { tenderId: tender_id, userId: user_id },
+        transaction,
+      }
+    );
+
+    let tender_application_id;
+    if (existingApp.length > 0) {
+      // If the user has already applied, get the existing tender_application_id
+      tender_application_id = existingApp[0].tender_application_id;
+
+      // Update the application status
+      await db.sequelize.query(
+        `UPDATE tender_application 
+         SET status = :status 
+         WHERE tender_application_id = :tenderApplicationId AND user_id = :userId`,
+        {
+          replacements: {
+            status,
+            tenderApplicationId: tender_application_id,
+            userId: user_id,
+          },
+
+          transaction,
+        }
+      );
+    } else {
+      // If no existing application for the user, create a new one
+      const [insertResult] = await db.sequelize.query(
+        `INSERT INTO tender_application (tender_id, user_id, status) 
+         VALUES (:tenderId, :userId, :status)`,
+        {
+          replacements: { tenderId: tender_id, userId: user_id, status },
+
+          transaction,
+        }
+      );
+
+      if (insertResult.affectedRows === 0) {
+        throw new Error("Failed to insert tender application");
+      }
+      // console.log("DSGRGRHBRTHTH", insertResult);
+      tender_application_id = insertResult;
+    }
+
+    // Process each file URL for this user's tender application
+    for (const file of file_url) {
+      const { tender_doc_id, doc_url } = file;
+
+      if (tender_user_doc_id) {
+        // Update existing document URL if tender_user_doc_id is provided
+        await db.sequelize.query(
+          `UPDATE tender_user_doc 
+           SET doc_url = :docUrl 
+           WHERE tender_user_doc_id = :tenderUserDocId`,
+          {
+            replacements: {
+              docUrl: doc_url,
+              tenderUserDocId: tender_user_doc_id,
+            },
+
+            transaction,
+          }
+        );
+      } else {
+        // Insert new document if no tender_user_doc_id is provided
+        // console.log("DFEIFHEF", tender_application_id);
+        await db.sequelize.query(
+          `INSERT INTO tender_user_doc (tender_application_id, tender_id, user_id, tender_doc_id, doc_url)
+           VALUES (:tenderApplicationId, :tenderId, :userId, :tenderDocId, :docUrl)`,
+          {
+            replacements: {
+              tenderApplicationId: tender_application_id,
+              tenderId: tender_id,
+              userId: user_id,
+              tenderDocId: tender_doc_id,
+              docUrl: doc_url,
+            },
+            transaction,
+          }
+        );
+      }
+    }
+
+    // Fetch seller details for event emission
+    const [rows] = await db.sequelize.query(
+      `SELECT user_id 
+       FROM manage_tender 
+       WHERE tender_id = :tenderId`,
+      {
+        replacements: { tenderId: tender_id },
+
+        transaction,
+      }
+    );
+
+    // Buyer details
+    // const token = req.headers["authorization"];
+
+    // const buyerDetailsResponse = await axios.post(
+    //   userVerifyApi + "taqw-yvsu",
+    //   {
+    //     required_keys: "*",
+    //     user_ids: [
+    //       {
+    //         type: "buyer",
+    //         user_id: req.user?.user_id,
+    //       },
+    //     ],
+    //   },
+    //   {
+    //     headers: {
+    //       Authorization: token,
+    //     },
+    //   }
+    // );
+
+    // emitEvent(
+    //   "Tender",
+    //   {
+    //     message: `New Application Submitted By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
+    //     buyer_id: req.user.user_id,
+    //     company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
+    //     tender_id: tender_id,
+    //     seller_id: rows[0].user_id,
+    //     action_type: "New-Application",
+    //   },
+    //   "seller",
+    //   rows[0]?.user_id
+    // );
+
+    // Commit transaction
+    await transaction.commit();
+
+    res
+      .status(201)
+      .json({ msg: "File URLs processed successfully", success: true });
+  } catch (error) {
+    // Roll back the transaction in case of an error
+    await transaction.rollback();
+    console.error("Error processing file URLs:", error.message);
+    res.status(500).json({ msg: "Error processing file URLs", success: false });
+  }
+};

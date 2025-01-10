@@ -1,22 +1,23 @@
-const express = require("express");
-const isAdmin = require("../middlewares/isAdmin");
-const listOfNotVerifiedUsers = require("../controllers/admin/listOfNotVerifiedUsers/index");
-const updateRatingAndStatus = require("../controllers/admin/updateRatingAndStatus/index");
-const rejectApplication = require("../controllers/admin/updateRatingAndStatus/RejectApplication");
-const switchUser = require("../controllers/admin/switchUser/index");
-const blockOrDeleteUser = require("../controllers/admin/blockOrDeleteUser/index");
-const editUserInfo = require("../controllers/admin/editUserInfo/index");
-const getUserInfo = require("../controllers/admin/getUserInfo/index");
-const createTag = require("../controllers/admin/createTag/index");
-const updateTagForUser = require("../controllers/admin/updateTagForUser/index");
-const getAllBuyerTags = require("../controllers/admin/getAllBuyerTags/index");
-const getAllSellerTags = require("../controllers/admin/getAllSellerTags/index");
-const createRequiredDocument = require("../controllers/admin/createRequiredDocument/index");
-const getSellerByTagId = require("../controllers/admin/getSellersByTagId/index");
-const getBuyerByTagId = require("../controllers/admin/getBuyersByTagId/index");
-const listOfRequiredDocs = require("../controllers/admin/listOfRequiredDocs/index");
-const removeRequiredDocForTagId = require("../controllers/admin/removeRequiredDocForTagId/index");
-const removeTagById = require("../controllers/admin/removeTagById/index");
+import express from "express";
+import isAdmin from "../middlewares/isAdmin.js";
+import listOfNotVerifiedUsers from "../controllers/admin/listOfNotVerifiedUsers/index.js";
+import updateRatingAndStatus from "../controllers/admin/updateRatingAndStatus/index.js";
+import rejectApplication from "../controllers/admin/updateRatingAndStatus/RejectApplication.js";
+import switchUser from "../controllers/admin/switchUser/index.js";
+import blockOrDeleteUser from "../controllers/admin/blockOrDeleteUser/index.js";
+import editUserInfo from "../controllers/admin/editUserInfo/index.js";
+import getUserInfo from "../controllers/admin/getUserInfo/index.js";
+import createTag from "../controllers/admin/createTag/index.js";
+import updateTagForUser from "../controllers/admin/updateTagForUser/index.js";
+import getAllBuyerTags from "../controllers/admin/getAllBuyerTags/index.js";
+import getAllSellerTags from "../controllers/admin/getAllSellerTags/index.js";
+import createRequiredDocument from "../controllers/admin/createRequiredDocument/index.js";
+import getSellerByTagId from "../controllers/admin/getSellersByTagId/index.js";
+import getBuyerByTagId from "../controllers/admin/getBuyersByTagId/index.js";
+import listOfRequiredDocs from "../controllers/admin/listOfRequiredDocs/index.js";
+import removeRequiredDocForTagId from "../controllers/admin/removeRequiredDocForTagId/index.js";
+import removeTagById from "../controllers/admin/removeTagById/index.js";
+import { getAllTendersController } from "../controllers/admin/tenders/get.controller.js";
 
 const router = express.Router();
 
@@ -65,4 +66,7 @@ router.delete(
 );
 router.delete("/admin/remove-tag-id/:tag_id", isAdmin, removeTagById);
 
-module.exports = router;
+//Tenders
+router.get("/tenders", getAllTendersController);
+
+export default router;

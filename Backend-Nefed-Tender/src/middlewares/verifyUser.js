@@ -1,6 +1,6 @@
-const axios = require("axios");
-const { userVerifyApi } = require("../utils/external/api.js");
-const asyncErrorHandler = require("../utils/asyncErrorHandler.js");
+import axios from "axios";
+import { userVerifyApi } from "../utils/external/api.js";
+import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 
 const verifyUser = asyncErrorHandler(async (req, res, next) => {
   const token = req.headers["authorization"];
@@ -34,8 +34,8 @@ const verifyUser = asyncErrorHandler(async (req, res, next) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(401).json(error.response?.data || { msg: "Verification error" });
+    res.status(401).json(error.response.data);
   }
 });
 
-module.exports = verifyUser;
+export default verifyUser;

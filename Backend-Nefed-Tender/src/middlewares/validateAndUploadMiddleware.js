@@ -1,9 +1,9 @@
-const multer = require("multer");
-const { v4: uuidv4 } = require("uuid");
-const path = require("path");
-const cloudinary = require("../config/cloudinaryConfig.js");
-const db = require("../config/config2.js");
-const asyncErrorHandler = require("../utils/asyncErrorHandler.js");
+import multer from "multer";
+import { v4 as uuidv4 } from "uuid";
+import path from "path";
+import cloudinary from "../config/cloudinaryConfig.js";
+import db from "../config/config2.js";
+import asyncErrorHandler from "../utils/asyncErrorHandler.js";
 
 // Multer setup for file storage in memory
 const storage = multer.memoryStorage();
@@ -157,4 +157,4 @@ const validateAndUploadMiddleware = asyncErrorHandler(
   }
 );
 
-module.exports = validateAndUploadMiddleware;
+export default validateAndUploadMiddleware;

@@ -1,8 +1,8 @@
-const dotenv = require("dotenv");
-const path = require("path");
-const Joi = require("joi");
-const { fileURLToPath } = require("url");
-const { dirname } = require("path");
+import dotenv from "dotenv";
+import path from "path";
+import Joi from "joi";
+import { fileURLToPath } from "url";
+import { dirname } from "path";
 
 // Determine the directory of the current module
 const __filename = fileURLToPath(import.meta.url);
@@ -48,7 +48,7 @@ if (error) {
   throw new Error(`Config validation error: ${error.message}`);
 }
 
-module.exports = {
+export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
   sequelize: {

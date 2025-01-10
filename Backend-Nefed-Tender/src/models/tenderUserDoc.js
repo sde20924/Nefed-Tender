@@ -1,6 +1,5 @@
-const { Sequelize, DataTypes } = require("sequelize");
-
-module.exports = (sequelize) => {
+import { Sequelize, DataTypes } from "sequelize";
+export default (sequelize) => {
   const TenderUserDoc = sequelize.define(
     "TenderUserDoc",
     {

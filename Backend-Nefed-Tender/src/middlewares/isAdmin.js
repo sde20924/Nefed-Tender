@@ -1,11 +1,11 @@
-const jwt = require("jsonwebtoken");
-const db = require("../config/config2.js");
+import jwt from "jsonwebtoken";
+import db from "../config/config2.js";
 
 const isAdmin = async (req, res, next) => {
   const token = req.headers["authorization"];
 
   if (!token) {
-    return res.status(403).send({ msg: "No token provided", success: false });
+    return res.status(403).json({ msg: "No token provided", success: false });
   }
 
   try {
@@ -16,7 +16,7 @@ const isAdmin = async (req, res, next) => {
     );
     req.user = decoded;
 
-    const { user_id, login_as } = req.user;
+    const { user_id } = req.user;
 
     // Query the database to check the user's role in the authentication table
     const { rows } = await db.query(
@@ -27,7 +27,7 @@ const isAdmin = async (req, res, next) => {
     if (rows.length === 0) {
       return res
         .status(403)
-        .send({ msg: "Access denied. Only Admin can access.", success: false });
+        .json({ msg: "Access denied. Only Admin can access.", success: false });
     }
 
     const user = rows[0];
@@ -37,8 +37,8 @@ const isAdmin = async (req, res, next) => {
     console.error("Error in isAdmin middleware:", error);
     return res
       .status(500)
-      .send({ msg: "Failed to authenticate token", success: false });
+      .json({ msg: "Failed to authenticate token", success: false });
   }
 };
 
-module.exports = isAdmin;
+export default isAdmin;
