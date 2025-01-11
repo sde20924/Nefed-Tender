@@ -107,6 +107,7 @@ const AddTender = () => {
   const [subTenders, setSubTenders] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [accessPosition, setAccessPosition] = useState("yes");
   const [generatedFormula, setGeneratedFormula] = useState("");
   const handleDescriptionChange = (value) => {
@@ -380,6 +381,7 @@ const AddTender = () => {
       ShowItems: ShowItems,
       formula: generatedFormula,
       category: selectedCategory,
+      subcategory: selectedSubCategory,
     };
     const requiredFields = [
       { name: "tender_title", label: "Tender Title" },
@@ -395,9 +397,12 @@ const AddTender = () => {
     ];
 
     for (const field of requiredFields) {
-     
-      if (!formData[field] || formData[field] === "" || formData[field] ===  '<p><br></p>') {
-        toast.error(`Field "${field}" is required.`);
+      if (
+        !formData[field.name] ||
+        formData[field.name] === "" ||
+        formData[field.name] === "<p><br></p>"
+      ) {
+        toast.error(`Field ${field.label} is required.`);
         return; // Exit if a required field is missing
       }
       if (field.name === "attachments") {
@@ -440,15 +445,13 @@ const AddTender = () => {
       const response = await callApiPost("create_new_tender", formData);
       console.log("Response:", response);
 
-      if (
-        response.status === 201 ||
-        response?.msg === "Tender created successfully"
-      ) {
+      if (response.status === 201) {
         toast.success(
           tenderOption === "publish"
             ? "Tender created Successfully"
             : "Tender Saved Successfully"
         );
+        router.push('/tenders')
       } else {
         toast.error("Failed to create tender.");
       }
@@ -533,6 +536,8 @@ const AddTender = () => {
                 setCategories={setCategories}
                 selectedCategory={selectedCategory}
                 setSelectedCategory={setSelectedCategory}
+                selectedSubCategory={selectedSubCategory}
+                setSelectedSubCategory={setSelectedSubCategory} // Pass the state updater
               />
 
               {/* Auction Items */}

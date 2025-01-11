@@ -32,8 +32,8 @@ const AccessBidRoom = () => {
     rowIndex: null,
   });
   const [isBidValid, setIsBidValid] = useState(false);
-  const [latestBidAmount,setLatestBidAmount]=useState(0);
-  const [toastShown, setToastShown] = useState(false); 
+  const [latestBidAmount, setLatestBidAmount] = useState(0);
+  const [toastShown, setToastShown] = useState(false);
   // Handle input changes for editable fields
   const handleInputChange = (tableIndex, rowIndex, field, value) => {
     const updatedData = [...suggestionData];
@@ -105,13 +105,13 @@ const AccessBidRoom = () => {
       const { tableIndex, rowIndex } = pendingUpdate;
       handleActionClick(tableIndex, rowIndex); // Perform the update action
     }
-    setShowModal(false); 
-    setPendingUpdate(null); 
+    setShowModal(false);
+    setPendingUpdate(null);
   };
 
   const handleCancel = () => {
-    setShowModal(false); 
-    setPendingUpdate(null); 
+    setShowModal(false);
+    setPendingUpdate(null);
   };
 
   const handleActionClickWithDialog = (tableIndex, rowIndex) => {
@@ -156,11 +156,8 @@ const AccessBidRoom = () => {
       setFormData1(tenderData.data.sub_tenders);
       setSuggestionData(tenderData.data.suggested_prices.suggestedPrices);
       setLatestBidAmount(tenderData.data.latest_bid.bid_amount);
-        
-      console.log(
-        "len++++++",
-        tender
-      );
+
+      console.log("len++++++", tender);
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -294,15 +291,18 @@ const AccessBidRoom = () => {
       setIsBidValid(false);
       return;
     }
-  
+
     const { auction_type: auctionType, start_price: startPrice } = tender;
-  
+
     if (latestBidAmount === 0) {
       if (totalBidAmount > 0) {
         setIsBidValid(true);
       } else {
         setIsBidValid(false);
-        toast.error("Your bid must be greater than ₹0.");
+        if (!toastShown) {
+          toast.error("Your bid must be greater than ₹0.");
+          setToastShown(true);
+        }
       }
       return;
     }
@@ -314,8 +314,6 @@ const AccessBidRoom = () => {
         setIsBidValid(true);
       } else {
         setIsBidValid(false);
-        setToastShown(true);
-       
       }
     } else if (auctionType === "forward") {
       if (
@@ -325,11 +323,13 @@ const AccessBidRoom = () => {
         setIsBidValid(true);
       } else {
         setIsBidValid(false);
-
       }
     } else {
       setIsBidValid(false);
-      toast.error("Unknown auction type. Please contact support.");
+      if (!toastShown) {
+        toast.error("Unknown auction type. Please contact support.");
+        setToastShown(true);
+      }
     }
   };
   useEffect(() => {
@@ -364,14 +364,13 @@ const AccessBidRoom = () => {
   const handleInputChangeTable = (subTenderId, rowIndex, cellIndex, value) => {
     const { auction_type: auctionType, start_price: startPrice } = tender;
     const updatedValue = parseFloat(value) || 0;
-    const currentValue = parseFloat(
-      formdata1
-        ?.find((subTender) => subTender.id === subTenderId)
-        ?.rows?.[rowIndex]
-        ?.find((_, cIndex) => cIndex === cellIndex)
-        ?.data
-    ) || 0;
-    
+    const currentValue =
+      parseFloat(
+        formdata1
+          ?.find((subTender) => subTender.id === subTenderId)
+          ?.rows?.[rowIndex]?.find((_, cIndex) => cIndex === cellIndex)?.data
+      ) || 0;
+
     let allInputsValid = true;
     if (currentValue) {
       console.log("Updated Values:", updatedValue, currentValue);
@@ -392,29 +391,35 @@ const AccessBidRoom = () => {
                     }
                   } else {
                     if (!toastShown) {
-                    // Subsequent bids: apply auction type validation
-                    if (auctionType === "reverse" && updatedValue > currentValue) {
-                      toast.error(
-                        "In a reverse auction, you cannot enter a value higher than the current lowest bid."
-                      );
-                      allInputsValid = false;
-                      setToastShown(true);
-                      return cell; 
-                    } else if (auctionType === "forward" && updatedValue < currentValue) {
-                      toast.error(
-                        "In a forward auction, you cannot enter a value lower than the current highest bid."
-                      );
-                      allInputsValid = false;
-                      setToastShown(true);
-                      return cell; // Keep the original value
+                      // Subsequent bids: apply auction type validation
+                      if (
+                        auctionType === "reverse" &&
+                        updatedValue > currentValue
+                      ) {
+                        toast.error(
+                          "In a reverse auction, you cannot enter a value higher than the current lowest bid."
+                        );
+                        allInputsValid = false;
+                        setToastShown(true);
+                        return cell;
+                      } else if (
+                        auctionType === "forward" &&
+                        updatedValue < currentValue
+                      ) {
+                        toast.error(
+                          "In a forward auction, you cannot enter a value lower than the current highest bid."
+                        );
+                        allInputsValid = false;
+                        setToastShown(true);
+                        return cell; // Keep the original value
+                      }
                     }
-                  } 
                   }
                   return { ...cell, data: updatedValue };
                 }
                 return cell; // Return unchanged cells
               });
-           
+
               const headers = tender.headers;
               const quantityIndex = headers.findIndex(
                 (header) => header.table_head.toLowerCase() === "total quantity"
@@ -430,21 +435,22 @@ const AccessBidRoom = () => {
                 rateIndex !== -1 &&
                 totalCostIndex !== -1
               ) {
-                const quantity = parseFloat(updatedRow[quantityIndex]?.data) || 0;
+                const quantity =
+                  parseFloat(updatedRow[quantityIndex]?.data) || 0;
                 const rate = parseFloat(updatedRow[rateIndex]?.data) || 0;
                 const totalCost = quantity * rate;
                 updatedRow[totalCostIndex] = {
                   ...updatedRow[totalCostIndex],
-                  data: totalCost.toFixed(2), 
+                  data: totalCost.toFixed(2),
                 };
               }
-              return updatedRow; 
+              return updatedRow;
             }
             return row;
           });
-        return { ...subTender, rows: updatedRows }; 
+          return { ...subTender, rows: updatedRows };
         }
-        return subTender; 
+        return subTender;
       })
     );
     setIsBidValid(allInputsValid);
@@ -683,7 +689,7 @@ const AccessBidRoom = () => {
               </div>
             </div>
           )}
-          {suggestionData?.length > 0 &&(
+          {suggestionData?.length > 0 && (
             <div className="p-4 bg-gray-50">
               <h2 className="text-xl font-bold text-gray-800 mb-6">
                 Suggested Bids for Items
@@ -771,7 +777,11 @@ const AccessBidRoom = () => {
                                       : "text-green-500"
                                   }`}
                                 >
-                                  ${row.user_rate - row.suggested_price}
+                                  {row.user_rate && row.suggested_price
+                                    ? (
+                                        row.user_rate - row.suggested_price
+                                      ).toFixed(2)
+                                    : "N/A"}
                                 </td>
 
                                 {/* Actions */}
@@ -797,8 +807,7 @@ const AccessBidRoom = () => {
                 ))}
               </div>
             </div>
-          
-        )}
+          )}
           {/* suggesion End  */}
 
           {/* Table Data */}
@@ -854,8 +863,7 @@ const AccessBidRoom = () => {
                                         subTender.id,
                                         rowIndex,
                                         cellIndex,
-                                        e.target.value,
-                                        
+                                        e.target.value
                                       )
                                     }
                                     className="rounded px-2 py-1 border border-gray-300 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -909,7 +917,6 @@ const AccessBidRoom = () => {
           </div>
           <div>
             <h3>Bid's summary</h3>
-
           </div>
         </div>
       </div>

@@ -50,22 +50,7 @@ const TendersDetails = ({
           required
         />
       </div>
-              <div className="mb-4">
-                <label
-                  className="block text-gray-700 text-sm font-bold mb-2"
-                  htmlFor="slug"
-                >
-                  Slug<span className="text-red-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  id="slug"
-                  value={`http://127.0.0.1:8000/item/${slug}`}
-                  readOnly
-                  className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 leading-tight focus:outline-none focus:shadow-outline"
-                  required
-                />
-              </div>
+              
 
       <div className="mb-4">
         <label className="block text-gray-700 text-sm font-bold mb-2">
