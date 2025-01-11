@@ -349,7 +349,7 @@ const AccessBidRoom = () => {
         bid_amount: totalBidAmount,
         tender_id: tenderId,
       };
-      const response = await callApiPost("buyer-bid", body);
+      const response = await callApiPost("tender/buyer-bid", body);
       if (response.success) {
         toast.success("Bid submitted successfully!");
         fetchTenderDetails();
