@@ -14,7 +14,7 @@ const Tenders = () => {
   useEffect(() => {
     const fetchSellerTenders = async () => {
       try {
-        const response = await callApiGet("seller-tenders"); // API endpoint to fetch tenders for a specific seller
+        const response = await callApiGet("tender/seller-tenders"); // API endpoint to fetch tenders for a specific seller
 
         if (response.success) {
           // Sort tenders by created_at in descending order
@@ -62,7 +62,7 @@ const Tenders = () => {
                   closeToast();
                   try {
                     const response = await callApiDelete(
-                      `delete-tender/${tender.tender_id}`
+                      `tender/delete-tender/${tender.tender_id}`
                     );
                     if (response.success) {
                       toast.success("Tender deleted successfully");
@@ -97,7 +97,7 @@ const Tenders = () => {
     } else if (option === "clone") {
       try {
         const response = await callApiPost(
-          `clone-tender/${tender.tender_id}`,
+          `tender/clone-tender/${tender.tender_id}`,
           {}
         ); // Cloning still requires formData (even if empty)
         if (response.success) {
@@ -294,9 +294,15 @@ const Tenders = () => {
                       {tender.tender_title}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm">
-                      <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">
-                        Published
-                      </span>
+                      {tender.save_as === "publish" ? (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-green-200 text-green-800">
+                          {tender.save_as}
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-yellow-200 text-yellow-800">
+                          {tender.save_as}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                       {formatDate(tender.created_at)} <br />

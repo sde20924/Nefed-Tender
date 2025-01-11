@@ -44,7 +44,7 @@ function Brokers() {
   const fetchBuyerData = async () => {
     try {
       setIsLoading(true);
-      const response = await callApiPost("buyer_list", {
+      const response = await callApiPost("tender/buyer_list", {
         demo_tender_sheet_id: selectedcategoryFilter,
       });
       console.log(response);
@@ -63,7 +63,7 @@ function Brokers() {
     // setError(null);
     try {
       // Using axios
-      const response = await callApiGet("demo-excel-sheets");
+      const response = await callApiGet("common/demo-excel-sheets");
       // Assuming the API returns an array of categories
       setCategories(response.data);
     } catch (err) {
@@ -221,7 +221,7 @@ function Brokers() {
     // }
 
     try {
-      const newBuyerResponse = await callApiPost("new_buyer", {
+      const newBuyerResponse = await callApiPost("tender/new_buyer", {
         buyer_id: selectedBuyer.user_id,
         demo_tender_sheet_id: selectedCategory,
       });

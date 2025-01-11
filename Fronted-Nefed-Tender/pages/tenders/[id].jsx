@@ -22,14 +22,17 @@ const TenderDetail = () => {
     if (id) {
       const fetchTenderDetails = async () => {
         try {
+          const user = JSON.parse(localStorage.getItem("data")); // Assuming the user object is stored as JSON
+          const userIdBuyer = user.data.user_id;
+
           // Fetch tender details by ID
-          const tenderData = await callApiGet(`tender/${id}`);
+          const tenderData = await callApiGet(`common/tender/${id}`);
           setEditableSheet(tenderData.data);
           setTender(tenderData.data);
           calculateTimeLeft(tenderData.data.app_end_time);
 
           // Fetch applications from server to check if any application is submitted
-          const applicationsData = await callApiGet("tender-applications");
+          const applicationsData = await callApiGet("tender/tender-applications");
 
           // Filter applications to find any with the status "submitted"
           const acceptedApplications = applicationsData.data.filter(
@@ -42,12 +45,26 @@ const TenderDetail = () => {
             setIsApplicationSubmitted(true); // If any submitted application exists, set the flag to true
           } else {
             // Fetch previously uploaded files for "draft" status
-            const uploadedFilesData = await callApiGet(
-              `tender/${id}/files-status`
+            const uploadedFilesDataTender = await callApiGet(
+              `common/tender/${id}/files-status`
             );
-            console.log("-=-=-=-=-=uploadfile -=-=-=-=-=-=", uploadedFilesData);
-            if (uploadedFilesData.success) {
-              setUploadedFiles(uploadedFilesData.data); // Set the uploaded files from the server
+
+            console.log("-----837458---", uploadedFilesDataTender);
+
+            // Filter files by tender_id and user_id
+            const uploadedFilesData = uploadedFilesDataTender.data.filter(
+              (data) => {
+                return data.tender_id === id && data.user_id === userIdBuyer;
+              }
+            );
+
+            console.log("Filtered Uploaded Files Data :", uploadedFilesData);
+
+            // Set the uploaded files only if they exist
+            if (uploadedFilesData && uploadedFilesData.length > 0) {
+              setUploadedFiles(uploadedFilesData); // Update the state with the filtered files
+            } else {
+              console.log("No matching uploaded files found");
             }
           }
         } catch (error) {
@@ -88,32 +105,88 @@ const TenderDetail = () => {
   };
 
   // Function to handle file selection and upload
+  // const handleFileChange = async (event, docKey, tender_doc_id) => {
+  //   const file = event.target.files[0];
+  //   if (file) {
+  //     const formData = new FormData();
+  //     formData.append("file", file); // Append the file to the form data
+
+  //     try {
+  //       const response = await uploadDocApi("upload-doc", formData); // Correct endpoint for file upload
+  //       if (response && response.uploaded_data) {
+  //         const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
+  //         const tenderDocId = tender_doc_id; // Get the tender_doc_id
+
+  //         const newUploadedFiles = [
+  //           ...uploadedFiles,
+  //           { tender_doc_id: tenderDocId, doc_url: fileUrl },
+  //         ];
+  //         setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
+
+  //         toast.success("File uploaded successfully");
+  //       } else {
+  //         toast.error("Failed to upload file");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error uploading file:", error.message);
+  //       toast.error("Error uploading file");
+  //     }
+  //   }
+  // };
   const handleFileChange = async (event, docKey, tender_doc_id) => {
-    const file = event.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file); // Append the file to the form data
+    const files = Array.from(event.target.files);
 
-      try {
-        const response = await uploadDocApi("upload-doc", formData); // Correct endpoint for file upload
-        if (response && response.uploaded_data) {
-          const fileUrl = response.uploaded_data.doc_url; // Get the doc_url from the response
-          const tenderDocId = tender_doc_id; // Get the tender_doc_id
+    const newFiles = await Promise.all(
+      files.map(async (file) => {
+        const formData = new FormData();
+        formData.append("file", file);
 
-          const newUploadedFiles = [
-            ...uploadedFiles,
-            { tender_doc_id: tenderDocId, doc_url: fileUrl },
-          ];
-          setUploadedFiles(newUploadedFiles); // Update state with new uploaded files
+        try {
+          const response = await uploadDocApi("upload-doc", formData);
+          if (response && response.uploaded_data) {
+            const fileUrl = response.uploaded_data.doc_url;
 
-          toast.success("File uploaded successfully");
-        } else {
-          toast.error("Failed to upload file");
+            return {
+              tender_doc_id,
+              doc_key: docKey,
+              name: file.name,
+              file,
+              previewUrl: URL.createObjectURL(file),
+              doc_url: fileUrl,
+            };
+          }
+        } catch (error) {
+          console.error("Error uploading file:", error.message);
+          toast.error("Error uploading file");
+          return null;
         }
-      } catch (error) {
-        console.error("Error uploading file:", error.message);
-        toast.error("Error uploading file");
-      }
+      })
+    );
+
+    // Filter out null (failed uploads) and update state
+    setUploadedFiles((prevFiles) => [
+      ...prevFiles,
+      ...newFiles.filter((file) => file !== null),
+    ]);
+
+    toast.success("Files uploaded successfully");
+  };
+
+  const handleFileDelete = async (tender_doc_id, fileIndex) => {
+    const updatedFiles = uploadedFiles.filter(
+      (file, index) =>
+        !(file.tender_doc_id === tender_doc_id && index === fileIndex)
+    );
+
+    setUploadedFiles(updatedFiles);
+
+    // Optionally, send a delete request to the server
+    try {
+      await deleteDocApi("delete-doc", { tender_doc_id });
+      toast.success("File deleted successfully");
+    } catch (error) {
+      console.error("Error deleting file:", error.message);
+      toast.error("Error deleting file");
     }
   };
 
@@ -135,7 +208,7 @@ const TenderDetail = () => {
 
     try {
       console.log(uploadedFiles);
-      const apiResponse = await callApiPost("submit-file-url", {
+      const apiResponse = await callApiPost("tender/submit-file-url", {
         file_url: uploadedFiles,
         tender_id: id,
         status: "draft",
@@ -163,7 +236,7 @@ const TenderDetail = () => {
 
     try {
       console.log(uploadedFiles);
-      const apiResponse = await callApiPost("submit-file-url", {
+      const apiResponse = await callApiPost("tender/submit-file-url", {
         file_url: uploadedFiles,
         tender_id: id,
         status: "submitted",
@@ -311,12 +384,14 @@ const TenderDetail = () => {
             </div>
           ) : (
             <div className="bg-white shadow-md rounded-lg p-6">
-              <h5 className="text-lg font-bold mb-2">Submit Application</h5>
+              {/* <h5 className="text-lg font-bold mb-2">Submit Application</h5> */}
 
               {/* Attached Files Section */}
-              <div className="mb-2">
-                <h6 className="text-md font-semibold mb-2">Attached Files</h6>
-                <p className="text-sm text-gray-600 mb-2">
+              <div className="mb-6">
+                <h6 className="text-lg font-semibold text-gray-800 mb-3">
+                  Attached Files
+                </h6>
+                <p className="text-sm text-gray-600 mb-4">
                   Please upload the following documents and details. All
                   documents to be uploaded.
                 </p>
@@ -326,50 +401,92 @@ const TenderDetail = () => {
                   tender.tenderDocuments.map((doc, index) => (
                     <div
                       key={index}
-                      className="border rounded-md p-4 mb-2 bg-blue-50"
+                      className="border border-gray-200 rounded-lg p-4 mb-6 bg-white shadow hover:shadow-md transition-shadow"
                     >
-                      <div className="flex items-center mb-2">
-                        <i className="fas fa-file-alt text-blue-400 mr-2"></i>
-                        <span className="font-medium">{doc.doc_label}</span>
+                      <div className="flex items-center justify-between mb-4">
+                        {/* Icon */}
+                        <i className="fas fa-file-alt text-blue-500 text-xl mr-4"></i>
+
+                        {/* Content */}
+                        <div className="flex items-center justify-between flex-grow">
+                          <span className="font-medium text-gray-800 text-sm mr-4">
+                            {doc.doc_label}
+                          </span>
+                          <p className="text-sm text-gray-500 whitespace-nowrap">
+                            {doc.doc_ext} - {doc.doc_size} MB Allowed
+                          </p>
+                        </div>
                       </div>
-                      <p className="text-sm text-gray-500 mb-2">
-                        {doc.doc_ext} - {doc.doc_size} MB Allowed
-                      </p>
-                      <div className="flex items-center">
+
+                      {/* Display uploaded images */}
+                      <div className="flex flex-wrap gap-4">
+                        {[
+                          ...new Map(
+                            uploadedFiles
+                              .filter(
+                                (file) =>
+                                  file.tender_doc_id === doc.tender_doc_id
+                              )
+                              .map((file) => [file.doc_url, file]) // Remove duplicates by `doc_url`
+                          ).values(),
+                        ].map((file, fileIndex) => (
+                          <div
+                            key={fileIndex}
+                            className="relative group w-24 h-24"
+                          >
+                            {/* Image */}
+                            <img
+                              src={file.doc_url}
+                              alt="Preview"
+                              className="w-full h-full border border-gray-300 rounded-md object-cover transition-opacity hover:opacity-90"
+                              onClick={() =>
+                                window.open(
+                                  file.doc_url || file.previewUrl,
+                                  "_blank"
+                                )
+                              }
+                            />
+
+                            {/* Delete Icon */}
+                            <i
+                              className="fas fa-times-circle text-red-500 text-lg absolute top-1 right-1 cursor-pointer hidden group-hover:block"
+                              onClick={() =>
+                                handleFileDelete(doc.tender_doc_id, fileIndex)
+                              }
+                            ></i>
+                          </div>
+                        ))}
+                      </div>
+
+                      {/* Upload Button */}
+                      <div className="flex items-center mt-4">
+                        <label
+                          htmlFor={`file-input-${doc.tender_doc_id}`}
+                          className="cursor-pointer px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded-md shadow hover:bg-blue-600 focus:ring-2 focus:ring-blue-400 focus:outline-none transition-all"
+                        >
+                          Upload Files
+                        </label>
                         <input
+                          id={`file-input-${doc.tender_doc_id}`}
                           type="file"
-                          className="mr-4"
+                          multiple
+                          accept="image/*"
+                          className="hidden"
                           onChange={(e) =>
                             handleFileChange(e, doc.doc_key, doc.tender_doc_id)
                           }
-                          required
                           disabled={isCountdownComplete}
                         />
-                        <span>
-                          {uploadedFiles.find(
-                            (file) => file.tender_doc_id === doc.tender_doc_id
-                          ) ? (
-                            <a
-                              href={
-                                uploadedFiles.find(
-                                  (file) =>
-                                    file.tender_doc_id === doc.tender_doc_id
-                                ).doc_url
-                              }
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              View Uploaded File
-                            </a>
-                          ) : (
-                            "No file chosen"
-                          )}
-                        </span>
+                        {isCountdownComplete && (
+                          <p className="ml-4 text-sm text-gray-400">
+                            File upload is disabled
+                          </p>
+                        )}
                       </div>
                     </div>
                   ))
                 ) : (
-                  <p className="text-sm text-gray-500 mb-2">
+                  <p className="text-sm text-gray-500">
                     No documents required for this tender.
                   </p>
                 )}
@@ -403,7 +520,7 @@ const TenderDetail = () => {
       </div>
       <div className="space-y-8">
         <div className="space-y-8">
-          {iseditableSheet.sub_tenders.map((subTender) => (
+          {iseditableSheet?.sub_tenders?.map((subTender) => (
             <div
               key={subTender.id}
               className="border border-gray-300 p-4 rounded"
@@ -419,10 +536,8 @@ const TenderDetail = () => {
                           className="border border-gray-300 px-4 py-2 font-bold"
                         >
                           {header.table_head}
-
                         </th>
                       ))}
-                      
                     </tr>
                   </thead>
                   <tbody>

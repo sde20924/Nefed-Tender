@@ -10,6 +10,8 @@ const AuctionItems = ({
   auctionType,
   accessPosition,
   setAccessPosition,
+  ShowItems,
+  setShowItems,
   onSelectedBuyersChange,
   initialSelectedBuyersIds,
 }) => {
@@ -72,6 +74,14 @@ const AuctionItems = ({
       setAccessPosition("yes");
     }
   }, [accessPosition, setAccessPosition]);
+  useEffect(() => {
+      if (!ShowItems) {
+        setShowItems("yes");
+      }
+    }, [ShowItems, setShowItems]);
+    const handleShowItems = (value) => {
+      setShowItems(value);
+    };
 
   const handleAccessPositionChange = (value) => {
     setAccessPosition(value);
@@ -174,17 +184,17 @@ const AuctionItems = ({
   };
 
   return (
-    <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
+    <div className="bg-white shadow-md rounded lg:px-8 px-4 pt-6 pb-8 mb-4">
       <h2 className="text-2xl font-bold mb-4">Auction Control</h2>
 
       {/* Auction Type Section */}
       <div className=" flex flex-col justify-between items-start ">
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-medium ">
+            <h2 className="lg:text-lg text-sm font-medium ">
               Access User<span className="text-red-400">*</span>
             </h2>
-            <div className="flex items-center gap-4 px-5">
+            <div className="flex items-center gap-4 md:px-4 px-2 lg:text-lg">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -386,50 +396,17 @@ const AuctionItems = ({
             )}
           </div>
         </div>
-        <div className="mt-2 mb-2">
-          <div className="flex items-center justify-between">
-            {/* Label */}
-            <h3 className="text-lg font-medium">
-              Access Position<span className="text-red-400">*</span>
-            </h3>
-
-            {/* Radio Buttons */}
-            <div className="flex items-center gap-4 px-5">
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="accessPosition"
-                  value="yes"
-                  checked={accessPosition === "yes"}
-                  onChange={() => handleAccessPositionChange("yes")}
-                  className="form-radio text-blue-600 mr-2"
-                />
-                <span>Yes</span>
-              </label>
-              <label className="flex items-center">
-                <input
-                  type="radio"
-                  name="accessPosition"
-                  value="no"
-                  checked={accessPosition === "no"}
-                  onChange={() => handleAccessPositionChange("no")}
-                  className="form-radio text-blue-600 mr-2"
-                />
-                <span>No</span>
-              </label>
-            </div>
-          </div>
-        </div>
+        
 
         <div className="mt-2 mb-2">
           <div className="flex items-center justify-between">
             {/* Label */}
-            <h3 className="text-lg font-medium">
+            <h3 className="lg:text-lg text-sm font-medium">
               Auction Type<span className="text-red-400">*</span>
             </h3>
 
             {/* Radio Buttons */}
-            <div className=" px-5 flex items-center gap-4">
+            <div className=" md:px-4 px-2 lg:text-lg flex items-center gap-4">
               <label className="flex items-center">
                 <input
                   type="radio"
@@ -462,6 +439,74 @@ const AuctionItems = ({
                   className="form-radio text-blue-600 mr-2"
                 />
                 <span>Other</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 mb-2">
+          <div className="flex items-center justify-between">
+            {/* Label */}
+            <h3 className="text-lg font-medium">
+              Access Position<span className="text-red-400">*</span>
+            </h3>
+
+            {/* Radio Buttons */}
+            <div className="flex items-center gap-4 px-5">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="accessPosition"
+                  value={accessPosition}
+                  checked={accessPosition=="yes"}
+                  onChange={() => handleAccessPositionChange("yes")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>Yes</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="accessPosition"
+                  value={accessPosition}
+                  checked={accessPosition=="no"}
+                  onChange={() => handleAccessPositionChange("no")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>No</span>
+              </label>
+            </div>
+          </div>
+        </div>
+        <div className="mt-2 mb-2">
+          <div className="flex flex-col items-left justify-between">
+            {/* Label */}
+            <h3 className="text-lg font-medium">
+              Do you want to show Tender-items to buyer at Application submit<span className="text-red-400">*</span>
+            </h3>
+
+            {/* Radio Buttons */}
+            <div className="flex items-left mt-2 gap-4 ">
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="ShowItems"
+                  value="yes"
+                  checked={ShowItems === "yes"}
+                  onChange={() => handleShowItems("yes")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>Yes</span>
+              </label>
+              <label className="flex items-center">
+                <input
+                  type="radio"
+                  name="ShowItems"
+                  value="no"
+                  checked={ShowItems === "no"}
+                  onChange={() => handleShowItems("no")}
+                  className="form-radio text-blue-600 mr-2"
+                />
+                <span>No</span>
               </label>
             </div>
           </div>

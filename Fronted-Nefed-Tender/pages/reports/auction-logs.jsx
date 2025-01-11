@@ -14,7 +14,7 @@ const AuctionLogs = () => {
     setLoadingBids(true);
     try {
       const response = await callApiGet(
-        `tender-Auction-bids/${selectedTender}`
+        `tender/tender-Auction-bids/${selectedTender}`
       );
 
       if (response && response.success) {

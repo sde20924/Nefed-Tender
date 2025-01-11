@@ -49,7 +49,7 @@ const NotificationDropdown = () => {
       return;
     }
 
-    const socketInstance = io("http://localhost:8002", {
+    const socketInstance = io("http://localhost:8003", {
       query: { token },
       transports: ["websocket"],
     });

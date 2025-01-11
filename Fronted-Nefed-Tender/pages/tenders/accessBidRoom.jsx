@@ -21,6 +21,7 @@ const AccessBidRoom = () => {
   const [itemBids, setItemBids] = useState({}); // Store user input for each item
   const [totalBidAmount, setTotalBidAmount] = useState(0); // Store the total bid amount
   const [formdata, setFormData] = useState([]);
+  const [formdata1, setFormData1] = useState([]);
   const [bidDetails, setBidDetails] = useState();
   const [bidcount, setBidCount] = useState();
   const [suggestionData, setSuggestionData] = useState([]);
@@ -30,6 +31,8 @@ const AccessBidRoom = () => {
     tableIndex: null,
     rowIndex: null,
   });
+  const [isBidValid, setIsBidValid] = useState(false);
+  const [latestBidAmount,setLatestBidAmount]=useState(0);
 
   // Handle input changes for editable fields
   const handleInputChange = (tableIndex, rowIndex, field, value) => {
@@ -42,83 +45,86 @@ const AccessBidRoom = () => {
   //Change rate
   // ...
   // This function gets called when you click the "Update" button in the suggestion table
- const handleActionClick = (tableIndex, rowIndex) => {
-  console.log("Table Index:", tableIndex);
-  console.log("Row Index:", rowIndex);
+  const handleActionClick = (tableIndex, rowIndex) => {
+    console.log("Table Index:", tableIndex);
+    console.log("Row Index:", rowIndex);
 
-  const updatedFormData = [...formdata];
-  const { subtender_name } = suggestionData[tableIndex];
-  const suggestionRow = suggestionData[tableIndex]?.items[rowIndex];
+    const updatedFormData = [...formdata];
+    const { subtender_name } = suggestionData[tableIndex];
+    const suggestionRow = suggestionData[tableIndex]?.items[rowIndex];
 
-  console.log("Suggestion Row:", suggestionRow);
+    console.log("Suggestion Row:", suggestionRow);
 
-  if (!suggestionRow || !suggestionRow.suggested_price) {
-    console.warn("No suggested_price found in this row.");
-    return;
-  }
+    if (!suggestionRow || !suggestionRow.suggested_price) {
+      console.warn("No suggested_price found in this row.");
+      return;
+    }
 
-  const { item_name, suggested_price } = suggestionRow;
+    const { item_name, suggested_price } = suggestionRow;
 
-  // Find the corresponding subtender by name
-  const correspondingSubTender = updatedFormData.find(
-    (subTender) => subTender.name.trim().toLowerCase() === subtender_name.trim().toLowerCase()
-  );
-
-  if (!correspondingSubTender) {
-    console.warn("No matching subtender found for:", subtender_name);
-    return;
-  }
-
-  console.log("Corresponding Subtender:", correspondingSubTender);
-
-  // Find the row in the subtender matching the item name
-  const itemColumnIndex = tender.headers.findIndex(
-    (header) => header.table_head.toLowerCase() === "item"
-  );
-
-  if (itemColumnIndex === -1) {
-    console.warn("No 'Item' column found in headers.");
-    return;
-  }
-
-  const correspondingRow = correspondingSubTender.rows.find((row) => {
-    const itemData = row[itemColumnIndex]?.data?.trim().toLowerCase();
-    return itemData === item_name.trim().toLowerCase();
-  });
-
-  if (!correspondingRow) {
-    console.warn(
-      `No matching row found for item_name: "${item_name}" in subtender: "${subtender_name}"`
+    // Find the corresponding subtender by name
+    const correspondingSubTender = updatedFormData.find(
+      (subTender) =>
+        subTender.name.trim().toLowerCase() ===
+        subtender_name.trim().toLowerCase()
     );
-    return;
-  }
 
-  console.log("Corresponding Row:", correspondingRow);
+    if (!correspondingSubTender) {
+      console.warn("No matching subtender found for:", subtender_name);
+      return;
+    }
 
-  // Find the "Rate" column index
-  const rateIndex = tender.headers.findIndex(
-    (header) => header.table_head.toLowerCase() === "rate"
-  );
+    console.log("Corresponding Subtender:", correspondingSubTender);
 
-  if (rateIndex === -1) {
-    console.warn("No 'Rate' column found in headers.");
-    return;
-  }
+    // Find the row in the subtender matching the item name
+    const itemColumnIndex = tender.headers.findIndex(
+      (header) => header.table_head.toLowerCase() === "item"
+    );
 
-  // Update the corresponding row's "Rate" cell with the suggested price
-  correspondingRow[rateIndex].data = suggested_price;
+    if (itemColumnIndex === -1) {
+      console.warn("No 'Item' column found in headers.");
+      return;
+    }
 
-  console.log("Updated Row:", correspondingRow);
+    const correspondingRow = correspondingSubTender.rows.find((row) => {
+      const itemData = row[itemColumnIndex]?.data?.trim().toLowerCase();
+      return itemData === item_name.trim().toLowerCase();
+    });
 
-  // Update the state with the new formData
-  setFormData(updatedFormData);
+    if (!correspondingRow) {
+      console.warn(
+        `No matching row found for item_name: "${item_name}" in subtender: "${subtender_name}"`
+      );
+      return;
+    }
 
-  // Recalculate total amounts
-  updateTotalBidAmount();
+    console.log("Corresponding Row:", correspondingRow);
 
-  toast.success(`Successfully updated "${item_name}" with suggested price ₹${suggested_price}`);
-};
+    // Find the "Rate" column index
+    const rateIndex = tender.headers.findIndex(
+      (header) => header.table_head.toLowerCase() === "rate"
+    );
 
+    if (rateIndex === -1) {
+      console.warn("No 'Rate' column found in headers.");
+      return;
+    }
+
+    // Update the corresponding row's "Rate" cell with the suggested price
+    correspondingRow[rateIndex].data = suggested_price;
+
+    console.log("Updated Row:", correspondingRow);
+
+    // Update the state with the new formData
+    setFormData(updatedFormData);
+
+    // Recalculate total amounts
+    updateTotalBidAmount();
+
+    toast.success(
+      `Successfully updated "${item_name}" with suggested price ₹${suggested_price}`
+    );
+  };
 
   const handleConfirm = () => {
     if (pendingUpdate) {
@@ -160,26 +166,26 @@ const AccessBidRoom = () => {
 
   useEffect(() => {
     if (tenderId) {
-      fetchTenderDetails();
       fetchBids();
+      fetchTenderDetails();
       // fetchAuctionItems(); // Fetch auction items when tenderId is available
     }
   }, [tenderId]);
-  // useEffect(() => {
-  //   const BidsDetails = async () => {
-  //     try {
-  //       const responce = await callApiGet(
-  //         `get-bid-details?tender_id=${tenderId}`
-  //       );
-  //       if (responce.success) {
-  //         setBidDetails(responce);
-  //       }
-  //     } catch (error) {
-  //       console.error(" Error Bids Details:", error.message);
-  //     }
-  //   };
-  //   BidsDetails();
-  // }, [tenderId]);
+  useEffect(() => {
+    const BidsDetails = async () => {
+      try {
+        const responce = await callApiGet(
+          `tender/get-bid-details?tender_id=${tenderId}`
+        );
+        if (responce.success) {
+          setBidDetails(responce);
+        }
+      } catch (error) {
+        console.error(" Error Bids Details:", error.message);
+      }
+    };
+    BidsDetails();
+  }, [tenderId]);
 
   // console.log("hsdsdf", bidDetails);
 
@@ -207,12 +213,17 @@ const AccessBidRoom = () => {
   // Fetch tender details
   const fetchTenderDetails = async () => {
     try {
-      const tenderData = await callApiGet(`get-access-bid/${tenderId}`); // Fetch tender details by ID
+      const tenderData = await callApiGet(`tender/get-access-bid/${tenderId}`); // Fetch tender details by ID
       setTender(tenderData.data);
       setFormData(tenderData.data.sub_tenders);
+      setFormData1(tenderData.data.sub_tenders);
       setSuggestionData(tenderData.data.suggested_prices.suggestedPrices);
-  
-      console.log("len++++++",tenderData.data.suggested_prices.suggestedPrices)
+      setLatestBidAmount(tenderData.data.latest_bid_amount);
+        
+      console.log(
+        "len++++++",
+        tender
+      );
       checkAuctionStatus(
         tenderData.data.auct_start_time,
         tenderData.data.auct_end_time
@@ -221,6 +232,7 @@ const AccessBidRoom = () => {
       console.error("Error fetching tender details:", error.message);
     }
   };
+  // console.log("------++++++",latestBidAmount)
 
   // Fetch bids for the specific tender
   const fetchBids = async () => {
@@ -230,8 +242,8 @@ const AccessBidRoom = () => {
       if (response.success) {
         setBids(response.allBids); // Set all bids data
 
-        setLBidsUserId(response.lowestBid.user_id);
-        setLBid(response.lowestBid.bid_amount);
+        // setLBidsUserId(response.lowestBid.user_id);
+        // setLBid(response.lowestBid.bid_amount);
       }
     } catch (error) {
       console.error("Error fetching bids:", error.message);
@@ -421,20 +433,20 @@ const AccessBidRoom = () => {
     const isL1 = lBidUserId === loggedInUserId;
 
     // If the auction has ended and the user is L1
-    if (auctionEnded && isL1) {
-      return (
-        <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 text-center">
-          <div className="flex justify-center items-center mb-4">
-            <i className="fas fa-check-circle text-green-700 text-3xl"></i>
-          </div>
-          <p className="font-semibold text-lg">
-            Congratulations! You have successfully secured a quantity of{" "}
-            {tender.qty_split_criteria} MT at the rate of ₹
-            {Number(lBid).toFixed(2)} CIF to {tender.dest_port}.
-          </p>
-        </div>
-      );
-    }
+    // if (auctionEnded && isL1) {
+    //   return (
+    //     <div className="bg-green-100 border border-green-400 text-green-700 p-4 rounded-lg mb-4 text-center">
+    //       <div className="flex justify-center items-center mb-4">
+    //         <i className="fas fa-check-circle text-green-700 text-3xl"></i>
+    //       </div>
+    //       <p className="font-semibold text-lg">
+    //         Congratulations! You have successfully secured a quantity of{" "}
+    //         {tender.qty_split_criteria} MT at the rate of ₹
+    //         {Number(lBid).toFixed(2)} CIF to {tender.dest_port}.
+    //       </p>
+    //     </div>
+    //   );
+    // }
 
     // If the auction is live
     return (
@@ -454,6 +466,42 @@ const AccessBidRoom = () => {
       </div>
     );
   };
+
+  const validateBidAmount = () => {
+    if (!tender || totalBidAmount <= 0) {
+      setIsBidValid(false);
+      return;
+    }
+
+    const { auction_type: auctionType, start_price: startPrice } = tender;
+
+    if (auctionType === "reverse") {
+      if (
+        (lBid !== undefined && totalBidAmount < lBid) ||
+        (lBid === undefined && totalBidAmount < startPrice)
+      ) {
+        setIsBidValid(true);
+      } else {
+        setIsBidValid(false);
+      }
+    } else if (auctionType === "forward") {
+      if (
+        (lBid !== undefined && totalBidAmount > lBid) ||
+        (lBid === undefined && totalBidAmount > startPrice)
+      ) {
+        setIsBidValid(true);
+      } else {
+        setIsBidValid(false);
+      }
+    } else {
+      setIsBidValid(false); // Default to invalid if auction type is unknown
+    }
+  };
+
+  // Re-validate bid whenever totalBidAmount or tender details change
+  useEffect(() => {
+    validateBidAmount();
+  }, [totalBidAmount, tender]);
   const sendFormData = async () => {
     try {
       const body = {
@@ -462,12 +510,13 @@ const AccessBidRoom = () => {
         bid_amount: totalBidAmount,
         tender_id: tenderId,
       };
+
       console.log("body-datafgh", body);
 
       const response = await callApiPost("buyer-bid", body);
 
       if (response.success) {
-        toast.success("Form data submitted successfully!");
+        toast.success("Bid submitted successfully!");
         fetchTenderDetails();
       } else {
         toast.error("Failed to submit form data.");
@@ -478,58 +527,91 @@ const AccessBidRoom = () => {
     }
   };
   const handleInputChangeTable = (subTenderId, rowIndex, cellIndex, value) => {
+    const { auction_type: auctionType, start_price: startPrice } = tender;
+    const updatedValue = parseFloat(value) || 0; // Ensure updatedValue is a valid number
+    const currentValue = parseFloat(
+      formdata1
+        ?.find((subTender) => subTender.id === subTenderId)
+        ?.rows?.[rowIndex]
+        ?.find((_, cIndex) => cIndex === cellIndex)
+        ?.data
+    ) || 0;
+    let allInputsValid = true; // Track the validity of all inputs
+    // Log for debugging
+    if (currentValue) {
+      console.log("Updated Values:", updatedValue, currentValue);
+    }
+  
     setFormData((prevFormData) =>
       prevFormData.map((subTender) => {
         if (subTender.id === subTenderId) {
           const updatedRows = subTender.rows.map((row, rIndex) => {
             if (rIndex === rowIndex) {
-              // Update the cell data
               const updatedRow = row.map((cell, cIndex) => {
                 if (cIndex === cellIndex && cell.type === "edit") {
-                  return { ...cell, data: value };
+                  // Validation logic based on auction type
+                  if (auctionType === "reverse" && updatedValue > currentValue) {
+                    toast.error(
+                      "In a reverse auction, you cannot enter a value higher than the current amount."
+                    );
+                    allInputsValid = false;
+                    return cell; // Keep the original value
+                  } else if (auctionType === "forward" && updatedValue < currentValue) {
+                    toast.error(
+                      "In a forward auction, you cannot enter a value lower than the current amount."
+                    );
+                    allInputsValid = false;
+                    return cell; // Keep the original value
+                  }
+                  // Update the cell value
+                  return { ...cell, data: updatedValue };
                 }
-                return cell;
+                return cell; // Return unchanged cells
               });
-
-              // Calculate Total Cost if headers include Total Quantity and Rate
+  
+              // Calculate dependent fields (e.g., Total Cost) dynamically
               const headers = tender.headers;
               const quantityIndex = headers.findIndex(
-                (header) => header.table_head === "Total Quantity"
+                (header) => header.table_head.toLowerCase() === "total quantity"
               );
               const rateIndex = headers.findIndex(
-                (header) => header.table_head === "Rate"
+                (header) => header.table_head.toLowerCase() === "rate"
               );
               const totalCostIndex = headers.findIndex(
-                (header) => header.table_head === "Total Cost"
+                (header) => header.table_head.toLowerCase() === "total cost"
               );
-
+  
               if (
                 quantityIndex !== -1 &&
                 rateIndex !== -1 &&
                 totalCostIndex !== -1
               ) {
-                const quantity =
-                  parseFloat(updatedRow[quantityIndex]?.data) || 0;
+                const quantity = parseFloat(updatedRow[quantityIndex]?.data) || 0;
                 const rate = parseFloat(updatedRow[rateIndex]?.data) || 0;
                 const totalCost = quantity * rate;
-
+  
                 updatedRow[totalCostIndex] = {
                   ...updatedRow[totalCostIndex],
                   data: totalCost.toFixed(2), // Update Total Cost
                 };
               }
-
-              return updatedRow;
+  
+              return updatedRow; // Return updated row
             }
-            return row; // Return other rows unchanged
+            return row; // Return unchanged rows
           });
-
-          return { ...subTender, rows: updatedRows }; // Return updated sub-tender
+  
+          return { ...subTender, rows: updatedRows }; // Update the sub-tender
         }
-        return subTender; // Return other sub-tenders unchanged
+        return subTender; // Return unchanged sub-tenders
       })
     );
+  
+    setIsBidValid(allInputsValid); // Update the button state based on input validity
   };
+  
+  
+  
 
   const calculateTotalAmount = (rows, headers) => {
     const totalCostIndex = headers.findIndex(
@@ -723,18 +805,9 @@ const AccessBidRoom = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
-                <h5 className="text-xl font-bold mb-3 text-center text-green-800">
-                  Current Bid Details
-                </h5>
-                {bidDetails ? (
-                  <div className="flex justify-between items-center">
-                    <p className="text-gray-600 font-medium">{`Bid Amount: $${bidDetails.data.latestUserBid.bid_amount}`}</p>
-                  </div>
-                ) : (
-                  <p className="text-center text-gray-400">Loading...</p>
-                )}
-              </div>
+              {/* <div className="bg-gradient-to-r from-green-100 to-white shadow-lg rounded-lg p-6 hover:shadow-xl transition-shadow duration-300 flex flex-col justify-between h-full">
+                <h5 className="text-xl font-bold mb-3 text-center text-green-800"></h5>
+              </div> */}
             </div>
 
             {/* Right Side Card */}
@@ -752,12 +825,6 @@ const AccessBidRoom = () => {
                 <div className="flex justify-between mb-4">
                   <span className="font-medium text-gray-700">Currency:</span>
                   <span className="text-gray-800">{tender.currency}</span>
-                </div>
-                <div className="flex justify-between mb-4">
-                  <span className="font-medium text-gray-700">
-                    Destination Port:
-                  </span>
-                  <span className="text-gray-800">{tender.dest_port}</span>
                 </div>
                 <div className="flex justify-between mb-4">
                   <span className="font-medium text-gray-700">
@@ -820,125 +887,122 @@ const AccessBidRoom = () => {
           )}
 
           {/* sugession Table  */}
-{suggestionData?.length > 0 && (
-   <div className="p-4 bg-gray-50">
-   <h2 className="text-xl font-bold text-gray-800 mb-6">
-     Suggested Bids for Items
-   </h2>
+          {suggestionData?.length > 0 && (
+            <div className="p-4 bg-gray-50">
+              <h2 className="text-xl font-bold text-gray-800 mb-6">
+                Suggested Bids for Items
+              </h2>
 
-   {/* Grid container for tables */}
-   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-     {suggestionData?.map((table, tableIndex) => (
-       <div
-         key={tableIndex}
-         className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
-       >
-         <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
-           <h3 className="text-xl font-semibold text-blue-700">
-             {table.subtender_name}
-           </h3>
-         </div>
-         <div className="overflow-x-auto p-4">
-           <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
-             <thead className="bg-blue-100">
-               <tr>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Item
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Suggestion Amount
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Current Amount
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
-                   Difference
-                 </th>
-                 <th className="border border-gray-300 px-3 py-2 text-center text-blue-800 font-medium">
-                   Actions
-                 </th>
-               </tr>
-             </thead>
-             <tbody>
-               {table.items
-                 ?.filter((row) => row.suggested_price !== null)
-                 .map((row, rowIndex) => (
-                   <tr
-                     key={rowIndex}
-                     className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 transition-all duration-200"
-                   >
-                     {/* Item */}
-                     <td className="border border-gray-300 px-3 py-2">
-                       {row.item_name}
-                     </td>
+              {/* Grid container for tables */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {suggestionData?.map((table, tableIndex) => (
+                  <div
+                    key={tableIndex}
+                    className="border border-gray-300 rounded-lg shadow-lg bg-white hover:shadow-xl transition-all duration-300"
+                  >
+                    <div className="bg-blue-50 px-6 py-4 rounded-t-lg">
+                      <h3 className="text-xl font-semibold text-blue-700">
+                        {table.subtender_name}
+                      </h3>
+                    </div>
+                    <div className="overflow-x-auto p-4">
+                      <table className="table-auto border-collapse border border-gray-300 w-full text-sm text-left">
+                        <thead className="bg-blue-100">
+                          <tr>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Item
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Suggestion Amount
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Current Amount
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-blue-800 font-medium">
+                              Difference
+                            </th>
+                            <th className="border border-gray-300 px-3 py-2 text-center text-blue-800 font-medium">
+                              Actions
+                            </th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {table.items
+                            ?.filter((row) => row.suggested_price !== null)
+                            .map((row, rowIndex) => (
+                              <tr
+                                key={rowIndex}
+                                className="odd:bg-gray-50 even:bg-white hover:bg-gray-100 transition-all duration-200"
+                              >
+                                {/* Item */}
+                                <td className="border border-gray-300 px-3 py-2">
+                                  {row.item_name}
+                                </td>
 
-                     {/* Suggestion Amount */}
-                     <td className="border border-gray-300 px-3 py-2">
-                       {row.suggested_price
-                         ? `₹${row.suggested_price}`
-                         : "N/A"}
-                     </td>
+                                {/* Suggestion Amount */}
+                                <td className="border border-gray-300 px-3 py-2">
+                                  {row.suggested_price
+                                    ? `₹${row.suggested_price}`
+                                    : "N/A"}
+                                </td>
 
-                     {/* Current Amount (Editable) */}
-                     <td className="border border-gray-300 px-3 py-2">
-                       {editingRow?.tableIndex === tableIndex &&
-                       editingRow?.rowIndex === rowIndex ? (
-                         <input
-                           type="number"
-                           value={row.currentAmount}
-                           onChange={(e) =>
-                             handleInputChange(
-                               tableIndex,
-                               rowIndex,
-                               "currentAmount",
-                               e.target.value
-                             )
-                           }
-                           className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
-                         />
-                       ) : (
-                         `${row.user_rate ? `₹${row.user_rate}` : "N/A"}`
-                       )}
-                     </td>
+                                {/* Current Amount (Editable) */}
+                                <td className="border border-gray-300 px-3 py-2">
+                                  {editingRow?.tableIndex === tableIndex &&
+                                  editingRow?.rowIndex === rowIndex ? (
+                                    <input
+                                      type="number"
+                                      value={row.currentAmount}
+                                      onChange={(e) =>
+                                        handleInputChange(
+                                          tableIndex,
+                                          rowIndex,
+                                          "currentAmount",
+                                          e.target.value
+                                        )
+                                      }
+                                      className="p-1 border border-gray-300 rounded w-full focus:ring-2 focus:ring-blue-500"
+                                    />
+                                  ) : (
+                                    `${row.user_rate ? `₹${row.user_rate}` : "N/A"}`
+                                  )}
+                                </td>
 
-                     {/* Difference */}
-                     <td
-                       className={`border border-gray-300 px-3 py-2 font-medium ${
-                         row.difference < 0
-                           ? "text-red-500"
-                           : "text-green-500"
-                       }`}
-                     >
-                       ${row.user_rate - row.suggested_price}
-                     </td>
+                                {/* Difference */}
+                                <td
+                                  className={`border border-gray-300 px-3 py-2 font-medium ${
+                                    row.difference < 0
+                                      ? "text-red-500"
+                                      : "text-green-500"
+                                  }`}
+                                >
+                                  ${row.user_rate - row.suggested_price}
+                                </td>
 
-                     {/* Actions */}
-                     <td className="border border-gray-300 px-3 py-2 text-center">
-                       <button
-                         onClick={() =>
-                           handleActionClickWithDialog(
-                             tableIndex,
-                             rowIndex
-                           )
-                         }
-                         className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
-                       >
-                         Update
-                       </button>
-                     </td>
-                   </tr>
-                 ))}
-             </tbody>
-           </table>
-         </div>
-       </div>
-     ))}
-   </div>
- </div>
-)
-
-}
-       
+                                {/* Actions */}
+                                <td className="border border-gray-300 px-3 py-2 text-center">
+                                  <button
+                                    onClick={() =>
+                                      handleActionClickWithDialog(
+                                        tableIndex,
+                                        rowIndex
+                                      )
+                                    }
+                                    className="bg-green-500 text-white p-2 rounded-full hover:bg-green-600"
+                                  >
+                                    Update
+                                  </button>
+                                </td>
+                              </tr>
+                            ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* suggesion End  */}
 
@@ -995,7 +1059,8 @@ const AccessBidRoom = () => {
                                         subTender.id,
                                         rowIndex,
                                         cellIndex,
-                                        e.target.value
+                                        e.target.value,
+                                        
                                       )
                                     }
                                     className="rounded px-2 py-1 border border-gray-300 w-full focus:ring-2 focus:ring-blue-500 focus:outline-none"
@@ -1035,12 +1100,21 @@ const AccessBidRoom = () => {
               <div className="absolute right-2 top-2 transform -translate-y-1/2">
                 <button
                   onClick={sendFormData}
-                  className="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-blue-700 transition-all duration-300"
+                  disabled={!isBidValid} // Disable button if bid is invalid
+                  className={`${
+                    isBidValid
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-gray-300 cursor-not-allowed"
+                  } text-white font-bold py-3 px-6 rounded-lg shadow-md transition-all duration-300`}
                 >
                   Submit Bid
                 </button>
               </div>
             </div>
+          </div>
+          <div>
+            <h3>Bid's summary</h3>
+
           </div>
         </div>
       </div>

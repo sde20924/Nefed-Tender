@@ -44,8 +44,6 @@ const EditTenderForm = () => {
     description: "",
     isFeatured: false,
     isPublished: false,
-    emdAmount: "",
-    emdLevelAmount: "",
     attachments: [],
     currency: "",
     startingPrice: "",
@@ -68,6 +66,8 @@ const EditTenderForm = () => {
     counterOfferTimer: "",
     customForm: {},
     accessPosition: "",
+    ShowItems:"",
+    formula: "",
   });
 
   // ---------- IMAGE UPLOAD STATE ----------
@@ -81,6 +81,7 @@ const EditTenderForm = () => {
   const [accessType, setAccessType] = useState("public");
   const [selectedBuyers, setSelectedBuyers] = useState([]);
   const [accessPosition, setAccessPosition] = useState("yes");
+  const [ShowItems, setShowItems] = useState("yes");
 
   // ---------- DRAG & DROP HANDLER FOR FORM BUILDER ----------
   const onDragEnd = (result) => {
@@ -106,7 +107,7 @@ const EditTenderForm = () => {
     if (id) {
       const fetchTenderDetails = async () => {
         try {
-          const response = await callApiGet(`tender/${id}`);
+          const response = await callApiGet(`common/tender/${id}`);
           const data = response.data || {};
           setHeaders(response.data.headers);
           setSubTenders(response.data.sub_tenders);
@@ -119,10 +120,8 @@ const EditTenderForm = () => {
             description: data.tender_desc?.trim() || "",
             isFeatured: data.tender_opt === "true",
             isPublished: data.tender_opt === "true",
-            emdAmount: data.emd_amt?.toString() || "",
-            emdLevelAmount: data.emt_lvl_amt?.trim() || "",
-            attachments: Array.isArray(data.attachments)
-              ? data.attachments.map((att) => ({
+            attachments: Array.isArray(data.tenderDocuments)
+              ? data.tenderDocuments.map((att) => ({
                   ...att,
                   file: null, // Handle existing files as needed
                 }))
@@ -169,14 +168,15 @@ const EditTenderForm = () => {
             auction_type: data.auction_type || "reverse",
             accessType: data.accessType || "public",
             selected_buyers: data.selected_buyers || [],
+            ShowItems:data.show_items || "yes",
+            formula: data.generatedFormula|| "",
           }));
           // Set auction states
           setAuctionType(data.auction_type || "reverse");
           setAccessType(data.accessType || "public");
           setSelectedBuyers(data.selected_buyers || []);
           setAccessPosition(data.access_position);
-
-          console.log("attachments data here :", tenderData.attachments);
+          setShowItems(data.show_items);
         } catch (error) {
           console.error("Error fetching tender details:", error);
           toast.error("Failed to fetch tender details.");
@@ -200,9 +200,9 @@ const EditTenderForm = () => {
       tender_desc: tenderData.description, // Description of the tender
       tender_cat: "testing", // Default to 'testing' if not applicable
       tender_opt: tenderData.isPublished, // Tender option, e.g., publish status
-      emd_amt: tenderData.emdAmount, // EMD Amount
+      // emd_amt: tenderData.emdAmount, // EMD Amount
       // emt_lvl_amt: tenderData.emdLevelAmount, // EMD Level Amount
-      // attachments: tenderData.attachments, // Attachments if needed
+      attachments: tenderData.attachments, // Attachments if needed
       custom_form: JSON.stringify(tenderData.customForm), // Stringify custom form fields if needed
       currency: tenderData.currency, // Currency type
       start_price: tenderData.startingPrice, // Starting price for the tender
@@ -240,7 +240,10 @@ const EditTenderForm = () => {
       audi_key: tenderData.audiKey,
       headers: headers,
       sub_tender: subTenders, // Audio key, set to null if not applicable
-      access_position:accessPosition
+      access_position:accessPosition,
+      ShowItems:ShowItems,
+ 
+
     };
 
     console.log("form data here 1", formData);
@@ -271,7 +274,7 @@ const EditTenderForm = () => {
           className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 relative"
         >
           {/* Grid Layout with 2 Columns */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* ----- LEFT COLUMN ----- */}
             <div>
               {/* Tenders Details */}
@@ -295,10 +298,10 @@ const EditTenderForm = () => {
               />
 
               {/* EMD Details */}
-              <EMDDetails
+              {/* <EMDDetails
                 tenderData={tenderData}
                 setTenderData={setTenderData}
-              />
+              /> */}
 
               {/* Attachments */}
               <Attachments
@@ -319,6 +322,8 @@ const EditTenderForm = () => {
                 setAccessType={setAccessType}
                 accessPosition={accessPosition}
                 setAccessPosition={setAccessPosition}
+                ShowItems={ShowItems}
+                setShowItems={setShowItems}
                 onSelectedBuyersChange={() => handleSelectedBuyersChange}
                 initialSelectedBuyersIds={tenderData.selected_buyers}
               />
@@ -342,7 +347,7 @@ const EditTenderForm = () => {
           />
 
           {/* Sticky Submit Button */}
-          <div className="fixed bottom-8 right-4">
+          <div className="flex justify-end">
             <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"

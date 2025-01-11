@@ -8,6 +8,7 @@ import { useState } from "react";
 import TenderTable from "@/components/Report/TenderTable";
 import { useSelector } from "react-redux";
 
+
 const AuctionBids = () => {
   const socket = useSelector((state) => state.socket.socket_instance);
   const [selectedTender, setSelectedTender] = useState("");
@@ -21,12 +22,15 @@ const AuctionBids = () => {
     setLoadingBids(true);
     try {
       const response = await callApiGet(
-        `tender-Auction-bids/${selectedTender}`
+        `tender/tender-Auction-bids/${selectedTender}`
       );
 
       setEditableSheet(response.data);
       if (response && response.success) {
-        setBids(response.data.allBids);
+        const sortedBids = response.data.allBids.sort((a, b) => {
+          return a.bid_amount - b.bid_amount;
+        });
+        setBids(sortedBids);
         setTenderData(response.data);
         setError("");
       } else {
@@ -130,20 +134,16 @@ const AuctionBids = () => {
                 <tr>
                   {[
                     "Sno",
-                    "#",
                     "User",
                     "Company Name",
                     "Amount",
-                    "FOB",
-                    "Freight",
                     "Status",
-                    "Round",
-                    "Qty",
+                    "Action",
                     "Bided At",
                   ].map((header) => (
                     <th
                       key={header}
-                      className="px-4 py-2 border-b text-sm font-medium text-gray-700"
+                      className="px-4 py-2 border-b text-sm font-medium text-gray-700 text-center align-middle"
                     >
                       {header}
                     </th>
@@ -151,14 +151,6 @@ const AuctionBids = () => {
                 </tr>
               </thead>
               <tbody>
-                {!loadingBids && (
-                  <tr>
-                    <td colSpan="11" className="text-center py-4 text-gray-500">
-                      No data record found.{" "}
-                      <span className="text-blue-400">Select Tender</span>
-                    </td>
-                  </tr>
-                )}
                 {bids.length > 0 &&
                   bids.map((bid, index) => {
                     const [bidDate, bidTime] = bid.created_at.split("T");
@@ -167,11 +159,8 @@ const AuctionBids = () => {
                         key={bid.bid_id}
                         className="hover:bg-gray-100 transition-all duration-200"
                       >
-                        <td className="border-t px-6 py-3 text-center">
+                        <td className="border-t px-6 py-3 text-center align-middle">
                           {index + 1}
-                        </td>
-                        <td className="border-t px-6 py-3 text-center">
-                          #{bid.user_id}
                         </td>
                         <td className="border-t px-6 py-3">
                           {`${bid.user_details.first_name} ${bid.user_details.last_name}`}
@@ -179,27 +168,15 @@ const AuctionBids = () => {
                         <td className="border-t px-6 py-3">
                           {bid.user_details.company_name}
                         </td>
-                        <td className="border-t px-6 py-3 text-right">
+                        <td className="border-t px-6 py-3 text-center align-middle">
                           $
                           {bid.bid_amount
                             ? Number(bid.bid_amount).toFixed(2)
                             : "--"}
                         </td>
-                        <td className="border-t px-6 py-3 text-right">
-                          $
-                          {bid.fob_amount
-                            ? Number(bid.fob_amount).toFixed(2)
-                            : "--"}
-                        </td>
-                        <td className="border-t px-6 py-3 text-right">
-                          $
-                          {bid.freight_amount
-                            ? Number(bid.freight_amount).toFixed(2)
-                            : "--"}
-                        </td>
-                        <td className="border-t px-6 py-3 text-center">
+                        <td className="border-t px-6 py-3 text-center align-middle">
                           <span
-                            className={`px-4 py-1 inline-block text-sm leading-5 font-semibold rounded-full min-w-[80px] text-center ${
+                            className={`px-4 py-1 inline-block text-sm leading-5 font-semibold rounded-full min-w-[80px] text-center align-middle ${
                               bid.bid_status === "sold"
                                 ? "bg-green-500 text-white"
                                 : "bg-blue-500 text-white"
@@ -211,11 +188,13 @@ const AuctionBids = () => {
                               : "--"}
                           </span>
                         </td>
-                        <td className="border-t px-6 py-3 text-right">
-                          {bid.round || "--"}
-                        </td>
-                        <td className="border-t px-6 py-3 text-right">
-                          {bid.qty_secured || "--"}
+                        <td className="border-t px-6 py-3 text-center align-middle">
+                          <button className="x-4 py-1 inline-block text-sm leading-5 font-semibold rounded-full min-w-[80px] text-center bg-green-500 text-white ">
+                             Accept
+                          </button>
+                          <button className="x-4 py-1 inline-block text-sm leading-5 font-semibold rounded-full min-w-[80px] text-center bg-blue-500 text-white ml-2">
+                            Reject
+                          </button>
                         </td>
                         <td className="border-t px-6 py-3 text-right">
                           {bidDate} - {bidTime.split(".")[0]}
@@ -230,7 +209,7 @@ const AuctionBids = () => {
       </div>
 
       {/* Editable Sub-Tenders Section */}
-      <div className="space-y-8">
+      {/* <div className="space-y-8">
         {iseditableSheet?.sub_tenders?.map((subTender) => (
           <div
             key={subTender.id}
@@ -276,8 +255,9 @@ const AuctionBids = () => {
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
       {!loadingBids && tenderData && <TenderTable data={tenderData} />}
+
     </>
   );
 };
