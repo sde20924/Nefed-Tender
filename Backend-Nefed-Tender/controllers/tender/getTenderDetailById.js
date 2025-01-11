@@ -20,6 +20,8 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             WHERE mt.tender_id = ?
         `;
         const [tenderDetailsResult] = await db.query(tenderDetailsQuery, [tenderId]);
+        console.log("-------uit",tenderDetailsResult);
+        
 
 
         if (tenderDetailsResult.length === 0) {
@@ -37,6 +39,7 @@ const getTenderDetailsController = asyncErrorHandler(async (req, res) => {
             tender_opt: tenderDetailsResult[0].tender_opt,
             // emd_amt: tenderDetailsResult[0].emd_amt,
             // emt_lvl_amt: tenderDetailsResult[0].emt_lvl_amt,
+            save_as:tenderDetailsResult[0].save_as,
             custom_form: tenderDetailsResult[0].custom_form,
             currency: tenderDetailsResult[0].currency,
             start_price: tenderDetailsResult[0].start_price,

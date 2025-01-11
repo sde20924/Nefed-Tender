@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios"; // Optional: For HTTP requests
 import { FaSpinner, FaExclamationTriangle } from "react-icons/fa"; // Icons for loading and error states
 import { callApiGet } from "@/utils/FetchApi";
 
@@ -8,19 +7,21 @@ export default function TenderCategories({
   setCategories,
   selectedCategory,
   setSelectedCategory,
+  selectedSubCategory,
+  setSelectedSubCategory,
   headerdynamicSize,
 }) {
-  console.log("--------88--",headerdynamicSize);
-  
   // State to manage loading
   const [isLoading, setIsLoading] = useState(false);
 
   // State to manage errors
   const [error, setError] = useState(null);
 
+  // State to store subcategories based on the selected category
+  const [subcategories, setSubcategories] = useState([]);
+
   useEffect(() => {
-    // Function to fetch tender categories
-    console.log("jnfd");
+    // Fetch tender categories
     const fetchCategories = async () => {
       setIsLoading(true);
       setError(null);
@@ -29,7 +30,6 @@ export default function TenderCategories({
         const response = await callApiGet("common/demo-excel-sheets");
         // Assuming the API returns an array of categories
         setCategories(response.data);
-        console.log("+__+_+_+data", response.data);
       } catch (err) {
         setError(err.message || "An error occurred while fetching categories.");
       } finally {
@@ -42,22 +42,35 @@ export default function TenderCategories({
 
   // Handler for category selection
   const handleCategoryChange = (e) => {
-    console.log("-------", e);
+    const selectedCategoryId = e.target.value;
+    setSelectedCategory(selectedCategoryId);
 
-    setSelectedCategory(e.target.value);
-    // You can perform additional actions here when a category is selected
-    console.log("Selected Category:", e.target.value);
+    // Fetch subcategories for the selected category
+    const selectedCategoryData = categories.find(
+      (category) => category.demo_tender_sheet_id === selectedCategoryId
+    );
+    
+    if (selectedCategoryData) {
+      setSubcategories(selectedCategoryData.subcategories || []);
+    }
+
+    setSelectedSubCategory(""); // Reset subcategory when category is changed
+  };
+
+  // Handler for subcategory selection
+  const handleSubCategoryChange = (e) => {
+    setSelectedSubCategory(e.target.value);
   };
 
   return (
     <div className="p-4">
       <h2
-        className={` ${headerdynamicSize ? `text-${headerdynamicSize} font-medium text-gray-700`  : "text-2xl" } mb-1 font-bold`}
+        className={` ${headerdynamicSize ? `text-${headerdynamicSize} font-medium text-gray-700` : "text-2xl"} mb-1 font-bold`}
       >
         Tender Categories
       </h2>
 
-      <div className=" ">
+      <div>
         {/* Loading State */}
         {isLoading && (
           <div className="flex items-center space-x-2 text-gray-500">
@@ -81,7 +94,7 @@ export default function TenderCategories({
               htmlFor="tender-categories"
               className="block text-sm font-medium text-gray-400 mb-1"
             >
-              {/* Select a Category: */}
+              Select a Category:
             </label>
             <select
               id="tender-categories"
@@ -102,7 +115,33 @@ export default function TenderCategories({
           </div>
         )}
 
-        {/* Display Selected Category */}
+        {/* Subcategory Dropdown */}
+        {selectedCategory && !isLoading && !error && subcategories.length > 0 && (
+          <div className="mt-4">
+            <label
+              htmlFor="sub-tender-categories"
+              className="block text-sm font-medium text-gray-400 mb-1"
+            >
+              Select a Subcategory:
+            </label>
+            <select
+              id="sub-tender-categories"
+              value={selectedSubCategory}
+              onChange={handleSubCategoryChange}
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+            >
+              <option value="">-- Choose a subcategory --</option>
+              {subcategories.map((subcategory) => (
+                <option
+                  key={subcategory.sub_tender_sheet_id}
+                  value={subcategory.sub_tender_sheet_id}
+                >
+                  {subcategory.sub_tender_table_name}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
     </div>
   );

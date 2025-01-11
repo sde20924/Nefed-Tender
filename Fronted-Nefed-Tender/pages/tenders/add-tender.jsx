@@ -20,6 +20,7 @@ import CustomFormBuilder from "@/components/add-tander/CustomForm";
 import FullDetails from "@/components/add-tander/FullDetails";
 import TenderCategories from "@/components/add-tander/TenderCategories";
 import Loader from "@/components/Loader";
+import ButtonLoader from "@/components/ui/ButtonLoader";
 
 // Importing newly created components
 
@@ -60,6 +61,8 @@ const AddTender = () => {
   const [bagSize, setBagSize] = useState("");
   const [bagType, setBagType] = useState("");
   const [loading, setLoading] = useState(false);
+  const [loadingSave, setLoadingSave] = useState(false); // For draft
+  const [loadingPublish, setLoadingPublish] = useState(false); // For publish
   // const [measurmentUnit, setMeasurmentUnit] = useState("");
   const [auctionStart, setAuctionStart] = useState(() => {
     const today = new Date();
@@ -104,6 +107,7 @@ const AddTender = () => {
   const [subTenders, setSubTenders] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubCategory, setSelectedSubCategory] = useState("");
   const [accessPosition, setAccessPosition] = useState("yes");
   const [generatedFormula, setGeneratedFormula] = useState("");
   const handleDescriptionChange = (value) => {
@@ -158,7 +162,7 @@ const AddTender = () => {
 
   // Attachments
   const [attachments, setAttachments] = useState([
-    { key: "", extension: "", maxFileSize: "", label: "" },
+    { key: "", extension: "PNG", maxFileSize: "2", label: "" },
   ]);
 
   const handleAddAttachment = () => {
@@ -377,51 +381,89 @@ const AddTender = () => {
       ShowItems: ShowItems,
       formula: generatedFormula,
       category: selectedCategory,
+      subcategory: selectedSubCategory,
     };
     const requiredFields = [
-      "tender_title",
-      "tender_slug",
-      "tender_desc",
-      "currency",
-      "start_price",
-      "app_start_time",
-      "app_end_time",
-      "auct_start_time",
-      "auct_end_time",
+      { name: "tender_title", label: "Tender Title" },
+      { name: "tender_slug", label: "Tender Slug" },
+      { name: "tender_desc", label: "Tender Description" },
+      { name: "currency", label: "Currency" },
+      { name: "start_price", label: "Starting Price" },
+      { name: "app_start_time", label: "Application Start Time" },
+      { name: "app_end_time", label: "Application End Time" },
+      { name: "auct_start_time", label: "Auction Start Time" },
+      { name: "auct_end_time", label: "Auction End Time" },
+      { name: "attachments", label: "Attachments" },
     ];
-  
+
     for (const field of requiredFields) {
-      if (!formData[field] || formData[field] === "") {
-        toast.error(`Field "${field}" is required.`);
+      if (
+        !formData[field.name] ||
+        formData[field.name] === "" ||
+        formData[field.name] === "<p><br></p>"
+      ) {
+        toast.error(`Field ${field.label} is required.`);
         return; // Exit if a required field is missing
+      }
+      if (field.name === "attachments") {
+        if (
+          !Array.isArray(formData[field.name]) ||
+          formData[field.name].length === 0
+        ) {
+          toast.error("Attachments are required.");
+          return; // Exit if attachments array is empty
+        }
+
+        // Validate each attachment
+        for (const attachment of formData[field.name]) {
+          // Loop over the properties of each attachment
+          const attachmentKeys = Object.keys(attachment);
+
+          // Check for missing properties dynamically
+          for (const key of attachmentKeys) {
+            if (!attachment[key]) {
+              toast.error(`Attachment is missing required field: ${key}`);
+              return; // Exit if any field is missing in the attachment
+            }
+          }
+        }
       }
     }
 
     try {
-      setLoading(true);
-      if (tenderOption === "publish" && generatedFormula == "") {
-        toast.error("Formula Required For Calculate Total Coast");
-        return
+      if (tenderOption === "publish") {
+        setLoadingPublish(true); // Set the publish loading state to true
+      } else {
+        setLoadingSave(true); // Set the save (draft) loading state to true
       }
-      
-      if (tenderOption === "draft") {
-        const response = await callApiPost("tender/create_new_tender", formData);
-        console.log("Response:", response);
-        toast.success("Tender Saved Sucessfully");
-        setLoading(false);
+
+      if (tenderOption === "publish" && generatedFormula === "") {
+        toast.error("Formula Required For Calculate Total Coast");
         return;
       }
+
       const response = await callApiPost("tender/create_new_tender", formData);
-      console.log("{}{}{}{}{}}}{}", response.status);
+      console.log("Response:", response);
+
       if (response.status === 201) {
-        console.log("Response:", response);
-        toast.success("Tender Created Sucessfully");
+        toast.success(
+          tenderOption === "publish"
+            ? "Tender created Successfully"
+            : "Tender Saved Successfully"
+        );
+        router.push('/tenders')
+      } else {
+        toast.error("Failed to create tender.");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Failed to submit tender.");
     } finally {
-      setLoading(false); // Hide loader
+      if (tenderOption === "publish") {
+        setLoadingPublish(false); // Hide loading when publish is finished
+      } else {
+        setLoadingSave(false); // Hide loading when draft is finished
+      }
     }
   };
 
@@ -436,7 +478,7 @@ const AddTender = () => {
 
   return (
     <>
-      {loading && <Loader />}
+      {/* {loading && <Loader />} */}
       <HeaderTitle
         padding={"p-4"}
         subTitle={"Add new tenders, set visibility etc."}
@@ -488,6 +530,15 @@ const AddTender = () => {
                 handleRemoveAttachment={handleRemoveAttachment}
                 handleInputChange={handleInputChange}
               />
+              {/* Tender Categories */}
+              <TenderCategories
+                categories={categories}
+                setCategories={setCategories}
+                selectedCategory={selectedCategory}
+                setSelectedCategory={setSelectedCategory}
+                selectedSubCategory={selectedSubCategory}
+                setSelectedSubCategory={setSelectedSubCategory} // Pass the state updater
+              />
 
               {/* Auction Items */}
               <AuctionItems
@@ -502,6 +553,7 @@ const AddTender = () => {
                 // onSelectedBuyersChange={() => handleSelectedBuyersChange}
                 selectedBuyers={selectedBuyers}
                 setSelectedBuyers={setSelectedBuyers}
+                selectedCategory={selectedCategory}
               />
             </div>
 
@@ -515,13 +567,6 @@ const AddTender = () => {
               renderField={renderField}
               initialFields={initialFields}
             /> */}
-              {/* Tender Categories */}
-              <TenderCategories
-                categories={categories}
-                setCategories={setCategories}
-                selectedCategory={selectedCategory}
-                setSelectedCategory={setSelectedCategory}
-              />
               {/* Tender Details Form */}
               <FullDetails
                 currency={currency}
@@ -577,20 +622,23 @@ const AddTender = () => {
             onFormulaChange={handleFormulaChange}
           />
           <div className=" flex justify-end p-4">
-            <button
+            <ButtonLoader
+              loading={loadingSave}
               type="button"
               className="bg-blue-600 mx-4 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               onClick={(e) => handleSubmit(e, "draft")}
             >
               Save
-            </button>
-            <button
+            </ButtonLoader>
+
+            <ButtonLoader
+              loading={loadingPublish}
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
               onClick={(e) => handleSubmit(e, "publish")}
             >
               Create
-            </button>
+            </ButtonLoader>
           </div>
         </form>
         {/* Sticky Submit Button */}

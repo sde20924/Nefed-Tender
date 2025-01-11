@@ -16,6 +16,7 @@ import Attachments from "@/components/edit-tender/Attachments";
 import FullDetails from "@/components/edit-tender/FullDetails";
 import EditTAble from "@/components/edit-tender/EditTAble";
 import AuctionItems from "@/components/edit-tender/AuctionItems";
+import ButtonLoader from "@/components/ui/ButtonLoader";
 
 const ReactQuill = dynamic(() => import("react-quill"), { ssr: false });
 const DatePicker = dynamic(() => import("react-datepicker"), { ssr: false });
@@ -36,6 +37,9 @@ const EditTenderForm = () => {
   const [data, setData] = useState();
   const router = useRouter();
   const { id } = router.query;
+  const [loadingSave, setLoadingSave] = useState(false); // For draft
+  const [loadingPublish, setLoadingPublish] = useState(false); // For publish
+  const [published, setPublished] = useState();
 
   // ---------- TENDER DATA STATE ----------
   const [tenderData, setTenderData] = useState({
@@ -66,8 +70,9 @@ const EditTenderForm = () => {
     counterOfferTimer: "",
     customForm: {},
     accessPosition: "",
-    ShowItems:"",
+    ShowItems: "",
     formula: "",
+    save_as: "",
   });
 
   // ---------- IMAGE UPLOAD STATE ----------
@@ -168,8 +173,9 @@ const EditTenderForm = () => {
             auction_type: data.auction_type || "reverse",
             accessType: data.accessType || "public",
             selected_buyers: data.selected_buyers || [],
-            ShowItems:data.show_items || "yes",
-            formula: data.generatedFormula|| "",
+            ShowItems: data.show_items || "yes",
+            formula: data.generatedFormula || "",
+            save_as: data.save_as || "",
           }));
           // Set auction states
           setAuctionType(data.auction_type || "reverse");
@@ -192,16 +198,20 @@ const EditTenderForm = () => {
     console.log(selectedBuyers); // Store only IDs in the state
   };
   // ---------- SUBMIT HANDLER ----------
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e, tenderOption) => {
     e.preventDefault();
+
+    // Generate a random tender_id using current time
+    const tender_id = `tender_${new Date().getTime()}`; // Prefixing with 'tender_' to ensure uniqueness
+
+    // Prepare form data to send to backend
     const formData = {
       tender_title: tenderData.name, // Title of the tender
       tender_slug: tenderData.slug, // URL-friendly version of the title
       tender_desc: tenderData.description, // Description of the tender
       tender_cat: "testing", // Default to 'testing' if not applicable
       tender_opt: tenderData.isPublished, // Tender option, e.g., publish status
-      // emd_amt: tenderData.emdAmount, // EMD Amount
-      // emt_lvl_amt: tenderData.emdLevelAmount, // EMD Level Amount
+      save_as: tenderOption, // Set save_as to 'publish' or 'draft' based on the tenderOption passed
       attachments: tenderData.attachments, // Attachments if needed
       custom_form: JSON.stringify(tenderData.customForm), // Stringify custom form fields if needed
       currency: tenderData.currency, // Currency type
@@ -240,16 +250,21 @@ const EditTenderForm = () => {
       audi_key: tenderData.audiKey,
       headers: headers,
       sub_tender: subTenders, // Audio key, set to null if not applicable
-      access_position:accessPosition,
-      ShowItems:ShowItems,
- 
-
+      access_position: accessPosition,
+      ShowItems: ShowItems,
+      save_as: tenderOption, // This will dynamically set to either "draft" or "publish"
     };
 
     console.log("form data here 1", formData);
     console.log(accessType);
     console.log("++++++++++++", selectedBuyers);
     try {
+      if (tenderOption === "publish") {
+        setLoadingPublish(true); // Set the publish loading state to true
+      } else {
+        setLoadingSave(true); // Set the save (draft) loading state to true
+      }
+
       const response = await callApiPost(`update-tender/${id}`, formData);
       toast.success("Tender Updated");
       router.push("/tenders");
@@ -257,6 +272,12 @@ const EditTenderForm = () => {
     } catch (error) {
       console.error("Error updating form:", error);
       toast.error("Failed to update tender.");
+    } finally {
+      if (tenderOption === "publish") {
+        setLoadingPublish(false); // Hide loading when publish is finished
+      } else {
+        setLoadingSave(false); // Hide loading when draft is finished
+      }
     }
   };
 
@@ -348,12 +369,35 @@ const EditTenderForm = () => {
 
           {/* Sticky Submit Button */}
           <div className="flex justify-end">
-            <button
+            <div className="flex justify-end p-4">
+              
+
+              <ButtonLoader
+                loading={loadingPublish}
+                type="submit"
+                className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                onClick={(e) => handleSubmit(e, tenderData.save_as)}
+              >
+                {tenderData.save_as === "draft" ? "Save" :"Update"}
+              </ButtonLoader>
+              {tenderData.save_as === "draft" && (
+                <ButtonLoader
+                  loading={loadingSave}
+                  type="button"
+                  className="bg-blue-600 mx-4 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                  onClick={(e) => handleSubmit(e, "publish")}
+                >
+                  Publish
+                </ButtonLoader>
+              )}
+            </div>
+
+            {/* <button
               type="submit"
               className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
             >
               Edit
-            </button>
+            </button> */}
           </div>
         </form>
       </div>

@@ -4,7 +4,8 @@ import { FaTrash } from "react-icons/fa";
 import { useDrag, useDrop, DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { toast } from "react-toastify"; // Importing toast for notifications
-
+import UomList from "../../utils/uomList";
+import uomList from "../../utils/uomList";
 const DraggableHeader = ({ header, type, typee }) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "HEADER",
@@ -16,6 +17,7 @@ const DraggableHeader = ({ header, type, typee }) => {
 
   return (
     <button
+      type="button"
       ref={drag}
       className={`bg-blue-500 hover:bg-blue-600 text-white font-bold py-1 px-3 rounded transition-opacity ${
         isDragging ? "opacity-50" : "opacity-100"
@@ -36,6 +38,7 @@ const DraggableOperation = ({ operation, type }) => {
 
   return (
     <button
+      type="button"
       ref={drag}
       className={`bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-3 rounded transition-opacity ${
         isDragging ? "opacity-50" : "opacity-100"
@@ -57,6 +60,7 @@ const DraggableNumber = ({ number, type }) => {
 
   return (
     <button
+      type="button"
       ref={drag}
       className={`bg-gray-400 hover:bg-gray-500 text-white font-bold py-1 px-3 rounded transition-opacity ${
         isDragging ? "opacity-50" : "opacity-100"
@@ -115,8 +119,6 @@ export default function EditableSheet({
   onFormulaChange,
 }) {
   // Add a new subtender
-  console.log("headerrrr++++++--", headers);
-  // console.log("hsdfsdf--", subTenders);
 
   const [isModalOpen, setIsModalOpen] = useState(false); // State to control modal visibility
   const [newSubTenderName, setNewSubTenderName] = useState(""); // State for the new SubTender name
@@ -153,7 +155,7 @@ export default function EditableSheet({
       buttonText == "CreateSheet" &&
       (selectedCategory === "" || selectedCategory === null)
     ) {
-      toast.success("Select the categories first");
+      toast.info("Select the categories first");
       return; // Exit the function to prevent opening the modal
     }
 
@@ -179,6 +181,7 @@ export default function EditableSheet({
       toast.error("Please enter a valid SubTender name.");
     }
   };
+  console.log("--------888--", uomList);
 
   const handleItemDrop = (item) => {
     console.log("yahan chala");
@@ -225,14 +228,6 @@ export default function EditableSheet({
     });
   };
 
-  // const handleOperationClick = (operation) => {
-  //   setFormula((prev) => [...prev, operation]);
-  //   setFormulaDisplay((prev) => [...prev, operation]);
-  // };
-  // const handleNumberClick = (number) => {
-  //   setFormula((prev) => `${prev}${number}`);
-  // };
-
   const handleClearFormula = () => {
     setFormula([]);
     setFormulaDisplay([]);
@@ -258,8 +253,6 @@ export default function EditableSheet({
       ...prevDisplay,
       operationItem.operation,
     ]);
-
-    toast.success(`Operation "${operationItem.operation}" added to formula.`);
   };
   const handleNumberDrop = (numberItem) => {
     // Basic validation: prevent starting formula with a number if needed
@@ -377,27 +370,6 @@ export default function EditableSheet({
     );
   };
 
-  //     setSubTenders((prev) =>
-  //       prev.map((subTender) => {
-  //         if (subTender.id === subTenderId) {
-  //           const updatedRows = subTender.rows.filter(
-  //             (_, index) => index !== rowIndex
-  //           );
-
-  //           // Reassign S.No after deletion
-  //           const reassignedRows = updatedRows.map((row, i) => {
-  //             row[0] = `${subTender.id}.${i + 1}`;
-  //             return row;
-  //           });
-
-  //           return { ...subTender, rows: reassignedRows };
-  //         }
-  //         return subTender;
-  //       })
-  //     );
-  //   }
-  // };
-
   // Handle row deletion logic
   const handleDeleteRow = (subTenderId, rowIndex) => {
     setRowToDelete({ subTenderId, rowIndex });
@@ -465,35 +437,6 @@ export default function EditableSheet({
     setDeleteTableModal(false); // Close the modal without deleting
   };
 
-  // const handleDeleteColumn = () => {
-  //   const columnToDelete = prompt(
-  //     `Enter the column name to delete:\n${headers.join(", ")}`
-  //   );
-
-  //   if (!columnToDelete || !headers.includes(columnToDelete)) {
-  //     toast.error("Invalid column name or column does not exist.");
-  //     return;
-  //   }
-
-  //   const colIndex = headers.indexOf(columnToDelete);
-
-  //   // Remove the column from headers
-  //   const updatedHeaders = headers.filter((_, index) => index !== colIndex);
-  //   setHeaders(updatedHeaders);
-
-  //   // Remove the corresponding cell from each row in all subtenders
-  //   setSubTenders((prev) =>
-  //     prev.map((subTender) => ({
-  //       ...subTender,
-  //       rows: subTender.rows.map((row) =>
-  //         row.filter((_, index) => index !== colIndex)
-  //       ),
-  //     }))
-  //   );
-
-  //   toast.success(`Column "${columnToDelete}" has been deleted.`);
-  // };
-
   const handleDeleteColumn = () => {
     setShowDeleteColumnModal(true);
   };
@@ -531,72 +474,6 @@ export default function EditableSheet({
         : [...prev, colIndex]
     );
   };
-  //   const newSubTenders = [];
-  //   let currentSubTender = null;
-
-  //   for (let i = 1; i < sheetData.length; i++) {
-  //     const row = sheetData[i];
-  //     const item = row[1]?.trim(); // Second column (Item)
-  //     const description = row[2]?.trim(); // Third column (Item Description)
-
-  //     if (item && !description) {
-  //       // Start a new subtender
-  //       if (currentSubTender) {
-  //         newSubTenders.push(currentSubTender);
-  //       }
-  //       currentSubTender = {
-  //         id: newSubTenders.length + 1,
-  //         name: item,
-  //         rows: [],
-  //       };
-  //     } else if (description && currentSubTender) {
-  //       // Add row to the current subtender
-  //       const formattedRow = headers.map((_, index) => row[index] || "");
-  //       currentSubTender.rows.push(formattedRow);
-  //     }
-  //   }
-
-  //   // Push the last subtender if any
-  //   if (currentSubTender) {
-  //     newSubTenders.push(currentSubTender);
-  //   }
-
-  //   setSubTenders(newSubTenders);
-  // };
-
-  // const handleFileUpload = (event) => {
-  //   const file = event.target.files[0];
-  //   if (file) {
-  //     const reader = new FileReader();
-  //     reader.onload = (e) => {
-  //       const data = e.target.result;
-  //       const workbook = XLSX.read(data, { type: "binary" });
-  //       const sheetName = workbook.SheetNames[0];
-  //       const sheet = workbook.Sheets[sheetName];
-  //       const jsonData = XLSX.utils.sheet_to_json(sheet, { header: 1 });
-
-  //       if (jsonData.length > 0) {
-  //         console.log("Sheet Data:", jsonData);
-
-  //         // Transform headers into the desired format
-  //         const transformedHeaders = jsonData[0].map((header) => ({
-  //           header: header || "Unknown Header", // Handle empty headers
-  //           type: "view", // Default type
-  //         }));
-
-  //         // Set transformed headers to state
-  //         setHeaders(transformedHeaders);
-
-  //         // Parse sheet data into subtenders
-  //         parseSheetData(jsonData, jsonData[0]);
-  //       } else {
-  //         alert("The uploaded file is empty.");
-  //       }
-  //     };
-
-  //     reader.readAsBinaryString(file);
-  //   }
-  // };
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
@@ -685,26 +562,36 @@ export default function EditableSheet({
   const handleDownload = () => {
     const worksheetData = [];
 
-    worksheetData.push([...headers]);
+    // Add headers to the worksheetData
+    const headerRow = headers.map((header) => header.header); // Extract header names
+    worksheetData.push(headerRow);
+
+    // Add sub-tenders and their rows
     subTenders.forEach((subTender) => {
-      const subTenderHeaderRow = new Array(headers.length).fill("");
+      // Add a row for the SubTender ID and Name
+      const subTenderHeaderRow = new Array(headers.length).fill(""); // Empty row with the same length as headers
       subTenderHeaderRow[0] = subTender.id;
       subTenderHeaderRow[1] = subTender.name;
       worksheetData.push(subTenderHeaderRow);
-      worksheetData.push(...subTender.rows);
 
+      // Add the sub-tender rows
+      subTender.rows.forEach((row) => {
+        worksheetData.push(row);
+      });
+
+      // Add an empty row for spacing
       worksheetData.push([]);
     });
 
+    // Create a worksheet and workbook
     const worksheet = XLSX.utils.aoa_to_sheet(worksheetData);
-
-    // Build a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
-    // Download the file
+    // Trigger the file download
     XLSX.writeFile(workbook, "editable_subtender_table.xlsx");
   };
+
   console.log("headdsdddderrrr", headers);
   return (
     <div className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 p-4">
@@ -857,6 +744,7 @@ export default function EditableSheet({
                       </div>
                       <div className="flex justify-between">
                         <button
+                          type="button"
                           onClick={handleClearFormula}
                           className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded"
                         >
@@ -864,12 +752,14 @@ export default function EditableSheet({
                         </button>
                         <div className="space-x-2">
                           <button
+                            type="button"
                             onClick={() => setShowFormulaModal(false)}
                             className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded"
                           >
                             Cancel
                           </button>
                           <button
+                            type="button"
                             onClick={handleSaveFormula}
                             className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded"
                           >
@@ -1082,28 +972,74 @@ export default function EditableSheet({
                     key={rowIndex}
                     className="odd:bg-gray-100 even:bg-gray-50 hover:bg-gray-200 transition-all duration-200"
                   >
-                    {row.map((cell, cellIndex) => (
-                      <td
-                        key={cellIndex}
-                        className="border border-gray-300 px-4 py-2 break-words max-w-[200px] l:max-w-[450px]"
-                        contentEditable
-                        suppressContentEditableWarning
-                        style={{
-                          wordWrap: "break-word", // Ensure text wrapping
-                          whiteSpace: "pre-wrap", // Preserve spaces and wrap text
-                        }}
-                        onBlur={(e) =>
-                          handleCellEdit(
-                            subTender.id,
-                            rowIndex,
-                            cellIndex,
-                            e.target.innerText
-                          )
-                        }
-                      >
-                        {cell}
-                      </td>
-                    ))}
+                    {row.map((cell, cellIndex) => {
+                      const isEditable = headers[cellIndex]?.type === "view"; // Check if the column type is "view"
+                      const isUOMColumn = headers[cellIndex]?.header === "UOM"; // Check if the column header is "UOM"
+
+                      return (
+                        <td
+                          key={cellIndex}
+                          className={`border border-gray-300 px-4 py-2 break-words max-w-[200px] lg:max-w-[450px] ${
+                            isEditable
+                              ? "bg-white"
+                              : isUOMColumn
+                                ? "bg-white"
+                                : "bg-gray-100 cursor-not-allowed"
+                          }`}
+                          contentEditable={isEditable && !isUOMColumn} // Prevent contentEditable for UOM dropdown
+                          suppressContentEditableWarning={
+                            isEditable && !isUOMColumn
+                          }
+                          style={{
+                            wordWrap: "break-word", // Ensure text wrapping
+                            whiteSpace: "pre-wrap", // Preserve spaces and wrap text
+                          }}
+                        >
+                          {isUOMColumn ? (
+                            // Render dropdown for UOM column
+                            <select
+                              className="w-full px-2 py-1 border border-gray-300 rounded"
+                              value={cell} // Bind the value to the current cell
+                              onChange={(e) =>
+                                handleCellEdit(
+                                  subTender.id,
+                                  rowIndex,
+                                  cellIndex,
+                                  e.target.value // Update the cell value on dropdown change
+                                )
+                              }
+                            >
+                              <option value="" disabled>
+                                Select UOM
+                              </option>
+                              {uomList.map((uom) => (
+                                <option key={uom.id} value={uom.name}>
+                                  {uom.name} ({uom.abbreviation})
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            // Render normal cell for other columns
+                            <div
+                              contentEditable={isEditable}
+                              suppressContentEditableWarning={isEditable}
+                              onBlur={(e) =>
+                                isEditable &&
+                                handleCellEdit(
+                                  subTender.id,
+                                  rowIndex,
+                                  cellIndex,
+                                  e.target.innerText
+                                )
+                              }
+                            >
+                              {cell}
+                            </div>
+                          )}
+                        </td>
+                      );
+                    })}
+
                     <td className="text-center align-middle border border-gray-300 px-4 py-2">
                       <button
                         type="button"
@@ -1148,7 +1084,7 @@ export default function EditableSheet({
               onClick={() => handleAddRowToSubTender(subTender.id)}
               className="bg-green-500 hover:bg-green-600 text-white font-bold py-1 px-3 rounded flex items-center transition-all duration-200"
             >
-              Add Row
+              <span className="mr-1">➕</span> Add Row
             </button>
           </div>
         </div>
@@ -1233,7 +1169,7 @@ export default function EditableSheet({
           </button>
         </div>
       ) : (
-        <div className="container mx-auto p-6 gap-6">
+        <div className="container lg:mx-auto lg:p-6 gap-6">
           {/* Combined Section for Upload and Create Excel */}
           <div className="flex flex-col md:flex-row items-center justify-between space-y-6 md:space-y-0">
             {/* Left Section - Upload Excel */}
@@ -1252,7 +1188,7 @@ export default function EditableSheet({
                     type="file"
                     accept=".xlsx, .xls"
                     onChange={handleFileUpload}
-                    className="hidden"
+                    className="hidden lg:text-lg text-sm"
                   />
                 </label>
               </div>
@@ -1271,7 +1207,7 @@ export default function EditableSheet({
                   type="button"
                   // disabled ={selectedCategory!== "" && selectedCategory !== null ? false : true}
                   onClick={(e) => openAddSubTenderModal(e)}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-full shadow-lg"
+                  className="bg-green-600 hover:bg-green-700 text-white lg:font-bold py-2 px-6 rounded-full shadow-lg"
                 >
                   <i className="mr-2 fas fa-edit transition-all duration-200 ease-in-out transform hover:scale-110"></i>{" "}
                   Create Sheet
