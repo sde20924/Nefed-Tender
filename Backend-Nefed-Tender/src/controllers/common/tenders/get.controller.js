@@ -4,10 +4,12 @@ import asyncErrorHandler from "../../../utils/asyncErrorHandler.js";
 export const getTenderDetailsController = asyncErrorHandler(
   async (req, res) => {
     try {
-      const { id: tenderId } = req.params; // Extract tender ID from request parameters
+      const tenderId = req.params.id; // Extract tender ID from request parameters
+      const { login_as } = req.user;
 
-      // Query to fetch tender details and documents
-      const tenderDetailsQuery = `
+      // Fetch tender details from the manage_tender table
+      const [tenderDetailsResult] = await db.sequelize.query(
+        `
       SELECT 
         mt.*, 
         trd.doc_key, 
@@ -18,9 +20,7 @@ export const getTenderDetailsController = asyncErrorHandler(
       FROM manage_tender mt
       LEFT JOIN tender_required_doc trd ON mt.tender_id = trd.tender_id
       WHERE mt.tender_id = :tenderId
-    `;
-      const [tenderDetailsResult] = await db.sequelize.query(
-        tenderDetailsQuery,
+      `,
         {
           replacements: { tenderId },
         }
@@ -32,45 +32,47 @@ export const getTenderDetailsController = asyncErrorHandler(
           success: false,
         });
       }
-
-      // Query to fetch headers
-      const headersQuery = `
-      SELECT 
-        header_id, 
-        table_head, 
-        \`order\`
-      FROM tender_header
-      WHERE tender_id = :tenderId
-      ORDER BY \`order\`
-    `;
-      const [headers] = await db.sequelize.query(headersQuery, {
-        replacements: { tenderId },
-      });
-
-      // Query to fetch subtenders and associated rows
-      const headersWithSubTendersQuery = `
-      SELECT 
-        s.subtender_id,
-        s.subtender_name,
-        r.row_data_id,
-        r.header_id,
-        r.row_data,
-        r.type,
-        r.order,
-        r.row_number
-      FROM subtender s
-      LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
-      WHERE s.tender_id = :tenderId
-      ORDER BY s.subtender_id, r.row_number, r.order
-    `;
-      const [headersWithSubTendersResult] = await db.sequelize.query(
-        headersWithSubTendersQuery,
-        { replacements: { tenderId } }
-      );
-
+     
       // Parse tender details
-      const tenderDetails = {
-        ...tenderDetailsResult[0],
+      let tenderDetails = {
+        tender_title: tenderDetailsResult[0].tender_title,
+        tender_slug: tenderDetailsResult[0].tender_slug,
+        tender_desc: tenderDetailsResult[0].tender_desc,
+        tender_cat: tenderDetailsResult[0].tender_cat,
+        tender_opt: tenderDetailsResult[0].tender_opt,
+        save_as: tenderDetailsResult[0].save_as,
+        custom_form: tenderDetailsResult[0].custom_form,
+        currency: tenderDetailsResult[0].currency,
+        start_price: tenderDetailsResult[0].start_price,
+        dest_port: tenderDetailsResult[0].dest_port,
+        bag_size: tenderDetailsResult[0].bag_size,
+        bag_type: tenderDetailsResult[0].bag_type,
+        app_start_time: tenderDetailsResult[0].app_start_time,
+        app_end_time: tenderDetailsResult[0].app_end_time,
+        auct_start_time: tenderDetailsResult[0].auct_start_time,
+        auct_end_time: tenderDetailsResult[0].auct_end_time,
+        time_frame_ext: tenderDetailsResult[0].time_frame_ext,
+        extended_at: tenderDetailsResult[0].extended_at,
+        amt_of_ext: tenderDetailsResult[0].amt_of_ext,
+        aut_auct_ext_bfr_end_time:
+          tenderDetailsResult[0].aut_auct_ext_bfr_end_time,
+        min_decr_bid_val: tenderDetailsResult[0].min_decr_bid_val,
+        timer_ext_val: tenderDetailsResult[0].timer_ext_val,
+        qty_split_criteria: tenderDetailsResult[0].qty_split_criteria,
+        counter_offr_accept_timer:
+          tenderDetailsResult[0].counter_offr_accept_timer,
+        img_url: tenderDetailsResult[0].img_url,
+        auction_type: tenderDetailsResult[0].auction_type,
+        tender_id: tenderDetailsResult[0].tender_id,
+        audi_key: tenderDetailsResult[0].audi_key,
+        access_position: tenderDetailsResult[0].access_position,
+        show_items: tenderDetailsResult[0].show_items,
+        category: tenderDetailsResult[0].category,
+        formula: tenderDetailsResult[0].cal_formula,
+      };
+
+      tenderDetails = {
+        ...tenderDetails,
         tenderDocuments: tenderDetailsResult
           .map((row) => ({
             doc_key: row.doc_key,
@@ -79,45 +81,100 @@ export const getTenderDetailsController = asyncErrorHandler(
             doc_ext: row.doc_ext,
             doc_size: row.doc_size,
           }))
-          .filter((doc) => doc.doc_key), // Filter out rows without documents
+          .filter((doc) => doc.doc_key),
       };
 
-      // Add headers to tender details
+      // Fetch headers
+      const headers = await db.sequelize.query(
+        `
+      SELECT 
+        header_id, 
+        table_head, 
+        \`order\`
+      FROM tender_header
+      WHERE tender_id = :tenderId
+      ORDER BY \`order\`
+      `,
+        {
+          replacements: { tenderId },
+        }
+      );
+
       tenderDetails.headers = headers;
 
-      // Parse sub-tenders and group rows by row_number
-      const subTendersArray = [];
-      const subTenderMap = new Map();
+      // Fetch subtenders and all possible rows if the user is a seller or buyer with show_items enabled
+      if (
+        login_as === "seller" ||
+        (login_as === "buyer" && tenderDetails.show_items === "yes")
+      ) {
+        const headersWithSubTendersResult = await db.sequelize.query(
+          `
+        SELECT 
+          s.subtender_id,
+          s.subtender_name,
+          r.row_data_id,
+          r.header_id,
+          r.row_data,
+          r.type,
+          r.order,
+          r.row_number
+        FROM subtender s
+        LEFT JOIN seller_header_row_data r ON s.subtender_id = r.subtender_id
+        WHERE s.tender_id = :tenderId
+        ORDER BY s.subtender_id, r.row_number, r.order
+        `,
+          {
+            replacements: { tenderId },
+          }
+        );
 
-      headersWithSubTendersResult.forEach((row) => {
-        const subTenderId = row.subtender_id;
-        const subTenderName = row.subtender_name;
+        const subTendersArray = [];
+        const subTenderMap = new Map();
 
-        if (!subTenderMap.has(subTenderId)) {
-          const newSubTender = {
-            id: subTenderId,
-            name: subTenderName,
-            rows: [],
+        headersWithSubTendersResult.forEach((row) => {
+          const subTenderId = row.subtender_id;
+          const subTenderName = row.subtender_name;
+
+          if (!subTenderMap.has(subTenderId)) {
+            const newSubTender = {
+              id: subTenderId,
+              name: subTenderName,
+              rows: [],
+            };
+            subTenderMap.set(subTenderId, newSubTender);
+            subTendersArray.push(newSubTender);
+          }
+
+          const subTender = subTenderMap.get(subTenderId);
+          const rowGroup = subTender.rows[row.row_number - 1] || [];
+          rowGroup[row.order - 1] = {
+            data: row.row_data || "",
+            type: row.type || "edit",
           };
-          subTenderMap.set(subTenderId, newSubTender);
-          subTendersArray.push(newSubTender);
-        }
+          subTender.rows[row.row_number - 1] = rowGroup;
+        });
 
-        const subTender = subTenderMap.get(subTenderId);
+        tenderDetails.sub_tenders = subTendersArray;
+      }
 
-        // Ensure all rows, even empty ones, are included
-        const rowGroup = subTender.rows[row.row_number - 1] || [];
-        rowGroup[row.order - 1] = {
-          data: row.row_data || "", // Default to empty string if data is missing
-          type: row.type || "edit", // Default to "edit" if type is missing
-        };
-        subTender.rows[row.row_number - 1] = rowGroup;
-      });
+      // Fetch selected buyers for private tenders
+      if (tenderDetails.accessType === "private") {
+        const selectedBuyers = await db.sequelize.query(
+          `
+        SELECT buyer_id
+        FROM tender_access
+        WHERE tender_id = :tenderId
+        `,
+          {
+            replacements: { tenderId },
+          }
+        );
+        tenderDetails.selected_buyers = selectedBuyers.map(
+          (buyer) => buyer.buyer_id
+        );
+      }
 
-      // Add sub-tenders to tender details
-      tenderDetails.sub_tenders = subTendersArray;
-
-      // Send the response
+      // Return the result
       res.status(200).json({
         msg: "Tender details fetched successfully",
         success: true,
@@ -139,64 +196,91 @@ export const getAllDemoExcelSheetsController = asyncErrorHandler(
     try {
       // SQL query to fetch demo tender sheets and their headers
       const query = `
-      SELECT 
+       SELECT 
         dts.demo_tender_sheet_id,
         dts.tender_table_name,
         dts.created_at AS sheet_created_at,
         dth.demo_tender_header_id,
         dth.header_display_name,
-        dth.created_at AS header_created_at
+        dth.created_at AS header_created_at,
+        dth.type AS type,
+        sts.sub_tender_sheet_id,
+        sts.sub_tender_table_name,
+        sts.created_at AS sub_tender_created_at
       FROM 
         demo_tender_sheet dts
       LEFT JOIN 
         demo_tender_header dth 
       ON 
         dts.demo_tender_sheet_id = dth.demo_tender_sheet_id
+      LEFT JOIN 
+        sub_tender_sheet sts
+      ON 
+        dts.demo_tender_sheet_id = sts.demo_tender_sheet_id
       ORDER BY 
-        dts.demo_tender_sheet_id, dth.demo_tender_header_id;
+        dts.demo_tender_sheet_id, dth.demo_tender_header_id, sts.sub_tender_sheet_id;
     `;
 
       // Execute the query using Sequelize
       const [results] = await db.sequelize.query(query);
 
-      // Organize results into a structured format
       const formattedData = results.reduce((acc, row) => {
         const sheetId = row.demo_tender_sheet_id;
-
-        // Initialize sheet entry if it doesn't exist
         if (!acc[sheetId]) {
           acc[sheetId] = {
             tender_table_name: row.tender_table_name,
             created_at: row.sheet_created_at,
-            headers: [],
+            headers: [], // Initialize headers array
+            subcategories: [], // Initialize subcategories array
           };
         }
 
-        // Add header information if available
-        if (row.demo_tender_header_id) {
+        // Add headers if they exist, ensuring headers are added only once
+        if (
+          row.demo_tender_header_id &&
+          !acc[sheetId].headers.some(
+            (header) =>
+              header.demo_tender_header_id === row.demo_tender_header_id
+          )
+        ) {
           acc[sheetId].headers.push({
             demo_tender_header_id: row.demo_tender_header_id,
             header_display_name: row.header_display_name,
             created_at: row.header_created_at,
+            type: row.type,
+          });
+        }
+
+        // Add subcategories if they exist, ensuring subcategories are added only once
+        if (
+          row.sub_tender_sheet_id &&
+          !acc[sheetId].subcategories.some(
+            (subcategory) =>
+              subcategory.sub_tender_sheet_id === row.sub_tender_sheet_id
+          )
+        ) {
+          acc[sheetId].subcategories.push({
+            sub_tender_sheet_id: row.sub_tender_sheet_id,
+            sub_tender_table_name: row.sub_tender_table_name,
+            created_at: row.sub_tender_created_at,
           });
         }
 
         return acc;
       }, {});
 
-      // Convert the formatted data object into an array for the response
-      const responseData = Object.entries(formattedData).map(
-        ([key, value]) => ({
-          demo_tender_sheet_id: key,
-          ...value,
-        })
-      );
+      // Convert object to array
+      const responseData = Object.keys(formattedData).map((key) => ({
+        demo_tender_sheet_id: key,
+        ...formattedData[key],
+      }));
 
-      // Respond with the formatted data
+      // Return the structured data
       res.status(200).json({
         success: true,
-        message: "Demo tender sheets fetched successfully",
         data: responseData,
+        message:
+          "Demo tender sheets with headers and subcategories fetched successfully",
       });
     } catch (error) {
       console.error("Error fetching demo tender sheets:", error.message);
@@ -232,7 +316,7 @@ export const getTenderFilesAndStatus = asyncErrorHandler(async (req, res) => {
 
     // Execute the query with Sequelize's query method
     const [rows] = await db.sequelize.query(query, {
-      replacements: { tenderId }, 
+      replacements: { tenderId },
     });
 
     // Respond with the data or a 404 error if no records are found
@@ -244,18 +328,20 @@ export const getTenderFilesAndStatus = asyncErrorHandler(async (req, res) => {
     } else {
       return res.status(404).json({
         success: false,
-        message: 'No data found for this tender',
+        message: "No data found for this tender",
       });
     }
   } catch (error) {
-    console.error('Error fetching uploaded files and application status:', error.message);
+    console.error(
+      "Error fetching uploaded files and application status:",
+      error.message
+    );
 
     // Respond with a 500 error for server issues
     return res.status(500).json({
       success: false,
-      message: 'Failed to fetch data',
+      message: "Failed to fetch data",
       error: error.message,
     });
   }
 });
-

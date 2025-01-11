@@ -27,7 +27,9 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
       replacements: { tenderId: tender_id },
     });
 
-    // Fetch subtenders and rows
+    
+
+    // Fetch subtenders and rows (including buyer and seller data)
     const subtendersQuery = `
       SELECT 
         s.subtender_id,
@@ -51,9 +53,9 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
         AND sh.row_number = bh.row_number 
         AND sh.order = bh.order
         AND bh.row_data_id = (
-            SELECT MAX(row_data_id) 
-            FROM buyer_header_row_data 
-            WHERE subtender_id = s.subtender_id 
+          SELECT MAX(row_data_id) 
+          FROM buyer_header_row_data 
+          WHERE subtender_id = s.subtender_id 
             AND row_number = sh.row_number
             AND header_id = sh.header_id
             AND buyer_id = bh.buyer_id
@@ -63,7 +65,9 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
     `;
     const [subtenderResults] = await db.sequelize.query(subtendersQuery, {
       replacements: { tenderId: tender_id },
+      
     });
+
 
     const subtenderData = {};
     const buyerDataMap = new Map();
@@ -86,7 +90,6 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
         buyer_order,
       } = row;
 
-      // Organize data for all subtenders
       if (!subtenderData[subtender_id]) {
         subtenderData[subtender_id] = {
           id: subtender_id,
@@ -127,10 +130,58 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
             header_name:
               headers.find((header) => header.header_id === buyer_header_id)
                 ?.table_head || "",
-            buyer_id,
-            buyer_name: `Buyer ${buyer_id}`, // Placeholder for buyer name
+            buyer_id: buyer_id,
+            buyer_name: `Buyer ${buyer_id}`,
           });
         }
+      } else {
+        const isHeaderChangedByBuyer = headersChangedByBuyers.some(
+          (entry) => entry.header_id === seller_header_id
+        );
+
+        if (!isHeaderChangedByBuyer) {
+          const rowData = {
+            header_id: seller_header_id,
+            row_data: seller_row_data || "",
+            type: seller_type || "view",
+            buyer_id: "view",
+            row_number: seller_row_number,
+            order: seller_order,
+          };
+
+          subtender.rows[seller_row_number - 1][seller_order - 1] = rowData;
+        }
+      }
+
+      if (buyer_id) {
+        if (!buyerDataMap.has(buyer_id)) {
+          buyerDataMap.set(buyer_id, {});
+        }
+
+        const buyerData = buyerDataMap.get(buyer_id);
+
+        if (!buyerData[subtender_id]) {
+          buyerData[subtender_id] = {
+            id: subtender_id,
+            name: subtender_name,
+            rows: [],
+          };
+        }
+
+        const buyerSubtender = buyerData[subtender_id];
+
+        if (!buyerSubtender.rows[buyer_row_number - 1]) {
+          buyerSubtender.rows[buyer_row_number - 1] = [];
+        }
+
+        buyerSubtender.rows[buyer_row_number - 1][buyer_order - 1] = {
+          header_id: buyer_header_id,
+          row_data: buyer_row_data,
+          type: "edit",
+          buyer_id,
+          row_number: buyer_row_number,
+          order: buyer_order,
+        };
       }
     });
 
@@ -153,7 +204,6 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
       (header) => !buyerSpecificHeaders.has(header.header_id)
     );
 
-    // Fetch latest bids
     const bidsQuery = `
       SELECT 
           tbr.bid_id,
@@ -212,7 +262,7 @@ export const getAllAuctionBids = asyncErrorHandler(async (req, res) => {
       );
       return {
         ...bid,
-        user_details: userDetail || {}, // Attach user details if available
+        user_details: userDetail || {},
       };
     });
 

@@ -213,64 +213,64 @@ export const createNewTenderController = asyncErrorHandler(async (req, res) => {
 
       await TenderAccess.bulkCreate(accessEntries, { transaction });
     }
-
+    await transaction.commit();
     // Commit the transaction before making external API calls and emitting events
 
-    // const token = req.headers["authorization"];
+    const token = req.headers["authorization"];
 
-    // const sellerDetailsResponse = await axios.post(
-    //   `${userVerifyApi}/taqw-yvsu`,
-    //   {
-    //     required_keys: "*",
-    //     user_ids: [
-    //       {
-    //         type: "seller",
-    //         user_id: user_id,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     headers: {
-    //       Authorization: token,
-    //     },
-    //   }
-    // );
+    const sellerDetailsResponse = await axios.post(
+      `${userVerifyApi}/taqw-yvsu`,
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "seller",
+            user_id: user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
 
-    // const companyName =
-    //   sellerDetailsResponse?.data?.data?.[0]?.company_name || "Unknown Company";
+    const companyName =
+      sellerDetailsResponse?.data?.data?.[0]?.company_name || "Unknown Company";
 
-    // // Emit events based on accessType
-    // if (accessType === "private" && selected_buyers.length > 0) {
-    //   for (const buyer_id of selected_buyers) {
-    //     emitEvent(
-    //       "Tender",
-    //       {
-    //         message: "New Tender Added",
-    //         seller_id: user_id,
-    //         company_name: companyName,
-    //         tender_id: tender_id || newTender.id,
-    //         action_type: "New-Tender/Private",
-    //         route: "/tenders/explore-tenders/",
-    //       },
-    //       "buyer",
-    //       buyer_id
-    //     );
-    //   }
-    // } else {
-    //   emitEvent(
-    //     "Tender",
-    //     {
-    //       message: "New Tender Added",
-    //       seller_id: user_id,
-    //       company_name: companyName,
-    //       tender_id: tender_id || newTender.id,
-    //       action_type: "New-Tender/Public",
-    //       route: "/tenders/explore-tenders/",
-    //     },
-    //     "buyer"
-    //   );
-    // }
-    await transaction.commit();
+    // Emit events based on accessType
+    if (accessType === "private" && selected_buyers.length > 0) {
+      for (const buyer_id of selected_buyers) {
+        emitEvent(
+          "Tender",
+          {
+            message: "New Tender Added",
+            seller_id: user_id,
+            company_name: companyName,
+            tender_id: tender_id || newTender.id,
+            action_type: "New-Tender/Private",
+            route: "/tenders/explore-tenders/",
+          },
+          "buyer",
+          buyer_id
+        );
+      }
+    } else {
+      emitEvent(
+        "Tender",
+        {
+          message: "New Tender Added",
+          seller_id: user_id,
+          company_name: companyName,
+          tender_id: tender_id || newTender.id,
+          action_type: "New-Tender/Public",
+          route: "/tenders/explore-tenders/",
+        },
+        "buyer"
+      );
+    }
+    
     // Send success response
     res.status(201).json({
       msg: "Tender created successfully",
@@ -504,43 +504,45 @@ export const submitFileUrl = async (req, res) => {
       }
     );
 
-    // Buyer details
-    // const token = req.headers["authorization"];
-
-    // const buyerDetailsResponse = await axios.post(
-    //   userVerifyApi + "taqw-yvsu",
-    //   {
-    //     required_keys: "*",
-    //     user_ids: [
-    //       {
-    //         type: "buyer",
-    //         user_id: req.user?.user_id,
-    //       },
-    //     ],
-    //   },
-    //   {
-    //     headers: {
-    //       Authorization: token,
-    //     },
-    //   }
-    // );
-
-    // emitEvent(
-    //   "Tender",
-    //   {
-    //     message: `New Application Submitted By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
-    //     buyer_id: req.user.user_id,
-    //     company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
-    //     tender_id: tender_id,
-    //     seller_id: rows[0].user_id,
-    //     action_type: "New-Application",
-    //   },
-    //   "seller",
-    //   rows[0]?.user_id
-    // );
-
     // Commit transaction
     await transaction.commit();
+
+    // Buyer details
+    const token = req.headers["authorization"];
+
+    const buyerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "buyer",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    emitEvent(
+      "Tender",
+      {
+        message: `New Application Submitted By ${buyerDetailsResponse?.data?.data[0]?.company_name}`,
+        buyer_id: req.user.user_id,
+        company_name: buyerDetailsResponse?.data?.data[0]?.company_name,
+        tender_id: tender_id,
+        seller_id: rows[0].user_id,
+        action_type: "New-Application",
+      },
+      "seller",
+      rows[0]?.user_id
+    );
+
+    
 
     res
       .status(201)

@@ -446,6 +446,41 @@ export const updateTenderApplicationBySeller = async (req, res) => {
     // Commit transaction
     await transaction.commit();
 
+    const token = req.headers["authorization"];
+
+    const sellerDetailsResponse = await axios.post(
+      userVerifyApi + "taqw-yvsu",
+      {
+        required_keys: "*",
+        user_ids: [
+          {
+            type: "seller",
+            user_id: req.user?.user_id,
+          },
+        ],
+      },
+      {
+        headers: {
+          Authorization: token,
+        },
+      }
+    );
+
+    emitEvent(
+      "Tender",
+      {
+        message: `Your Application ${action.toUpperCase()} By ${
+          sellerDetailsResponse?.data?.data[0]?.company_name
+        }`,
+        seller_id: req.user.user_id,
+        company_name: sellerDetailsResponse?.data?.data[0]?.company_name,
+        tender_id: updatedRecord[0]?.tender_id,
+        action_type: "Application-status",
+      },
+      "buyer",
+      updatedRecord[0]?.user_id
+    );
+
     return res.status(200).json({
       message: "Tender application updated successfully",
       tenderApplication: updatedRecord[0],

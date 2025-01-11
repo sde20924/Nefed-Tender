@@ -1,25 +1,17 @@
-// src/socket/initializeSocket.js
-
 import { Server as SocketIO } from "socket.io";
 import { authSocketMiddleware, getConnectedUsers } from "./authenticate.js";
 
 let io;
 
-/**
- * Initialize Socket.IO with the provided HTTP server.
- *
- * @param {Object} server - The HTTP server instance.
- * @returns {Object} - The initialized Socket.IO instance.
- */
 export const initializeSocket = (server) => {
   io = new SocketIO(server, {
     path: "/socket.io",
     cors: {
-      origin: ["http://localhost:8001"], // Update origin(s) based on your application needs
+      origin: ["http://localhost:8001"], 
       methods: ["GET", "POST", "DELETE", "PUT"],
       credentials: true,
     },
-    transports: ["websocket"], // Optimize for WebSocket transport
+    transports: ["websocket"], 
   });
 
   console.log("Socket.IO initialized");
@@ -59,9 +51,4 @@ export const initializeSocket = (server) => {
   return io;
 };
 
-/**
- * Get the current Socket.IO instance.
- *
- * @returns {Object} - The Socket.IO instance.
- */
 export const getIO = () => io;

@@ -13,7 +13,8 @@ import { updateTenderApplicationBySeller } from "../controllers/tender/seller/te
 
 import { getSellerTendersController,getSubmittedTenderApplications } from "../controllers/tender/seller/tenders/get.controller.js";
 // import { getTenderDetailsController } from "../controllers/tender/getTenderDetailById.js";
-import { getTenderApplicationsByUser } from "../controllers/tender/buyer/tenders/get.controller.js";
+import { getTenderApplicationsByUser,getBidDetails,getTenderBids } from "../controllers/tender/buyer/tenders/get.controller.js";
+import { saveBuyerHeaderRowData } from "../controllers/tender/buyer/tenders/post.controller.js";
 // import { getSubmittedTenderApplications } from "../controllers/tender/getSellerApplication.js";
 // import { getTenderFilesAndStatus } from "../controllers/tender/getBuyerSavedData.js";
 // import { updateTenderApplicationBySeller } from "../controllers/tender/applicationUpdatedStatusByseller.js";
@@ -48,7 +49,7 @@ router.get(
   getSubmittedTenderApplications
 );
 
-// router.get("/tender/bid/:tender_id", verifyUser, getTenderBids);
+router.get("/bid/:tender_id", verifyUser, getTenderBids);
 router.get("/tenders/active", verifyUser, getActiveTenders);
 router.get("/tender-Auction-bids/:tender_id", verifyUser, getAllAuctionBids);
 // router.get(
@@ -90,7 +91,12 @@ router.delete("/delete-tender/:id", verifyUser, deleteTenderController);
 //buyers
 router.post("/buyer_list", verifyUser, getSellerBuyerList);
 router.post("/new_buyer", verifyUser, createNewBuyerController);
-
+router.get("/get-bid-details", verifyUser, getBidDetails);
+router.post(
+  "/buyer-bid",
+  verifyUser,
+  saveBuyerHeaderRowData
+);
 router.get("/get-access-bid/:id", verifyUser, getAccessBidWithSuggestedPrice);
 
 
